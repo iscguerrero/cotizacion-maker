@@ -100,7 +100,7 @@ class Productos extends Base_Controller {
 		$no = 0;
 		foreach ($existentes as $key => $existente) {
 			$no++;
-			$existentes[$key]['no'] = $no;
+			$existentes[$key]['no_partida'] = $no;
 			$existentes[$key]['precioPiezaDD'] = $existentes[$key]['precioPiezaAD'] - ( $existentes[$key]['precioPiezaAD'] * $std / 100 );
 			$existentes[$key]['descuento'] = $std;
 			$existentes[$key]['replicas'] = $existentes[$key]['piezas'] * $replica;
@@ -158,7 +158,7 @@ class Productos extends Base_Controller {
 		foreach ($existentes as $key => $existente) {
 			$data = array(
 				'folio_encabezado' => $folio_encabezado,
-				'no_partida' => $no_partida,
+				'no_partida' => $existente['no_partida'],
 				'ult_costo' => $existente['ult_costo'],
 				'cve_art' => $existente['cve_art'],
 				'descripcion' => $existente['descripcion'],

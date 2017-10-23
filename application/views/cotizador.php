@@ -45,6 +45,7 @@
 					</div>
 					<form method="POST" action="#" id="formProducto">
 						<div class="modal-body">
+							<input type="hidden" name="ult_costo" id="ult_costo">
 							<div class="form-group">
 								<label for="inputPieza">Pieza</label>
 								<input type="text" class="form-control" name="inputPieza" id="inputPieza" readonly>
@@ -126,7 +127,9 @@
 		<!-- Lista de Acciones sobre la cotizacion -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
-					<ul class="nav nav-pills pull-right">
+					<ul class="nav nav-pills pull-right form-inline">
+						<input type="text" class="form-control text-center" name="pre_folio" id="pre_folio" value="" readonly placeholder="Pre-folio">
+						<input type="text" class="form-control text-center" name="folio" id="folio" value="" readonly placeholder="Folio">
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="abrirCotizacion" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o"></i> <font class="hidden-xs">Abrir...</font></button></li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o"></i> <font class="hidden-xs">Guardar</font></button></li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización"><i class="fa fa-unlock"></i> <font class="hidden-xs">Autorizar</font></button></li>
@@ -141,8 +144,6 @@
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
 					<div class="x_panel"">
 						<form method="POST" action="#" id="formCliente">
-							<input type="hidden" name="pre_folio" id="pre_folio">
-							<input type="hidden" name="folio" id="folio">
 							<div class="x_title">
 								<h2>DATOS DEL CLIENTE</h2>
 								<ul class="nav navbar-right panel_toolbox">

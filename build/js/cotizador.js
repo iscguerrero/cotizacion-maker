@@ -39,18 +39,21 @@ $(document).ready(function(){
 			$('#inputPieza').val(ui.item.CVE_ART);
 			$('#inputProducto').val(ui.item.DESCR);
 			$('#inputPrecio').val(ui.item.PRECIO);
+			$('#ult_costo').val(ui.item.ULT_COSTO);
 		}
 	});
 // Agregar el producto especial seleccionada a la tabla de cotizacion
 	$('#confirmarParte').click(function(){
 		descuento = $('#std').val();
-		precioPiezaAD = $('#inputPieza').val();
+		precioPiezaAD = $('#inputPrecio').val();
 		precioPiezaDD = precioPiezaAD - (precioPiezaAD * descuento / 100);
 		piezas = $('#inputPiezas').val();
 		replicas = piezas * $('#replica').val();
 		if($('#inputPiezas').val() != ''){
 			var row = {
-				no: 0,
+				no_partida: 0,
+				folio: '',
+				ult_costo: $('#ult_costo').val(),
 				cve_art: $('#inputPieza').val(),
 				descripcion: $('#inputProducto').val(),
 				precioPiezaAD: precioPiezaAD,
@@ -62,6 +65,7 @@ $(document).ready(function(){
 				precioReplicaAD: precioPiezaAD * replicas,
 				precioReplicaDD: precioPiezaDD * replicas,
 			};
+			console.log(row);
 			$('#tablaCotizacion').bootstrapTable('append', row);
 			data = $('#tablaCotizacion').bootstrapTable('getData');
 			actualizarNumeroPartidas(data);
@@ -133,7 +137,9 @@ $(document).ready(function(){
 					replica = $('#replica').val();
 					tc = $('#tc').val();
 					$('#tablaCotizacion').bootstrapTable('load', response.data);
-					actualizarTotales(response.data, tc, replica);
+					actualizarTotales();
+					$('#pre_folio').val(response.pre_folio);
+					$('#folio').val('');
 					if(response.faltantes.length > 0){
 						$('#faltantes').html("<strong>Los siguientes códigos de producto no se encuentran definidos en el catálogo de productos: </strong><strong style='color: red'>" + response.faltantes.join(', ') + "</strong>");
 					} else{
@@ -200,7 +206,9 @@ $(document).ready(function(){
 			{title: 'Información de las Replicas', halign: 'center', valign: 'middle', colspan: 3}
 		], [
 			{radio: true, align: 'center'},
-			{field: 'no', title: 'Item', align: 'center', halign: 'center', valign: 'middle'},
+			{field: 'no_partida', title: 'Item', align: 'center', halign: 'center', valign: 'middle',formatter: function (value, row, index) {
+				return parseInt(value);
+			}},
 			{field: 'cve_art', title: 'Código', align: 'center', halign: 'center', valign: 'middle'},
 			{field: 'descripcion', title: 'Descripción', valign: 'middle'},
 			{field: 'precioPiezaAD', title: 'Precio AD', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
@@ -260,14 +268,15 @@ $(document).ready(function(){
 			{field: 'precioReplicaDD', title: 'Precio DD', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
 				return formato_numero(value, 2, '.', ',')
 			}},
-			{field: 'ult_costo', title: 'costo', visible: false}
+			{field: 'ult_costo', title: 'costo', visible: false},
+			{field: 'folio', title: 'folio', visible: false}
 		]]
 	});
 // Funcion para remover la columna seleccionada de la previsualizacion
 	$('#removerFila').click(function(){
 		filasSeleccionadas = $('#tablaCotizacion').bootstrapTable('getSelections');
 		if(filasSeleccionadas.length > 0){
-			$('#tablaCotizacion').bootstrapTable('remove', {field: 'no', values: [filasSeleccionadas[0]['no']]});
+			$('#tablaCotizacion').bootstrapTable('remove', {field: 'no_partida', values: [filasSeleccionadas[0]['no_partida']]});
 			data = $('#tablaCotizacion').bootstrapTable('getData');
 			actualizarNumeroPartidas(data);
 			actualizarTotales();
@@ -334,51 +343,14 @@ $(document).ready(function(){
 // Guardamos los cambios hechos sobre la cotizacion
 	$('#btnGuardar').click(function(e){
 		e.preventDefault();
-		cliente = $('#formCliente').serializeArray();
-		partidas = $('#tablaCotizacion').bootstrapTable('getData');
-
-		encabezado = {
-			tc: $('#tc').val(),
-			replica: $('#replica').val(),
-			descuento: $('#descuento').val(),
-			representante: $('#accountManager').text(),
-			terminos: $('#paymentTerms').text(),
-			observaciones: $('#observaciones').text(),
-			subTotalUsdUnitPrice: $('#subTotalUsdUnitPrice').html(),
-			subTotalUsdSubTotMulti: $('#subTotalUsdSubTotMulti').html(),
-			subTotalUsdTotalCostUnit: $('#subTotalUsdTotalCostUnit').html(),
-			subTotalMxpUnitPrice: $('#subTotalMxpUnitPrice').html(),
-			subTotalMxpSubTotMulti: $('#subTotalMxpSubTotMulti').html(),
-			subTotalMxpTotalCostUnit: $('#subTotalMxpTotalCostUnit').html(),
-			ivaUnitPrice: $('#ivaUnitPrice').html(),
-			ivaSubTotMulti: $('#ivaSubTotMulti').html(),
-			ivaTotalCostUnit: $('#ivaTotalCostUnit').html(),
-			totalConIvaUnitPrice: $('#totalConIvaUnitPrice').html(),
-			totalConIvaSubTotMulti: $('#totalConIvaSubTotMulti').html(),
-			totalConIvaTotalCostUnit: $('#totalConIvaTotalCostUnit').html(),
-			unitRealUnitPrice: $('#unitRealUnitPrice').html(),
-			tRealSubTotMulti: $('#unitRealSubTotMulti').html(),
-			unitRealTotalCostUnit: $('#unitRealTotalCostUnit').html()
+		pre_folio = $('#pre_folio').val();
+		folio = $('#folio').val();
+		if(pre_folio == '' && folio == '') {
+			$('#msjAlert').html('NADA POR GUARDAR O NO SE HA DEFINIDO EL FOLIO DE LA COTIZACION');
+			modalAlert.modal('show');
+			return true
 		}
-
-		$.ajax({
-			async: true,
-			type: 'POST',
-			cache: false,
-			data: {cliente: cliente, encabezado: encabezado, partidas: partidas},
-			url: 'Cotizador/GuardarCotizacion',
-			dataType: 'json',
-			beforeSend: function(){
-				$('#msjAlert').html('CARGANDO COTIZACION, ESPERA POR FAVOR...');
-				modalAlert.modal('show');
-			},
-			success: function(json){
-				$('#msjAlert').html(json.msj);
-				if(json.flag == true){
-					
-				}
-			}
-		});
+		guardarCotizacion();
 	});
 });
 // Funcion para dar formato a un numero
@@ -459,7 +431,7 @@ $(document).ready(function(){
 // Actualizacion del numero de la partida
 	var actualizarNumeroPartidas = function(data){
 		$.each(data, function(index, row){
-			row['no'] = index + 1;
+			row['no_partida'] = index + 1;
 			$('#tablaCotizacion').bootstrapTable('updateRow', {index, row});
 		});
 	}
@@ -494,10 +466,10 @@ $(document).ready(function(){
 		utilidad = 0;
 
 		$.each(data, function(index, row){
-			stUsdPrecioPDD = stUsdPrecioPDD + row['precioParteDD'];
-			stUsdPrecioRAD = stUsdPrecioRAD + row['precioReplicaAD'];
-			stUsdPrecioRDD = stUsdPrecioRDD + row['precioReplicaDD'];
-			costo_total = costo_total + (row['ult_costo'] * row['replicas']);
+			stUsdPrecioPDD = stUsdPrecioPDD + parseFloat(row['precioParteDD']);
+			stUsdPrecioRAD = stUsdPrecioRAD + parseFloat(row['precioReplicaAD']);
+			stUsdPrecioRDD = stUsdPrecioRDD + parseFloat(row['precioReplicaDD']);
+			costo_total = costo_total + (parseFloat(row['ult_costo']) * parseFloat(row['replicas']));
 		});
 
 		stMxpPrecioPDD = stUsdPrecioPDD * tc;
@@ -549,7 +521,7 @@ $(document).ready(function(){
 		$('#totalPrecioRDD').html(formato_numero(totalPrecioRDD, 2, '.', ','));
 
 		$('#utilidad').html(formato_numero(utilidad, 2, '.', ','));
-		console.log(utilidad);
+		//console.log(utilidad);
 	}
 // Funcion para inicializar una nueva cotizacion
 	var nuevaCotizacion = function(){
@@ -563,5 +535,74 @@ $(document).ready(function(){
 	}
 // Funcion para guardar los cambios sobre la cotizacion
 	var guardarCotizacion = function(){
+		pre_folio = $('#pre_folio').val();
+		folio = $('#folio').val();
+		cliente = $('#formCliente').serializeArray();
+		partidas = $('#tablaCotizacion').bootstrapTable('getData');
+		encabezado = {
+			tc: $('#tc').val(),
+			replica: $('#replica').val(),
+			std: $('#std').val(),
+			representante: $('#gestorDeCuenta').text(),
+			terminos: $('#terminosVenta').text(),
+			observaciones: $('#observaciones').text(),
+			stUsdPrecioPDD: $('#stUsdPrecioPDD').html(),
+			stUsdPrecioRAD: $('#stUsdPrecioRAD').html(),
+			stUsdPrecioRDD: $('#stUsdPrecioRDD').html(),
+			stMxpPrecioPDD: $('#stMxpPrecioPDD').html(),
+			stMxpPrecioRAD: $('#stMxpPrecioRAD').html(),
+			stMxpPrecioRDD: $('#stMxpPrecioRDD').html(),
+			descuentoPrecioPDD: $('#descuentoPrecioPDD').html(),
+			descuentoPrecioRAD: $('#descuentoPrecioRAD').html(),
+			descuentoPrecioRDD: $('#descuentoPrecioRDD').html(),
+			stPrecioPDD: $('#stPrecioPDD').html(),
+			stPrecioRAD: $('#stPrecioRAD').html(),
+			stPrecioRDD: $('#stPrecioRDD').html(),
+			ivaPrecioPDD: $('#ivaPrecioPDD').html(),
+			ivaPrecioRAD: $('#ivaPrecioRAD').html(),
+			ivaPrecioRDD: $('#ivaPrecioRDD').html(),
+			totalPrecioPDD: $('#totalPrecioPDD').html(),
+			totalPrecioRAD: $('#totalPrecioRAD').html(),
+			totalPrecioRDD: $('#totalPrecioRDD').html(),
+			utilidad: $('#utilidad').html(),
+			tasa_impuesto: $('#impuestos').html(),
+			descuentost: $('#descuento').html()
+		}
 
+		$.ajax({
+			async: true,
+			type: 'POST',
+			cache: false,
+			data: {pre_folio: pre_folio, folio: folio, cliente: cliente, encabezado: encabezado, partidas: partidas},
+			url: 'Cotizador/GuardarCotizacion',
+			dataType: 'json',
+			beforeSend: function(){
+				$('#msjAlert').html('CARGANDO COTIZACION, ESPERA POR FAVOR...');
+				modalAlert.modal('show');
+			},
+			success: function(json){
+				$('#msjAlert').html(json.msj);
+				if(json.bandera == true) {
+					$('#folio').val(json.folio);
+					setearPartidas();
+					modalAlert.modal('hide');
+				}
+			}
+		});
 	}
+
+// Funcion para setear las partidas de la cotizacion en la vista
+var setearPartidas = function(){
+	folio = $('#folio').val();
+	$.ajax({
+		async: true,
+		type: 'POST',
+		cache: false,
+		data: {folio: folio},
+		url: 'Cotizador/ObtenerPartidas',
+		dataType: 'json',
+		success: function(json){
+			$('#tablaCotizacion').bootstrapTable('load', json);
+		}
+	});
+}
