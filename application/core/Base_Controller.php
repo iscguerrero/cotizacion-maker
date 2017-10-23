@@ -9,6 +9,23 @@ class Base_Controller extends CI_Controller {
 			$this->load->helper(array('url','form'));
 		# Cargamos la libreria para la validacion de los formularios
 			$this->load->library(array('form_validation', 'session'));
+
+			$sesion = array(
+				'cve_usuario' => 'dguerrero',
+				'cve_perfil' => '1',
+				'logueado' => true
+			);
+			$this->session->set_userdata($sesion);
+
+		# Comprobamos que exista una sesion de usuario creada
+			if($this->session->userdata('logueado') == false){
+				show_404();
+			}
+		# Seteamos la clave de usuario en variables globales
+			$this->created_user = $this->session->userdata() ? $this->session->userdata('cve_usuario') : null;
+			$this->updated_user = $this->session->userdata() ? $this->session->userdata('cve_usuario') : null;
+
+
 	}
 	# Funcion para formatear la fecha a formato Y-m-d
 	public function str_to_date($string){

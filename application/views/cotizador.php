@@ -141,6 +141,8 @@
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
 					<div class="x_panel"">
 						<form method="POST" action="#" id="formCliente">
+							<input type="hidden" name="pre_folio" id="pre_folio">
+							<input type="hidden" name="folio" id="folio">
 							<div class="x_title">
 								<h2>DATOS DEL CLIENTE</h2>
 								<ul class="nav navbar-right panel_toolbox">
@@ -305,6 +307,11 @@
 										<th id="totalPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
+										<th colspan="6"></th>
+										<th colspan="2" class="text-right">Utilidad Bruta</th>
+										<th colspan="4" id="utilidad" class="text-right"></th>
+									</tr>
+									<tr>
 										<th colspan="12" id="faltantes"></th>
 									</tr>
 								</tfoot>
@@ -325,7 +332,7 @@
 					<div class="col-xs-6 col-sm-3 col-md-2 col-lg-2">
 						<div class="input-group input-group-sm">
 							<span class="input-group-addon">T.C.</span>
-							<input type="text" class="form-control text-right  btn-sm" id="tc" data-toggle="tooltip" data-placement="bottom">
+							<input type="text" class="form-control text-right  btn-sm" name="tc" id="tc" data-toggle="tooltip" data-placement="bottom">
 						</div>
 					</div>
 					<div class="col-xs-5 col-sm-3 col-md-2 col-lg-2">

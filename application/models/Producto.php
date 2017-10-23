@@ -5,7 +5,7 @@ class Producto extends CI_Model{
 		parent::__construct();
 	}
 	public function obtenerProducto($cve_art){
-		$this->db->select('CVE_ART, DESCR, LIN_PROD, CON_SERIE');
+		$this->db->select('CVE_ART, DESCR, LIN_PROD, CON_SERIE, ULT_COSTO');
 		$this->db->from('INVE03');
 		$this->db->where('CVE_ART', $cve_art);
 		$this->db->limit(1);
@@ -13,7 +13,7 @@ class Producto extends CI_Model{
 		return $query->result();
 	}
 	public function obtenerProductoPorNombre($descr){
-		$this->db->select('CVE_ART, DESCR, CON_SERIE');
+		$this->db->select('CVE_ART, DESCR, CON_SERIE, ULT_COSTO');
 		$this->db->from('INVE03');
 		$this->db->like('DESCR', $descr);
 		$this->db->limit(15);

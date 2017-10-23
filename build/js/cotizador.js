@@ -98,25 +98,48 @@ $(document).ready(function(){
 		init:function(){
 			var self = this;
 			self.on('sending', function (file, xhr, formData) {
+				formData.append("id_cliente", $('#ID').val());
+				formData.append("nombre_cliente", $('#nombre').val());
+				formData.append("nombre_empresa", $('#nombreEmpresa').val());
+				formData.append("rfc", $('#RFC').val());
+				formData.append("direccion", $('#direccion').val());
+				formData.append("colonia", $('#colonia').val());
+				formData.append("municipio", $('#municipio').val());
+				formData.append("estado", $('#estado').val());
+				formData.append("codigo_postal", $('#CP').val());
+				formData.append("nombre_contacto", $('#contacto').val());
+				formData.append("telefono", $('#telefono').val());
+				formData.append("correo", $('#correo').val());
+				formData.append("representante_ventas", $('#gestorDeCuenta').html());
+				formData.append("terminos_y_condiciones", $('#terminosVenta').html());
+				formData.append("observaciones", $('#observaciones').html());
 				formData.append("tc", $('#tc').val());
 				formData.append("replica", $('#replica').val());
 				formData.append("std", $('#std').val());
+				formData.append("impuestos", $('#impuestos').html());
+				formData.append("descuento", $('#descuento').html());
 				modalAlert.modal('show');
 				$('#msjAlert').html('ESPERA UN MOMENTO POR FAVOR, CARGANDO ARCHIVO...');
 			});
 			self.on("queuecomplete", function (progress) {
-				modalAlert.modal('hide');
+				//modalAlert.modal('hide');
 			});
 			self.on("success", function (file, response) {
-				replica = $('#replica').val();
-				tc = $('#tc').val();
 				response = JSON.parse(response);
-				$('#tablaCotizacion').bootstrapTable('load', response.data);
-				actualizarTotales(response.data, tc, replica);
-				if(response.faltantes.length > 0){
-					$('#faltantes').html("<strong>Los siguientes códigos de producto no se encuentran definidos en el catálogo de productos: </strong><strong style='color: red'>" + response.faltantes.join(', ') + "</strong>");
+				if(response.flag == false){
+					$('#msjAlert').html(response.msj);
+					modalAlert.modal('show');
 				} else{
-					$('#faltantes').html("");
+					replica = $('#replica').val();
+					tc = $('#tc').val();
+					$('#tablaCotizacion').bootstrapTable('load', response.data);
+					actualizarTotales(response.data, tc, replica);
+					if(response.faltantes.length > 0){
+						$('#faltantes').html("<strong>Los siguientes códigos de producto no se encuentran definidos en el catálogo de productos: </strong><strong style='color: red'>" + response.faltantes.join(', ') + "</strong>");
+					} else{
+						$('#faltantes').html("");
+					}
+					modalAlert.modal('hide');
 				}
 				self.removeFile(file);
 			});
@@ -236,7 +259,8 @@ $(document).ready(function(){
 			}},
 			{field: 'precioReplicaDD', title: 'Precio DD', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
 				return formato_numero(value, 2, '.', ',')
-			}}
+			}},
+			{field: 'ult_costo', title: 'costo', visible: false}
 		]]
 	});
 // Funcion para remover la columna seleccionada de la previsualizacion
@@ -311,8 +335,32 @@ $(document).ready(function(){
 	$('#btnGuardar').click(function(e){
 		e.preventDefault();
 		cliente = $('#formCliente').serializeArray();
-		encabezado = { tc: $('#tc').val(), replica: $('#replica').val(), descuento: $('#descuento').val(), representante: $('#accountManager').text(), terminos: $('#paymentTerms').text(), observaciones: $('#observaciones').text(), subTotalUsdUnitPrice: $('#subTotalUsdUnitPrice').html(), subTotalUsdSubTotMulti: $('#subTotalUsdSubTotMulti').html(), subTotalUsdTotalCostUnit: $('#subTotalUsdTotalCostUnit').html(), subTotalMxpUnitPrice: $('#subTotalMxpUnitPrice').html(), subTotalMxpSubTotMulti: $('#subTotalMxpSubTotMulti').html(), subTotalMxpTotalCostUnit: $('#subTotalMxpTotalCostUnit').html(), ivaUnitPrice: $('#ivaUnitPrice').html(), ivaSubTotMulti: $('#ivaSubTotMulti').html(), ivaTotalCostUnit: $('#ivaTotalCostUnit').html(), totalConIvaUnitPrice: $('#totalConIvaUnitPrice').html(), totalConIvaSubTotMulti: $('#totalConIvaSubTotMulti').html(), totalConIvaTotalCostUnit: $('#totalConIvaTotalCostUnit').html(), unitRealUnitPrice: $('#unitRealUnitPrice').html(), tRealSubTotMulti: $('#unitRealSubTotMulti').html(), unitRealTotalCostUnit: $('#unitRealTotalCostUnit').html()}
 		partidas = $('#tablaCotizacion').bootstrapTable('getData');
+
+		encabezado = {
+			tc: $('#tc').val(),
+			replica: $('#replica').val(),
+			descuento: $('#descuento').val(),
+			representante: $('#accountManager').text(),
+			terminos: $('#paymentTerms').text(),
+			observaciones: $('#observaciones').text(),
+			subTotalUsdUnitPrice: $('#subTotalUsdUnitPrice').html(),
+			subTotalUsdSubTotMulti: $('#subTotalUsdSubTotMulti').html(),
+			subTotalUsdTotalCostUnit: $('#subTotalUsdTotalCostUnit').html(),
+			subTotalMxpUnitPrice: $('#subTotalMxpUnitPrice').html(),
+			subTotalMxpSubTotMulti: $('#subTotalMxpSubTotMulti').html(),
+			subTotalMxpTotalCostUnit: $('#subTotalMxpTotalCostUnit').html(),
+			ivaUnitPrice: $('#ivaUnitPrice').html(),
+			ivaSubTotMulti: $('#ivaSubTotMulti').html(),
+			ivaTotalCostUnit: $('#ivaTotalCostUnit').html(),
+			totalConIvaUnitPrice: $('#totalConIvaUnitPrice').html(),
+			totalConIvaSubTotMulti: $('#totalConIvaSubTotMulti').html(),
+			totalConIvaTotalCostUnit: $('#totalConIvaTotalCostUnit').html(),
+			unitRealUnitPrice: $('#unitRealUnitPrice').html(),
+			tRealSubTotMulti: $('#unitRealSubTotMulti').html(),
+			unitRealTotalCostUnit: $('#unitRealTotalCostUnit').html()
+		}
+
 		$.ajax({
 			async: true,
 			type: 'POST',
@@ -442,15 +490,20 @@ $(document).ready(function(){
 		stUsdPrecioPDD = 0;
 		stUsdPrecioRAD = 0;
 		stUsdPrecioRDD = 0;
+		costo_total = 0;
+		utilidad = 0;
+
 		$.each(data, function(index, row){
 			stUsdPrecioPDD = stUsdPrecioPDD + row['precioParteDD'];
 			stUsdPrecioRAD = stUsdPrecioRAD + row['precioReplicaAD'];
 			stUsdPrecioRDD = stUsdPrecioRDD + row['precioReplicaDD'];
+			costo_total = costo_total + (row['ult_costo'] * row['replicas']);
 		});
 
 		stMxpPrecioPDD = stUsdPrecioPDD * tc;
 		stMxpPrecioRAD = stUsdPrecioRAD * tc;
 		stMxpPrecioRDD = stUsdPrecioRDD * tc;
+		costo_total = costo_total * tc;
 
 		descuentoPrecioPDD = stMxpPrecioPDD * descuento / 100;
 		descuentoPrecioRAD = stMxpPrecioRAD * descuento / 100;
@@ -467,6 +520,8 @@ $(document).ready(function(){
 		totalPrecioPDD = stPrecioPDD + ivaPrecioPDD;
 		totalPrecioRAD = stPrecioRAD + ivaPrecioRAD;
 		totalPrecioRDD = stPrecioRDD + ivaPrecioRDD;
+
+		utilidad = totalPrecioRDD - costo_total;
 
 		// Se actualizan los valores de los controles de los totales
 		$('#stUsdPrecioPDD').html(formato_numero(stUsdPrecioPDD, 2, '.', ','));
@@ -492,6 +547,9 @@ $(document).ready(function(){
 		$('#totalPrecioPDD').html(formato_numero(totalPrecioPDD, 2, '.', ','));
 		$('#totalPrecioRAD').html(formato_numero(totalPrecioRAD, 2, '.', ','));
 		$('#totalPrecioRDD').html(formato_numero(totalPrecioRDD, 2, '.', ','));
+
+		$('#utilidad').html(formato_numero(utilidad, 2, '.', ','));
+		console.log(utilidad);
 	}
 // Funcion para inicializar una nueva cotizacion
 	var nuevaCotizacion = function(){

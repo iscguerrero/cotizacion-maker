@@ -4,8 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Clientes extends Base_Controller {
 	public function __construct(){
 		parent::__construct();
-		# Conexion a la base de datos para interactuar con las cotizaciones
-			$this->load->database('sqlserver');
+		$this->load->database('sqlserver');
 	}
 	# Metodo usado para obtener los datos del autocomplete del cliente
 	public function ObtenerCliente(){
