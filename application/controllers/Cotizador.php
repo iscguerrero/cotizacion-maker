@@ -76,33 +76,33 @@ class Cotizador extends Base_Controller {
 			'nombre_contacto' => $cliente[9]['value'],
 			'telefono' => $cliente[10]['value'],
 			'correo' => $cliente[11]['value'],
-			'descuentoPrecioPDD' => $encabezado['descuentoPrecioPDD'],
-			'descuentoPrecioRAD' => $encabezado['descuentoPrecioRAD'],
-			'descuentoPrecioRDD' => $encabezado['descuentoPrecioRDD'],
-			'ivaPrecioPDD' => $encabezado['ivaPrecioPDD'],
-			'ivaPrecioRAD' => $encabezado['ivaPrecioRAD'],
-			'ivaPrecioRDD' => $encabezado['ivaPrecioRDD'],
+			'descuentoPrecioPDD' => str_replace(',', '', $encabezado['descuentoPrecioPDD']),
+			'descuentoPrecioRAD' => str_replace(',', '', $encabezado['descuentoPrecioRAD']),
+			'descuentoPrecioRDD' => str_replace(',', '', $encabezado['descuentoPrecioRDD']),
+			'ivaPrecioPDD' => str_replace(',', '', $encabezado['ivaPrecioPDD']),
+			'ivaPrecioRAD' => str_replace(',', '', $encabezado['ivaPrecioRAD']),
+			'ivaPrecioRDD' => str_replace(',', '', $encabezado['ivaPrecioRDD']),
 			'observaciones' => $encabezado['observaciones'],
-			'replicas' => $encabezado['replica'],
+			'replicas' => str_replace(',', '', $encabezado['replica']),
 			'representante_ventas' => $encabezado['representante'],
-			'stUsdPrecioPDD' => $encabezado['stUsdPrecioPDD'],
-			'stUsdPrecioRAD' => $encabezado['stUsdPrecioRAD'],
-			'stUsdPrecioRDD' => $encabezado['stUsdPrecioRDD'],
-			'stMxpPrecioPDD' => $encabezado['stMxpPrecioPDD'],
-			'stMxpPrecioRAD' => $encabezado['stMxpPrecioRAD'],
-			'stMxpPrecioRDD' => $encabezado['stMxpPrecioRDD'],
-			'stPrecioPDD' => $encabezado['stPrecioPDD'],
-			'stPrecioRAD' => $encabezado['stPrecioRAD'],
-			'stPrecioRDD' => $encabezado['stPrecioRDD'],
+			'stUsdPrecioPDD' => str_replace(',', '', $encabezado['stUsdPrecioPDD']),
+			'stUsdPrecioRAD' => str_replace(',', '', $encabezado['stUsdPrecioRAD']),
+			'stUsdPrecioRDD' => str_replace(',', '', $encabezado['stUsdPrecioRDD']),
+			'stMxpPrecioPDD' => str_replace(',', '', $encabezado['stMxpPrecioPDD']),
+			'stMxpPrecioRAD' => str_replace(',', '', $encabezado['stMxpPrecioRAD']),
+			'stMxpPrecioRDD' => str_replace(',', '', $encabezado['stMxpPrecioRDD']),
+			'stPrecioPDD' => str_replace(',', '', $encabezado['stPrecioPDD']),
+			'stPrecioRAD' => str_replace(',', '', $encabezado['stPrecioRAD']),
+			'stPrecioRDD' => str_replace(',', '', $encabezado['stPrecioRDD']),
 			'descuento_sobre_pieza' => $encabezado['std'],
 			'tasa_impuesto' => $encabezado['tasa_impuesto'],
 			'tipo_cambios' => $encabezado['tc'],
 			'terminos_y_condiciones' => $encabezado['terminos'],
-			'totalPrecioPDD' => $encabezado['totalPrecioPDD'],
-			'totalPrecioRAD' => $encabezado['totalPrecioRAD'],
-			'totalPrecioRDD' => $encabezado['totalPrecioRDD'],
-			'utilidad' => $encabezado['utilidad'],
-			'descuentost' => $encabezado['descuentost'],
+			'totalPrecioPDD' => str_replace(',', '', $encabezado['totalPrecioPDD']),
+			'totalPrecioRAD' => str_replace(',', '', $encabezado['totalPrecioRAD']),
+			'totalPrecioRDD' => str_replace(',', '', $encabezado['totalPrecioRDD']),
+			'utilidad' => str_replace(',', '', $encabezado['utilidad']),
+			'descuentost' => str_replace(',', '', $encabezado['descuentost']),
 			'tipo_impresion' => 'A',
 			'created_user' => $this->created_user,
 			'updated_user' => $this->updated_user,
@@ -167,18 +167,19 @@ class Cotizador extends Base_Controller {
 				if($partida['folio'] == null || $partida['folio'] == ''){
 					$this->partidas_cotizacion_bulk->altaPartida($data);
 				} else {
-					$cont = false;
+					$this->partidas_cotizacion_bulk->editarPartida($data);
+					/*$cont = 0;
 					foreach ($antPartidas as $antPartida) {
 						if($antPartida->folio == $partida['folio']){
-							$cont = true;
+							$cont = 1;
 						}
 					}
-					if($cont == true){
+					if($cont == 1) {
 						$this->partidas_cotizacion_bulk->editarPartida($data);
-					} else{
+					} else {
 						$data = array('estatus'=>'X', 'folio'=>$partida['folio']);
 						$this->partidas_cotizacion_bulk->borrarPartida($data);
-					}
+					}*/
 				}
 			}
 		}
@@ -200,6 +201,25 @@ class Cotizador extends Base_Controller {
 		$folio = $this->input->post('folio');
 		$this->load->model('partidas_cotizacion_bulk');
 		exit(json_encode($this->partidas_cotizacion_bulk->obtenerPartidas($folio)));
+	}
+
+	# Funcion para obtener la lista de cotizaciones en un periodo de tiempo
+	public function ObtenerCotizaciones() {
+		# Validamos la fechas de consulta
+		$this->form_validation->set_rules('fi', 'Fecha Inicial', 'trim|required', array(
+			'required' => 'La fecha inicial de la consulta es necesaria'));
+		$this->form_validation->set_rules('ff', 'Fecha Final', 'trim|required', array(
+			'required' => 'La fecha final de la consulta es necesaria',
+		));
+		# Retornamos los errrores de validacion en caso de que estos se presente
+		if ($this->form_validation->run() === false) {
+			exit(json_encode(array('bandera'=>false, 'msj'=>'Las validaciones del formulario no se completaron, atiende:', 'error'=>validation_errors())));
+		} else {
+			$fi = $this->str_to_date($this->input->post('fi'));
+			$ff = $this->str_to_date($this->input->post('ff'));
+			$this->load->model('encabezado_cotizacion');
+			exit(json_encode($this->encabezado_cotizacion->obtenerCotizaciones($fi, $ff)));
+		}
 	}
 
 }

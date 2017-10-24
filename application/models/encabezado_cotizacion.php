@@ -29,4 +29,14 @@ class encabezado_cotizacion extends CI_Model{
 		return $this->db->update('encabezado_cotizacion', $data);
 	}
 
+	# Funcion para obtener la lista de cotizaciones en el periodo seleccionado
+	public function obtenerCotizaciones($fi, $ff) {
+		$this->db->select("folio, nombre_cliente, DATE_FORMAT(created_at, '%d-%M-%Y') AS fecha, totalPrecioRDD, estatus");
+		$this->db->from('encabezado_cotizacion');
+		$this->db->where('created_at >', $fi);
+		$this->db->where('created_at <', $ff.' 23:59:59');
+		$query = $this->db->get();
+		return $query->result();
+	}
+
 }

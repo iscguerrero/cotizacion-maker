@@ -34,7 +34,7 @@ class Base_Controller extends CI_Controller {
 		if($string == null) exit(json_encode(array('flag'=>false, 'msj'=>'UNA O VARIAS DE LAS FECHAS ES NULA')));
 		if($string == '') exit(json_encode(array('flag'=>false, 'msj'=>'UNA O VARIAS DE LAS FECHAS ES NULA')));
 		isset($string)?$fecha=explode("-", $string):exit(array('flag'=>false, 'msj'=>'UNA DE LAS FECHAS NO SE PROPORCIONO CORRECTAMENTE'));
-		$date = $fecha[2].$meses[$fecha[1]].$fecha[0];
+		$date = $fecha[2].'-'.$meses[$fecha[1]].'-'.$fecha[0];
 		return $date;
 	}
 }

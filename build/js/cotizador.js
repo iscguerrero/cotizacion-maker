@@ -333,10 +333,10 @@ $(document).ready(function(){
 		classes: 'table-condensed table-hover',
 		columns: [
 			{radio: true, align: 'center'},
-			{field: 'no', title: 'Cotizacion', align: 'center', halign: 'center', valign: 'middle'},
-			{field: 'cliente', title: 'Cliente', align: 'center', halign: 'center', valign: 'middle'},
+			{field: 'folio', title: 'Cotizacion', align: 'center', halign: 'center', valign: 'middle'},
+			{field: 'nombre_cliente', title: 'Cliente', align: 'center', halign: 'center', valign: 'middle'},
 			{field: 'fecha', title: 'Fecha', align: 'center', halign: 'center', valign: 'middle'},
-			{field: 'importe', title: 'Importe', align: 'center', halign: 'center', valign: 'middle'},
+			{field: 'totalPrecioRDD', title: 'Importe', align: 'center', halign: 'center', valign: 'middle'},
 			{field: 'estatus', title: 'Estatus', align: 'center', halign: 'center', valign: 'middle'},
 		]
 	});
@@ -351,6 +351,23 @@ $(document).ready(function(){
 			return true
 		}
 		guardarCotizacion();
+	});
+// Obtener el listado de cotizaciones
+	$('#filtrarCotizaciones').click(function(e){
+		e.preventDefault();
+		fi = $('#inputfi').val();
+		ff = $('#inputff').val();
+		$.ajax({
+			async: true,
+			type: 'POST',
+			cache: false,
+			data: {fi: fi, ff: ff},
+			url: 'Cotizador/ObtenerCotizaciones',
+			dataType: 'json',
+			success: function(json){
+				$('#tablaCotizaciones').bootstrapTable('load', json);
+			}
+		});
 	});
 });
 // Funcion para dar formato a un numero
@@ -603,6 +620,7 @@ var setearPartidas = function(){
 		dataType: 'json',
 		success: function(json){
 			$('#tablaCotizacion').bootstrapTable('load', json);
+			console.log(json);
 		}
 	});
 }
