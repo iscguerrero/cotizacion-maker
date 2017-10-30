@@ -2,10 +2,12 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Productos extends Base_Controller {
+
 	public function __construct(){
 		parent::__construct();
 		$firebird = $this->load->database('firebird');
 	}
+
 	# Metodo para obtener producto por nombre(autocomplete)
 	public function ObtenerProductoPorNombre(){
 		if(!$this->input->is_ajax_request()) show_404();
@@ -26,6 +28,7 @@ class Productos extends Base_Controller {
 
 		exit(json_encode($productos));
 	}
+
 	# Este metodo se encarga de recibir la cotizacion en formato pdf, leerlo y reenviar la informacion a la vista
 	public function RecibirExcel(){
 		if(!$this->input->is_ajax_request()) show_404();
@@ -52,6 +55,10 @@ class Productos extends Base_Controller {
 		$std = $this->input->post('std');
 		$impuestos = $this->input->post('impuestos');
 		$descuentost = $this->input->post('descuento');
+
+		# Comprobamos que el nombre del cliente haya sido proporcionado
+		if($id_cliente == null || $id_cliente == '')
+			die(json_encode(array('bandera'=>false, 'msj'=>'Es necesario proporcionar la información del cliente antes de iniciar una nueva cotizacion')));
 
 		# Guardamos el archivo en la carpeta de uploads para futuras referencias
 		$nombre = $_FILES['cotizacion']['name'];

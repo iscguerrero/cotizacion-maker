@@ -22,7 +22,7 @@ class partidas_cotizacion_bulk extends CI_Model{
 
 	# Metodo para obtener las partidas de la cotizacion
 	public function obtenerPartidas($folio) {
-		$this->db->select('*');
+		$this->db->select("*");
 		$this->db->from('partidas_cotizacion_bulk');
 		$this->db->where('folio_encabezado', $folio);
 		$this->db->where('estatus', 'A');
@@ -31,9 +31,9 @@ class partidas_cotizacion_bulk extends CI_Model{
 	}
 
 	# Metodo para borrar una partida
-	public function borrarPartida($data) {
+	public function borrarPartida($folio) {
 		$this->db->limit(1);
-		$this->db->where('folio', $data['folio']);
-		return $this->db->update('partidas_cotizacion_bulk', $data);
+		$this->db->where('folio', $folio);
+		return $this->db->update('partidas_cotizacion_bulk', array('estatus'=>'X'));
 	}
 }

@@ -13,12 +13,18 @@ class Producto extends CI_Model{
 		return $query->result();
 	}
 	public function obtenerProductoPorNombre($descr){
-		$this->db->select('CVE_ART, DESCR, CON_SERIE, ULT_COSTO');
+		$descr = strtoupper($descr);
+		$query = $this->db->query("SELECT CVE_ART, DESCR, CON_SERIE, ULT_COSTO FROM INVE03 WHERE UPPER(DESCR) LIKE '%$descr%'");
+		return $query->result();
+
+
+
+		/*$this->db->select('CVE_ART, DESCR, CON_SERIE, ULT_COSTO');
 		$this->db->from('INVE03');
 		$this->db->like('DESCR', $descr);
 		$this->db->limit(15);
 		$query = $this->db->get();
-		return $query->result();
+		return $query->result();*/
 		#return $this->db->get_compiled_select();
 	}
 }

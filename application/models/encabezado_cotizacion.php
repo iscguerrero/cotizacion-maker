@@ -39,4 +39,22 @@ class encabezado_cotizacion extends CI_Model{
 		return $query->result();
 	}
 
+	# Metodo para obtener el encabezado de una cotizacion
+	public function obtenerEncabezado($folio){
+		$this->db->select('folio, folio_preencabezado, nombre_cliente, nombre_empresa, id_cliente, rfc, direccion, colonia, municipio, estado, codigo_postal, nombre_contacto, telefono, correo, tipo_cambios, replicas, descuento_sobre_pieza, representante_ventas, terminos_y_condiciones, observaciones, descuentost, tasa_impuesto, utilidad');
+		$this->db->from('encabezado_cotizacion');
+		$this->db->where('folio', $folio);
+		$this->db->limit(1);
+		return $this->db->get()->row();
+	}
+
+	# Metodo para obtener toda la informacion del encabezado
+	public function obtenerEncabezadoPdf($folio){
+		$this->db->select("*, date_format(created_at, '%d-%b-%Y') AS ffecha");
+		$this->db->from('encabezado_cotizacion');
+		$this->db->where('folio', $folio);
+		$this->db->limit(1);
+		return $this->db->get()->row();
+	}
+
 }

@@ -1,9 +1,11 @@
 $(document).ready(function(){
 /*************** CARGA INICIAL DE LA INFORMACION DE LA COTIZACION ***************/
 	nuevaCotizacion();
+	folios = [];
 /*************** CONFIGURACION GENERAL DEL COMPORTAMIENTO DE LA VISTA ***************/
 // Configuracion del tooltip en la vista
 	$('[data-toggle="tooltip"]').tooltip();
+
 // Configuracion basica del datetimepicker
 	$('.simple-dp').datetimepicker({
 		locale: 'es',
@@ -11,16 +13,19 @@ $(document).ready(function(){
 		ignoreReadonly: true,
 		allowInputToggle: true
 	});
+
 // Configuracion del modal de mensajes del sistema
 	modalAlert = $('#modalAlert').modal({
 		backdrop: 'static',
 		keyboard: false,
 		show: false
 	});
+
 // Abrir el modal con el historico de cotizaciones
 	$('#abrirCotizacion').click(function(){
 		$('#modalCotizaciones').modal('show');
 	});
+
 	// Configuracion del autocomplete del cliente
 	$('#nombre').autocomplete({
 		source: "Clientes/ObtenerCliente",
@@ -29,6 +34,7 @@ $(document).ready(function(){
 			setearCliente(ui.item);
 		}
 	});
+
 	// Configuracion del autocomplete del producto especial
 	$('#inputProducto').autocomplete({
 		source: "Productos/ObtenerProductoPorNombre",
@@ -42,6 +48,7 @@ $(document).ready(function(){
 			$('#ult_costo').val(ui.item.ULT_COSTO);
 		}
 	});
+
 // Agregar el producto especial seleccionada a la tabla de cotizacion
 	$('#confirmarParte').click(function(){
 		descuento = $('#std').val();
@@ -76,6 +83,7 @@ $(document).ready(function(){
 			modalAlert.modal('show');
 		}
 	});
+
 // Configuracion del dropzone para cargar el excel de la cotizacion
 	Dropzone.autoDiscover = false;
 	$('#excelArea').dropzone({
@@ -130,7 +138,7 @@ $(document).ready(function(){
 			});
 			self.on("success", function (file, response) {
 				response = JSON.parse(response);
-				if(response.flag == false){
+				if(response.bandera == false){
 					$('#msjAlert').html(response.msj);
 					modalAlert.modal('show');
 				} else{
@@ -146,11 +154,13 @@ $(document).ready(function(){
 						$('#faltantes').html("");
 					}
 					modalAlert.modal('hide');
+					$('#rowCargar').hide();
 				}
 				self.removeFile(file);
 			});
 		}
 	});
+
 // Configuramos la accion del cuadro de texto de replica
 	$('#replica').change(function(){
 		replica = $(this);
@@ -162,6 +172,7 @@ $(document).ready(function(){
 			}, 1);
 		}
 	});
+
 // Configuramos la accion del cuadro de texto del descuento
 	$('#std').change(function(){
 		std = $(this);
@@ -173,6 +184,7 @@ $(document).ready(function(){
 			}, 1);
 		}
 	});
+
 // Configuracion del accion del cuadro de texto de tipo de cambio
 	$('#tc').change(function(){
 		if($(this).val() != ''){
@@ -183,17 +195,21 @@ $(document).ready(function(){
 			}, 1);
 		}
 	});
+
 // Abrir el modal para agregar un producto especial
 	$('#agregarParte').click(function(e){
 		e.preventDefault();
 		$('#modalProducto').modal('show');
 	});
+
+// Modal para agregar un producto especial
 	$('#modalProducto').on('hidden.bs.modal', function (e) {
 		$('#inputPieza').val('');
 		$('#inputProducto').val('');
 		$('#inputPrecio').val('');
 		$('#inputPiezas').val('');
 	});
+
 // Configuracion de la tabla de pre visualizacion de la cotizacion
 	$('#tablaCotizacion').bootstrapTable({
 		data: [],
@@ -272,16 +288,22 @@ $(document).ready(function(){
 			{field: 'folio', title: 'folio', visible: false}
 		]]
 	});
+
 // Funcion para remover la columna seleccionada de la previsualizacion
 	$('#removerFila').click(function(){
 		filasSeleccionadas = $('#tablaCotizacion').bootstrapTable('getSelections');
 		if(filasSeleccionadas.length > 0){
+			if(filasSeleccionadas[0]['folio'] != null && filasSeleccionadas[0]['folio'] != '') {
+				folios.push(filasSeleccionadas[0]['folio']);
+			}
 			$('#tablaCotizacion').bootstrapTable('remove', {field: 'no_partida', values: [filasSeleccionadas[0]['no_partida']]});
 			data = $('#tablaCotizacion').bootstrapTable('getData');
 			actualizarNumeroPartidas(data);
 			actualizarTotales();
+			console.log(folios);
 		}
 	});
+
 // Configuracion del pie de pagina de la tabla de previsualizacion de la cotizacion
 	$('#gestorDeCuenta').editable({
 		type: 'text',
@@ -292,6 +314,7 @@ $(document).ready(function(){
 		onblur: 'submit',
 		classes: 'table-condensed'
 	});
+
 	$('#terminosVenta').editable({
 		type: 'textarea',
 		defaultValue: '',
@@ -300,6 +323,7 @@ $(document).ready(function(){
 		showbuttons: true,
 		onblur: 'submit'
 	});
+
 	$('#observaciones').editable({
 		type: 'textarea',
 		defaultValue: '',
@@ -308,6 +332,7 @@ $(document).ready(function(){
 		showbuttons: true,
 		onblur: 'submit'
 	});
+
 	$('#impuestos').editable({
 		type: 'text',
 		mode: 'popup',
@@ -316,6 +341,7 @@ $(document).ready(function(){
 	}).on('hidden', function(e, reason) {
 		actualizarTotales();
 	});
+
 	$('#descuento').editable({
 		type: 'text',
 		mode: 'popup',
@@ -324,22 +350,55 @@ $(document).ready(function(){
 	}).on('hidden', function(e, reason) {
 		actualizarTotales();
 	});
+
 // Configuracion de la tabla de cotizaciones
 	$('#tablaCotizaciones').bootstrapTable({
 		data: [],
+		pagination: true,
+		sidePagination: 'client',
+		pageList: [10, 25, 50, 100, 200],
+		locale: 'es-MX',
 		clickToSelect: true,
 		toolbar: '#toolbarCotizaciones',
 		toolbarAlign: 'right',
-		classes: 'table-condensed table-hover',
+		classes: 'table-condensed table-hover table-bordered',
 		columns: [
-			{radio: true, align: 'center'},
 			{field: 'folio', title: 'Cotizacion', align: 'center', halign: 'center', valign: 'middle'},
-			{field: 'nombre_cliente', title: 'Cliente', align: 'center', halign: 'center', valign: 'middle'},
+			{field: 'nombre_cliente', title: 'Cliente'},
 			{field: 'fecha', title: 'Fecha', align: 'center', halign: 'center', valign: 'middle'},
-			{field: 'totalPrecioRDD', title: 'Importe', align: 'center', halign: 'center', valign: 'middle'},
-			{field: 'estatus', title: 'Estatus', align: 'center', halign: 'center', valign: 'middle'},
-		]
+			{field: 'totalPrecioRDD', title: 'Importe', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
+				return formato_numero(value, 2, '.', ',')
+			}},
+			{field: 'estatus', title: 'Estatus', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
+				string = '';
+				switch(value){
+					case 'A':
+						string = "<span class='label label-default'>Abierta</span>"
+						break;
+					case 'B':
+						string = "<span class='label label-primary'>Autorizada</span>"
+						break;
+					case 'C':
+						string = "<span class='label label-info'>Impresa</span>"
+						break;
+					case 'B':
+						string = "<span class='label label-success'>Cerrada</span>"
+						break;
+					case 'B':
+						string = "<span class='label label-danger'>Rechazada</span>"
+						break;
+				}
+				return string
+			}},
+			{title: 'Abrir', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
+				return "<button type='button' class='btn btn-xs bttn-primary open'><i class='fa fa-folder-open-o'></i></button>"
+			}},
+		],
+		onClickRow: function(row, $element, field){
+			cargarCotizacion(row.folio);
+		}
 	});
+
 // Guardamos los cambios hechos sobre la cotizacion
 	$('#btnGuardar').click(function(e){
 		e.preventDefault();
@@ -352,6 +411,7 @@ $(document).ready(function(){
 		}
 		guardarCotizacion();
 	});
+
 // Obtener el listado de cotizaciones
 	$('#filtrarCotizaciones').click(function(e){
 		e.preventDefault();
@@ -369,7 +429,19 @@ $(document).ready(function(){
 			}
 		});
 	});
+
+// Imprimir la cotizacion en formato bulk
+	$('#aBulk').click(function(e){
+		e.preventDefault();
+		if($('#folio').val() == '') {
+			$('#msjAlert').html('ABRE O CREA UNA NUEVA COTIZACION QUE IMPRIMIR');
+			modalAlert.modal('show');
+			return true;
+		}
+		window.open('Cotizador/ImprimirCotizacion/'+$('#folio').val());
+	});
 });
+
 // Funcion para dar formato a un numero
 	function formato_numero(numero, decimales, separador_decimal, separador_miles){
 		numero = parseFloat(numero);
@@ -384,6 +456,7 @@ $(document).ready(function(){
 		}
 		return numero;
 	}
+
 // Funcion para setear el formulario con la informacion del cliente
 	var setearCliente = function(response){
 		$('#nombreEmpresa').val(response.value);
@@ -398,6 +471,7 @@ $(document).ready(function(){
 		$('#telefono').val(response.TELEFONO);
 		$('#correo').val(response.CORREO);
 	}
+
 // Funcion para obtener el maximo descuento permitido por gerencia
 	var obtenerMaximoDescuento = function(){
 		var maximoDescuento;
@@ -412,6 +486,7 @@ $(document).ready(function(){
 		});
 		return maximoDescuento;
 	}
+
 // Funcion para reestablecer la replica de la tabla de cotizacion
 	var resetReplica = function(replica){
 		data = $('#tablaCotizacion').bootstrapTable('getData');
@@ -421,6 +496,7 @@ $(document).ready(function(){
 		});
 		actualizarTabla();
 	}
+
 // Funcion para reestablecer el descuento de la tabla de cotizacion
 	var resetDescuento = function(descuento){
 		data = $('#tablaCotizacion').bootstrapTable('getData');
@@ -430,6 +506,7 @@ $(document).ready(function(){
 		});
 		actualizarTabla();
 	}
+
 // Funcion para obtener el tipo de cambio del web service de banxico
 	var obtenerTipoCambio = function () {
 		var tc = 0;
@@ -445,6 +522,7 @@ $(document).ready(function(){
 		});
 		return [tc, fecha_tc];
 	}
+
 // Actualizacion del numero de la partida
 	var actualizarNumeroPartidas = function(data){
 		$.each(data, function(index, row){
@@ -452,6 +530,7 @@ $(document).ready(function(){
 			$('#tablaCotizacion').bootstrapTable('updateRow', {index, row});
 		});
 	}
+
 // Funcion para actualizar el campo de replica y los campos calculados
 	var actualizarTabla = function(){
 		data = $('#tablaCotizacion').bootstrapTable('getData');
@@ -460,14 +539,16 @@ $(document).ready(function(){
 		});
 		actualizarTotales();
 	}
+
 // Funcion para actualizar los campos calculados de la fila
 	var actualizarFila = function(index, row){
 		row['precioPiezaDD'] = row['precioPiezaAD'] - (row['precioPiezaAD'] * row['descuento'] / 100);
-		row['precioParteDD'] = row['replicas'] * row['precioPiezaDD'];
+		row['precioParteDD'] = row['piezas'] * row['precioPiezaDD'];
 		row['precioReplicaAD'] = row['replicas'] * row['precioPiezaAD'];
 		row['precioReplicaDD'] = row['replicas'] * row['precioPiezaDD'];
 		$('#tablaCotizacion').bootstrapTable('updateRow', {index, row});
 	}
+
 // Funcion para calcular los totales de la cotizacion
 	var actualizarTotales = function(){
 		tc = $('#tc').val();
@@ -538,18 +619,63 @@ $(document).ready(function(){
 		$('#totalPrecioRDD').html(formato_numero(totalPrecioRDD, 2, '.', ','));
 
 		$('#utilidad').html(formato_numero(utilidad, 2, '.', ','));
-		//console.log(utilidad);
 	}
+
 // Funcion para inicializar una nueva cotizacion
 	var nuevaCotizacion = function(){
 		// Cargamos el tipo de cambio de la cotizacion
 		var tc_info = obtenerTipoCambio();
 		$('#tc').val(tc_info[0]).attr('title', 'Fuente Banxico, fecha ' + tc_info[1]);
 	}
+
 // Funcion para cargar una cotizacion guardada con anterioriodad
 	var cargarCotizacion = function(folio){
-
+		$.ajax({
+			async: true,
+			type: 'POST',
+			cache: false,
+			data: {folio: folio},
+			url: 'Cotizador/ObtenerEncabezado',
+			dataType: 'json',
+			beforeSend: function(){
+				$('#msjAlert').html('CARGANDO COTIZACION, ESPERA POR FAVOR...');
+				modalAlert.modal('show');
+			},
+			success: function(json){
+				$('#msjAlert').html(json.msj);
+				if(json.bandera == true) {
+					en = json.encabezado;
+					// Se carga el encabezado
+					$('#folio').val(parseInt(en.folio));
+					$('#pre_folio').val(parseInt(en.folio_preencabezado));
+					$('#nombre').val(en.nombre_cliente);
+					$('#nombreEmpresa').val(en.nombre_empresa);
+					$('#ID').val(en.id_cliente);
+					$('#RFC').val(en.rfc);
+					$('#direccion').val(en.direccion);
+					$('#colonia').val(en.colonia);
+					$('#municipio').val(en.municipio);
+					$('#estado').val(en.estado);
+					$('#CP').val(en.codigo_postal);
+					$('#contacto').val(en.nombre_contacto);
+					$('#telefono').val(en.telefono);
+					$('#correo').val(en.correo);
+					$('#tc').val(en.tipo_cambios);
+					$('#replica').val(en.replicas);
+					$('#std').val(parseFloat(en.descuento_sobre_pieza, 2));
+					$('#gestorDeCuenta').html(en.representante_ventas);
+					$('#terminosVenta').html(en.terminos_y_condiciones);
+					$('#observaciones').html(en.observaciones);
+					$('#descuento').html(parseFloat(en.descuentost, 2));
+					$('#impuestos').html(parseFloat(en.tasa_impuesto, 2));
+					setearPartidas();
+					modalAlert.modal('hide');
+					$('#modalCotizaciones').modal('hide');
+				}
+			}
+		});
 	}
+
 // Funcion para guardar los cambios sobre la cotizacion
 	var guardarCotizacion = function(){
 		pre_folio = $('#pre_folio').val();
@@ -585,12 +711,11 @@ $(document).ready(function(){
 			tasa_impuesto: $('#impuestos').html(),
 			descuentost: $('#descuento').html()
 		}
-
 		$.ajax({
 			async: true,
 			type: 'POST',
 			cache: false,
-			data: {pre_folio: pre_folio, folio: folio, cliente: cliente, encabezado: encabezado, partidas: partidas},
+			data: {pre_folio: pre_folio, folio: folio, cliente: cliente, encabezado: encabezado, partidas: partidas, folios: folios},
 			url: 'Cotizador/GuardarCotizacion',
 			dataType: 'json',
 			beforeSend: function(){
@@ -620,7 +745,7 @@ var setearPartidas = function(){
 		dataType: 'json',
 		success: function(json){
 			$('#tablaCotizacion').bootstrapTable('load', json);
-			console.log(json);
+			actualizarTotales();
 		}
 	});
 }

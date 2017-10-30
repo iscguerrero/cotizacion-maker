@@ -6,7 +6,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Cotizador </title>
-		<link rel='icon' type='image/jpeg' href="<?php echo base_url('resources/images/trilogiq-logo.png')?>" />
+		<link rel='icon' type='image/jpeg' href="<?php echo base_url('resources/images/trilogiq.png')?>" />
 		<link href="<?php echo base_url('resources/bootstrap/dist/css/bootstrap.min.css')?>" rel="stylesheet">
 		<link href="<?php echo base_url('resources/jquery-ui/jquery-ui.min.css')?>" rel="stylesheet">
 		<link href="<?php echo base_url('resources/font-awesome/css/font-awesome.min.css')?>" rel="stylesheet">
@@ -133,7 +133,19 @@
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="abrirCotizacion" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o"></i> <font class="hidden-xs">Abrir...</font></button></li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o"></i> <font class="hidden-xs">Guardar</font></button></li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización"><i class="fa fa-unlock"></i> <font class="hidden-xs">Autorizar</font></button></li>
-						<li role="presentation"><button type="button" class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="Imprimir pdf de la cotización"><i class="fa fa-file-pdf-o"></i> <font class="hidden-xs">Imprimir</font></button></li>
+						<li role="presentation">
+							<div class="btn-group">
+								<button type="button" class="btn btn-info"><i class="fa fa-file-pdf-o"></i> Imprimir</button>
+								<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+									<span class="caret"></span>
+									<span class="sr-only">Imprimir</span>
+								</button>
+								<ul class="dropdown-menu" role="menu">
+									<li><a href="#" id="aBulk">Bulk</a></li>
+									<li><a href="#" id="aArmado">Armado</a></li>
+								</ul>
+							</div>
+						</li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-warning" title="Rechazar uso de la cotización"><i class="fa fa-close"></i> <font class="hidden-xs">Rechazar</font></button></li>
 					</ul>
 				</div>
@@ -145,12 +157,12 @@
 					<div class="x_panel"">
 						<form method="POST" action="#" id="formCliente">
 							<div class="x_title">
-								<h2>DATOS DEL CLIENTE</h2>
+								<h2>Datos del cliente</h2>
 								<ul class="nav navbar-right panel_toolbox">
 									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
 									</li>
 								</ul>
-								<input type="text" class="form-control autocomplete" name="nombre" id="nombre" placeholder="BUSCAR POR NOMBRE DE CLIENTE" autofocus >
+								<input type="text" class="form-control autocomplete" name="nombre" id="nombre" placeholder="Buscar por nombre de cliente" autofocus >
 								<div class="clearfix"></div>
 							</div>
 							<div class="x_content">
@@ -228,11 +240,11 @@
 				</div>
 			</div>
 			<!-- Panel para cargar la cotizacion en formato xls -->
-			<div class="row">
+			<div class="row" id="rowCargar">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
 					<div class="x_panel"">
 						<div class="x_title">
-							<h2>CARGAR ARCHIVO DE COTIZACION</i></h2>
+							<h2>Cargar archivo de cotización</i></h2>
 							<ul class="nav navbar-right panel_toolbox">
 								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
 								</li>
@@ -342,7 +354,7 @@
 							<input type="text" class="form-control text-right" id="replica" value="1">
 						</div>
 					</div>
-					<div class="col-xs-7 col-sm-4 col-md-3 col-lg-2">
+					<div class="col-xs-7 col-sm-4 col-md-3 col-lg-3">
 						<div class="input-group input-group-sm">
 							<span class="input-group-addon" >Descuento %</span>
 							<input type="text" class="form-control text-right" id="std" value="0">
