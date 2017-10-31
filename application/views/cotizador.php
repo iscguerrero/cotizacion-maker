@@ -71,6 +71,26 @@
 				</div>
 			</div>
 		</div>
+		<!-- Modal para cargar la partida armada de la cotizacion -->
+		<div id="modalArmado" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+						<h4 class="modal-title">Producto Armado</h4>
+					</div>
+					<form method="POST" action="#" id="formArmado">
+						<div class="modal-body">
+							<textarea class="form-control" rows="3" id="taArmado" name="taArmado" placeholder="Proporciona la descripción del producto armado"></textarea>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+							<button type="button" class="btn btn-success" id="confirmarPartida"><i class="fa fa-send"></i> Hecho</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 		<!-- Toolbar para la tabla de historico de cotizaciones -->
 		<div class="row" id="toolbarCotizaciones">
 			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
@@ -133,7 +153,7 @@
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="abrirCotizacion" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o"></i> <font class="hidden-xs">Abrir...</font></button></li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o"></i> <font class="hidden-xs">Guardar</font></button></li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización"><i class="fa fa-unlock"></i> <font class="hidden-xs">Autorizar</font></button></li>
-						<li role="presentation">
+						<li role="presentation" id="liImprimir">
 							<div class="btn-group">
 								<button type="button" class="btn btn-info"><i class="fa fa-file-pdf-o"></i> Imprimir</button>
 								<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -148,6 +168,11 @@
 						</li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-warning" title="Rechazar uso de la cotización"><i class="fa fa-close"></i> <font class="hidden-xs">Rechazar</font></button></li>
 					</ul>
+				</div>
+			</div>
+			<div class="row" id="rowMsj">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
+					<strong style="color: red">Cotizaciones con descuentos mayores a 15% deben ser aprobados para su impresión</strong>
 				</div>
 			</div>
 			<hr style="margin-top: 2px; margin-bottom: 10px; border: 0;" />
@@ -262,7 +287,7 @@
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
 					<div class="x_panel"">
 						<div class="x_title">
-							<h2>PRE VISUALIZACION</h2>
+							<h2>Pre visualizacion</h2>
 							<ul class="nav navbar-right panel_toolbox">
 								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
 								</li>
@@ -354,7 +379,7 @@
 							<input type="text" class="form-control text-right" id="replica" value="1">
 						</div>
 					</div>
-					<div class="col-xs-7 col-sm-4 col-md-3 col-lg-3">
+					<div class="col-xs-7 col-sm-4 col-md-3 col-lg-3 hidden">
 						<div class="input-group input-group-sm">
 							<span class="input-group-addon" >Descuento %</span>
 							<input type="text" class="form-control text-right" id="std" value="0">
@@ -367,7 +392,7 @@
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
 					<div class="x_panel">
 						<div class="x_title">
-							<h2>CARGAR IMAGENES</h2>
+							<h2>Cargar imagenes</h2>
 							<ul class="nav navbar-right panel_toolbox">
 								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
 								</li>
@@ -382,29 +407,6 @@
 											<input type="file" class="sr-only" id="inputImage" name="file" accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff">
 											<span class="fa fa-upload"></span>
 										</label>
-										<button type="button" class="btn btn-success" data-method="reset" title="Deshacer todos los cambios" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-refresh"></i></button>
-									</div>
-									<div class="btn-group">
-										<button type="button" class="btn btn-success" data-method="setDragMode" data-option="move" title="Mover" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-arrows"></i></button>
-										<button type="button" class="btn btn-success" data-method="setDragMode" data-option="crop" title="Cortar" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-crop"></i></button>
-										<button type="button" class="btn btn-success" data-method="disable" title="Deshabilitar cortado" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-lock"></i></button>
-										<button type="button" class="btn btn-success" data-method="enable" title="Habilitar cortado" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-unlock"></i></button>
-									</div>
-									<div class="btn-group">
-										<button type="button" class="btn btn-success" data-method="moveTo" data-option="0" title="Mover imagen al origen del área de trabajo" data-toggle="tooltip" data-placement="bottom">0,0</button>
-										<button type="button" class="btn btn-success" data-method="zoomTo" data-option="1" title="Reestablecer tamaño original de la imagen" data-toggle="tooltip" data-placement="bottom">100%</button>
-										<button type="button" class="btn btn-success" data-method="zoom" data-option="0.1" title="Acercar" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-search-plus"></i></button>
-										<button type="button" class="btn btn-success" data-method="zoom" data-option="-0.1" title="Alejar" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-search-minus"></i></button>
-									</div>
-									<div class="btn-group">
-										<button type="button" class="btn btn-success" data-method="move" data-option="-10" data-second-option="0" title="Mover a la izquierda" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-arrow-left"></i></button>
-										<button type="button" class="btn btn-success" data-method="move" data-option="10" data-second-option="0" title="Mover a la derecha" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-arrow-right"></i></button>
-										<button type="button" class="btn btn-success" data-method="move" data-option="0" data-second-option="-10" title="Mover arribla" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-arrow-up"></i></button>
-										<button type="button" class="btn btn-success" data-method="move" data-option="0" data-second-option="10" title="Mover abajo" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-arrow-down"></i></button>
-										<button type="button" class="btn btn-success" data-method="rotate" data-option="-45" title="Girar a la izquierda" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-rotate-left"></i></button>
-										<button type="button" class="btn btn-success" data-method="rotate" data-option="45" title="Girar a la derecha" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-rotate-right"></i></button>
-									</div>
-									<div class="btn-group btn-group-crop">
 										<button type="button" class="btn btn-success" id="imgGuardar"  title="Guardar imagen" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-floppy-o"></i></button>
 									</div>
 								</div>

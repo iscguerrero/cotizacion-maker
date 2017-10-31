@@ -43,7 +43,7 @@ class Cotizador extends Base_Controller {
 	}
 
 	# Este metodo se encarga de mostrar en pantalla el pdf de la cotizacion
-	public function ImprimirCotizacion($folio){
+	public function ImprimirCotizacion($folio, $tipo){
 		$this->load->library('Pdf');
 		$pdf = new Pdf('P', 'mm', 'Letter');
 
@@ -55,17 +55,29 @@ class Cotizador extends Base_Controller {
 
 		# Obtenemos la informacion de la cotizacion
 		$this->load->model('encabezado_cotizacion');
-		$this->load->model('partidas_cotizacion_bulk');
 		$encabezado = $this->encabezado_cotizacion->obtenerEncabezadoPdf($folio);
-		$partidas = $this->partidas_cotizacion_bulk->obtenerPartidas($folio);
 
-		$this->nuevaPaginaBulk($pdf, $encabezado, $partidas);
+		if($tipo == 'bulk') {
+			$this->load->model('partidas_cotizacion_bulk');
+			$partidas = $this->partidas_cotizacion_bulk->obtenerPartidas($folio);
+		} else {
+			$this->load->model('partidas_cotizacion_armado');
+			$partidas = $this->partidas_cotizacion_armado->obtenerPartidas($folio);
+			foreach ($partidas as $partida) {
+				$partida->cve_art = 'armada';
+				$partida->precioPiezaAD = $encabezado->stUsdPrecioRAD;
+				$partida->replicas = 1;
+				$partida->precioReplicaDD = $encabezado->stUsdPrecioRDD;
+			}
+		}
+
+		$this->nuevaPagina($pdf, $encabezado, $partidas);
 
 		$pdf->Output();
 	}
 
 	# Funcion para agregar una nueva pagina a la cotizacion bulk
-	public function nuevaPaginaBulk($pdf, $encabezado, $partidas) {
+	public function nuevaPagina($pdf, $encabezado, $partidas) {
 		$pdf->AddPage();
 
 		# Cuadro superior izquierda
@@ -290,8 +302,10 @@ class Cotizador extends Base_Controller {
 					'estatus' => 'A'
 				);
 				$partida['folio'] == null || $partida['folio'] == '' ? $this->partidas_cotizacion_bulk->altaPartida($data) : $this->partidas_cotizacion_bulk->editarPartida($data);
-				foreach ($folios as $folio) {
-					$this->partidas_cotizacion_bulk->borrarPartida($folio);
+				if(count($folios) > 0) {
+					foreach ($folios as $folio) {
+						$this->partidas_cotizacion_bulk->borrarPartida($folio);
+					}
 				}
 			}
 		}
@@ -312,6 +326,14 @@ class Cotizador extends Base_Controller {
 		$folio = $this->input->post('folio');
 		$this->load->model('partidas_cotizacion_bulk');
 		exit(json_encode($this->partidas_cotizacion_bulk->obtenerPartidas($folio)));
+	}
+
+	# Metodo para obtener las partidas armadas de la cotizacion
+	public function ObtenerPartidasArmado(){
+		if(!$this->input->is_ajax_request()) show_404();
+		$folio = $this->input->post('folio');
+		$this->load->model('partidas_cotizacion_armado');
+		exit(json_encode($this->partidas_cotizacion_armado->obtenerPartidas($folio)));
 	}
 
 	# Funcion para obtener la lista de cotizaciones en un periodo de tiempo
@@ -339,6 +361,22 @@ class Cotizador extends Base_Controller {
 		$folio = $this->input->post('folio');
 		$this->load->model('encabezado_cotizacion');
 		exit(json_encode(array('bandera'=>true, 'encabezado'=>$this->encabezado_cotizacion->obtenerEncabezado($folio))));
+	}
+
+	# Metodo para guardar las partidas de armado de la cotizacion
+	public function GuardarPartidaArmado() {
+		if(!$this->input->is_ajax_request()) show_404();
+		$folio = $this->input->post('folio');
+		$armado = $this->input->post('armado');
+		$data = array(
+			'folio_encabezado' => $folio,
+			'no_partida' => 1,
+			'descripcion' => $armado,
+			'estatus' => 'A'
+		);
+		$this->load->model('partidas_cotizacion_armado');
+		$this->partidas_cotizacion_armado->altaPartida($data);
+		exit(json_encode(array('bandera'=>true)));
 	}
 
 }

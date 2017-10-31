@@ -81,7 +81,7 @@ window.onload = function () {
 	};
 
 	// Abrir el modal con el resultado del recorte
-	/*$('#btnGuardar').click(function(e){
+	$('#imgGuardar').click(function(e){
 		e.preventDefault();
 		newCropper = cropper.getCroppedCanvas({
 			width: 160,
@@ -91,7 +91,7 @@ window.onload = function () {
 			imageSmoothingQuality: 'high',
 		});
 		$('#getCroppedCanvasModal').modal().find('.modal-body').html(newCropper);
-	});*/
+	});
 
 	// Importar imagen al area de trabajo
 	var inputImage = document.getElementById('inputImage');

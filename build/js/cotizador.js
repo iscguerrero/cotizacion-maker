@@ -2,6 +2,7 @@ $(document).ready(function(){
 /*************** CARGA INICIAL DE LA INFORMACION DE LA COTIZACION ***************/
 	nuevaCotizacion();
 	folios = [];
+	$('#rowMsj').hide();
 /*************** CONFIGURACION GENERAL DEL COMPORTAMIENTO DE LA VISTA ***************/
 // Configuracion del tooltip en la vista
 	$('[data-toggle="tooltip"]').tooltip();
@@ -38,7 +39,7 @@ $(document).ready(function(){
 	// Configuracion del autocomplete del producto especial
 	$('#inputProducto').autocomplete({
 		source: "Productos/ObtenerProductoPorNombre",
-		minLength: 3,
+		minLength: 1,
 		select:function(evt, ui){
 			$(this).val(ui.item.value);
 			$('#inputFam').val(ui.item.CON_SERIE);
@@ -46,6 +47,10 @@ $(document).ready(function(){
 			$('#inputProducto').val(ui.item.DESCR);
 			$('#inputPrecio').val(ui.item.PRECIO);
 			$('#ult_costo').val(ui.item.ULT_COSTO);
+			console.log(ui.item.CVE_ART.substring(0,1));
+			if(ui.item.CVE_ART.substring(0,1) == 'Z' || ui.item.CVE_ART.substring(0,1) == 'z') {
+				$('#inputPrecio').prop('readonly', false);
+			}
 		}
 	});
 
@@ -206,7 +211,7 @@ $(document).ready(function(){
 	$('#modalProducto').on('hidden.bs.modal', function (e) {
 		$('#inputPieza').val('');
 		$('#inputProducto').val('');
-		$('#inputPrecio').val('');
+		$('#inputPrecio').val('').prop('readonly', true);
 		$('#inputPiezas').val('');
 	});
 
@@ -438,8 +443,30 @@ $(document).ready(function(){
 			modalAlert.modal('show');
 			return true;
 		}
-		window.open('Cotizador/ImprimirCotizacion/'+$('#folio').val());
+		window.open('Cotizador/ImprimirCotizacion/'+$('#folio').val() + '/bulk');
 	});
+
+// Imprimir la cotizacion en formato armado
+	$('#aArmado').click(function(e){
+		e.preventDefault();
+		if($('#folio').val() == '') {
+			$('#msjAlert').html('ABRE O CREA UNA NUEVA COTIZACION QUE IMPRIMIR');
+			modalAlert.modal('show');
+			return true;
+		}
+		if(partidasArmado().length == 0) {
+			$('#taArmado').val('');
+			$('#modalArmado').modal('show');
+		} else {
+			window.open('Cotizador/ImprimirCotizacion/'+$('#folio').val() + '/armado');
+		}
+	});
+
+// Guardar la partida armado de la cotizacion
+	$('#confirmarPartida').click(function(){
+		guardarArmado($('#taArmado').val());
+	});
+
 });
 
 // Funcion para dar formato a un numero
@@ -593,6 +620,15 @@ $(document).ready(function(){
 
 		utilidad = totalPrecioRDD - costo_total;
 
+		if((stPrecioRDD / stMxpPrecioRAD * 100) < 84.99) {
+			$('#liImprimir').hide();
+			$('#rowMsj').show();
+		} else {
+			$('#liImprimir').show();
+			$('#rowMsj').hide();
+		}
+		console.log(stPrecioRDD / stMxpPrecioRAD * 100);
+
 		// Se actualizan los valores de los controles de los totales
 		$('#stUsdPrecioPDD').html(formato_numero(stUsdPrecioPDD, 2, '.', ','));
 		$('#stUsdPrecioRAD').html(formato_numero(stUsdPrecioRAD, 2, '.', ','));
@@ -669,6 +705,8 @@ $(document).ready(function(){
 					$('#descuento').html(parseFloat(en.descuentost, 2));
 					$('#impuestos').html(parseFloat(en.tasa_impuesto, 2));
 					setearPartidas();
+					$('#rowCargar').hide();
+
 					modalAlert.modal('hide');
 					$('#modalCotizaciones').modal('hide');
 				}
@@ -727,6 +765,7 @@ $(document).ready(function(){
 				if(json.bandera == true) {
 					$('#folio').val(json.folio);
 					setearPartidas();
+					folios.length = 0;
 					modalAlert.modal('hide');
 				}
 			}
@@ -734,18 +773,56 @@ $(document).ready(function(){
 	}
 
 // Funcion para setear las partidas de la cotizacion en la vista
-var setearPartidas = function(){
-	folio = $('#folio').val();
-	$.ajax({
-		async: true,
-		type: 'POST',
-		cache: false,
-		data: {folio: folio},
-		url: 'Cotizador/ObtenerPartidas',
-		dataType: 'json',
-		success: function(json){
-			$('#tablaCotizacion').bootstrapTable('load', json);
-			actualizarTotales();
-		}
-	});
-}
+	var setearPartidas = function(){
+		folio = $('#folio').val();
+		$.ajax({
+			async: true,
+			type: 'POST',
+			cache: false,
+			data: {folio: folio},
+			url: 'Cotizador/ObtenerPartidas',
+			dataType: 'json',
+			success: function(json){
+				$('#tablaCotizacion').bootstrapTable('load', json);
+				actualizarTotales();
+			}
+		});
+	}
+
+// Funcion para obtener las partidas armadas de la cotizacion
+	var partidasArmado = function(){
+		var data = [];
+		$.ajax({
+			async: false,
+			type: 'POST',
+			cache: false,
+			data: {folio: $('#folio').val()},
+			url: 'Cotizador/ObtenerPartidasArmado',
+			dataType: 'json',
+			success: function(json){
+				data = json;
+			}
+		});
+		return data;
+	}
+
+// Funcion para guardar la partida de armado
+	var guardarArmado = function(armado){
+		$.ajax({
+			async: false,
+			type: 'POST',
+			cache: false,
+			data: {folio: $('#folio').val(), armado: armado},
+			url: 'Cotizador/GuardarPartidaArmado',
+			dataType: 'json',
+			success: function(json){
+				if(json.bandera == true) {
+					$('#modalArmado').modal('hide');
+					window.open('Cotizador/ImprimirCotizacion/'+$('#folio').val() + '/armado');
+				} else {
+					$('#msjAlert').html('Se presento un error al guardar la partida de armado');
+				}
+			}
+		});
+		return data;
+	}
