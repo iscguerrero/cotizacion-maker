@@ -6,115 +6,18 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Cotizador </title>
-		<link rel='icon' type='image/jpeg' href="<?php echo base_url('resources/images/trilogiq.png')?>" />
-		<link href="<?php echo base_url('resources/bootstrap/dist/css/bootstrap.min.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('resources/jquery-ui/jquery-ui.min.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('resources/font-awesome/css/font-awesome.min.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('resources/nprogress/nprogress.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('resources/datetimepicker/build/css/bootstrap-datetimepicker.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('resources/dropzone/dist/min/dropzone.min.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('resources/bootstrap-table/bootstrap-table.min.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('resources/cropper/dist/cropper.min.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('resources/iCheck/skins/flat/green.css')?>" rel="stylesheet">
-		<link href="<?php echo base_url('build/css/custom.css')?>" rel="stylesheet">
+		<link rel='icon' type='image/jpeg' href="<?php echo base_url('public/images/trilogiq.png')?>" />
+		<link href="<?php echo base_url('resources/bootstrap/dist/css/bootstrap.min.css')?>">
+		<link href="<?php echo base_url('resources/jquery-ui/jquery-ui.min.css')?>">
+		<link href="<?php echo base_url('resources/font-awesome/css/font-awesome.min.css')?>">
+		<link href="<?php echo base_url('resources/nprogress/nprogress.css')?>">
+		<link href="<?php echo base_url('resources/datetimepicker/build/css/bootstrap-datetimepicker.css')?>">
+		<link href="<?php echo base_url('resources/dropzone/dist/min/dropzone.min.css')?>">
+		<link href="<?php echo base_url('resources/bootstrap-table/bootstrap-table.min.css')?>">
+		<link href="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.css')?>">
+		<link href="<?php echo base_url('public/css/custom.css')?>">
 	</head>
 	<body style="padding-right: 0 !important">
-		<!-- Modal para mostrar la imagen antes de cargarla al servidor -->
-		<div class="modal fade docs-cropped" id="getCroppedCanvasModal" role="dialog" aria-hidden="true" aria-labelledby="getCroppedCanvasTitle" tabindex="-1">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-						<h4 class="modal-title" id="getCroppedCanvasTitle">Recorte</h4>
-					</div>
-					<div class="modal-body"></div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-						<button class="btn btn-success" id="download">Enviar</button>
-					</div>
-				</div>
-			</div>
-		</div>
-		<!-- Modal para cargar un producto especial -->
-		<div id="modalProducto" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-sm">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-						<h4 class="modal-title">Producto especial</h4>
-					</div>
-					<form method="POST" action="#" id="formProducto">
-						<div class="modal-body">
-							<input type="hidden" name="ult_costo" id="ult_costo">
-							<input type="hidden" name="inputPieza" id="inputPieza">
-							<div class="form-group">
-								<label for="inputProducto">Producto</label>
-								<input type="text" class="form-control" name="inputProducto" id="inputProducto">
-							</div>
-							<div class="form-group">
-								<label for="inputPrecio">Precio</label>
-								<input type="text" class="form-control text-right" name="inputPrecio" id="inputPrecio" readonly>
-							</div>
-							<div class="form-group">
-								<label for="inputPiezas">Piezas</label>
-								<input type="text" class="form-control text-right" name="inputPiezas" id="inputPiezas" required>
-							</div>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-							<button type="button" class="btn btn-success" id="confirmarParte"><i class="fa fa-send"></i> Agregar</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-		<!-- Toolbar para la tabla de historico de cotizaciones -->
-		<div class="row" id="toolbarCotizaciones">
-			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
-				<div class="input-group input-group-sm"">
-					<span class="input-group-addon"><i class="fa fa-calendar"></i> <font class="hidden-xs hidden-sm">Desde</font></span>
-					<input type="text" class="form-control text-center simple-dp" name="inputfi" id="inputfi" readonly placeholder="Desde">
-				</div>
-			</div>
-			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
-				<div class="input-group input-group-sm">
-					<span class="input-group-addon"><i class="fa fa-calendar"></i> <font class="hidden-xs hidden-sm">Hasta</font></span>
-					<input type="text" class="form-control text-center simple-dp" name="inputff" id="inputff"  readonly placeholder="Hasta">
-				</div>
-			</div>
-			<div class="col-xs-6 col-sm-1 col-md-1 col-lg-2">
-				<button type="button" class="btn btn-warning btn-sm btn-block" id="filtrarCotizaciones" title="Buscar Cotizaciones acorde a los parametros proporcionados" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-filter"></i> <font class="hidden-sm hidden-md">Buscar</font></button>
-			</div>
-		</div>
-		<!-- Modal para cargar el listado de cotizaciones -->
-		<div id="modalCotizaciones" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-lg">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-						<h4 class="modal-title">Cotizaciones</h4>
-					</div>
-					<div class="modal-body">
-						<table id="tablaCotizaciones"></table>
-					</div>
-				</div>
-			</div>
-		</div>
-		<!-- Modal para bloquear la vista mientras se realizan peticiones ajax al servidor -->
-		<div id="modalAlert" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-sm">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-						<h4 class="modal-title">Mensaje del sistema</h4>
-					</div>
-					<div class="modal-body">
-						<strong id="msjAlert"></strong>
-					</div>
-				</div>
-			</div>
-		</div>
 		<div class="container-fluid">
 		<!-- Lista de Acciones sobre la cotizacion -->
 			<div class="row">
@@ -320,107 +223,162 @@
 					</div>
 				</div>
 			</div>
-			<!-- Toolbar para la tabla de previsualizacion de la vista -->
-			<div id="toolbar">
-				<div class="row form-inline">
-					<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
-						<button type="button" class="btn btn-success btn-block btn-sm" data-toggle="tooltip" data-placement="bottom" id="agregarParte" title="Agregar un producto especial"><i class="fa fa-plus-square"></i> <font class="hidden-xs">Agregar</font></button>
-					</div>
-					<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
-						<button type="button" class="btn btn-warning btn-block  btn-sm" data-toggle="tooltip" data-placement="bottom" id="removerFila" title="Quitar el producto seleccionado de la cotización"><i class="fa fa-eraser"></i> <font class="hidden-xs">Quitar</font></button>
-					</div>
-					<div class="col-xs-6 col-sm-3 col-md-2 col-lg-3">
-						<div class="input-group input-group-sm">
-							<span class="input-group-addon">T.C.</span>
-							<input type="text" class="form-control text-right  btn-sm" name="tc" id="tc" data-toggle="tooltip" data-placement="bottom">
-						</div>
-					</div>
-					<div class="col-xs-5 col-sm-3 col-md-2 col-lg-3">
-						<div class="input-group input-group-sm">
-							<span class="input-group-addon">Replica</span>
-							<input type="text" class="form-control text-right" id="replica" value="1">
-						</div>
-					</div>
-					<div class="col-xs-7 col-sm-4 col-md-3 col-lg-3 hidden">
-						<div class="input-group input-group-sm">
-							<span class="input-group-addon" >Descuento %</span>
-							<input type="text" class="form-control text-right" id="std" value="0">
-						</div>
-					</div>
-					<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
-						<div class="input-group input-group-sm">
-						<div class="checkbox">
-							<label><input type="checkbox" name="tipo" id="tipo"> Armado</label>
-						</div>
-						</div>
-					</div>
-				</div>
-				<div class="row" id="divArmado">
-						<textarea class="form-control" rows="1" id="taArmado" name="taArmado" placeholder="Proporciona la descripción del producto armado"></textarea>
-				</div>
-			</div>
 			<!-- Panel para cargar y editar las imagenes que se anexaran a la cotizacion -->
-			<div class="row hidden-xs">
+			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-					<div class="x_panel">
+					<div class="x_panel"">
 						<div class="x_title">
-							<h2>Cargar imagenes</h2>
+							<h2>Cargar imágenes</i></h2>
 							<ul class="nav navbar-right panel_toolbox">
 								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
 								</li>
 							</ul>
 							<div class="clearfix"></div>
 						</div>
-						<div class="x_content" >
-							<div class="row" id="actions">
-								<div class="col-md-12 docs-buttons">
-									<div class="btn-group">
-										<label class="btn btn-success btn-upload" for="inputImage" title="Cargar nueva imagen" data-toggle="tooltip" data-placement="bottom">
-											<input type="file" class="sr-only" id="inputImage" name="file" accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff">
-											<span class="fa fa-upload"></span>
-										</label>
-										<button type="button" class="btn btn-success" id="imgGuardar"  title="Guardar imagen" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-floppy-o"></i></button>
-									</div>
-								</div>
-							</div>
-							<hr style="margin-top: 2px; margin-bottom: 10px; border: 0;" />
+						<div class="x_content">
 							<div class="row">
-								<div class="col-lg-10">
-									<div class="img-container">
-										<img id="image" src="<?php echo base_url('resources/images/cropperInicio.jpg') ?>" alt="Picture">
+								<div class="col-md-55">
+										<div class="thumbnail">
+											<div class="image view view-first">
+												<img style="width: 100%; display: block;" src="<?php echo base_url('/uploads/dropzone.jpg') ?>" alt="image" />
+												<div class="mask">
+													<p>Your Text</p>
+													<div class="tools tools-bottom">
+														<a href="#"><i class="fa fa-link"></i></a>
+														<a href="#"><i class="fa fa-pencil"></i></a>
+														<a href="#"><i class="fa fa-times"></i></a>
+													</div>
+												</div>
+											</div>
+											<div class="caption">
+												<p>Snow and Ice Incoming for the South</p>
+											</div>
+										</div>
 									</div>
-								</div>
-								<div class="col-lg-2">
-									<div class="input-group input-group-sm">
-										<label class="input-group-addon" for="dataX">X</label>
-										<input type="text" class="form-control text-right" id="dataX" placeholder="x" readonly>
-										<span class="input-group-addon">px</span>
-									</div>
-									<div class="input-group input-group-sm">
-										<label class="input-group-addon" for="dataY">Y</label>
-										<input type="text" class="form-control text-right" id="dataY" placeholder="y" readonly>
-										<span class="input-group-addon">px</span>
-									</div>
-									<div class="input-group input-group-sm">
-										<label class="input-group-addon" for="dataWidth">Ancho</label>
-										<input type="text" class="form-control text-right" id="dataWidth" placeholder="Ancho de la imagen" readonly>
-										<span class="input-group-addon">px</span>
-									</div>
-									<div class="input-group input-group-sm">
-										<label class="input-group-addon" for="dataHeight">Alto</label>
-										<input type="text" class="form-control text-right" id="dataHeight" placeholder="Alto de la imagen" readonly>
-										<span class="input-group-addon">px</span>
-									</div>
-									<div class="input-group input-group-sm">
-										<label class="input-group-addon" for="dataRotate">Rotación</label>
-										<input type="text" class="form-control text-right" id="dataRotate" placeholder="Rotación de la imagen" readonly>
-										<span class="input-group-addon">deg</span>
-									</div>
-								</div>
 							</div>
+							<hr>
+							<form enctype="multipart/form-data" action="#" class="dropzone" id = 'imgArea'></form>
 						</div>
 					</div>
 				</div>
+			</div>
+		</div>
+		<!-- Modal para cargar un producto especial -->
+		<div id="modalProducto" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+						<h4 class="modal-title">Producto especial</h4>
+					</div>
+					<form method="POST" action="#" id="formProducto">
+						<div class="modal-body">
+							<input type="hidden" name="ult_costo" id="ult_costo">
+							<input type="hidden" name="inputPieza" id="inputPieza">
+							<div class="form-group">
+								<label for="inputProducto">Producto</label>
+								<input type="text" class="form-control" name="inputProducto" id="inputProducto">
+							</div>
+							<div class="form-group">
+								<label for="inputPrecio">Precio</label>
+								<input type="text" class="form-control text-right" name="inputPrecio" id="inputPrecio" readonly>
+							</div>
+							<div class="form-group">
+								<label for="inputPiezas">Piezas</label>
+								<input type="text" class="form-control text-right" name="inputPiezas" id="inputPiezas" required>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+							<button type="button" class="btn btn-success" id="confirmarParte"><i class="fa fa-send"></i> Agregar</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- Modal para cargar el listado de cotizaciones -->
+		<div id="modalCotizaciones" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+						<h4 class="modal-title">Cotizaciones</h4>
+					</div>
+					<div class="modal-body">
+						<table id="tablaCotizaciones"></table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Modal para bloquear la vista mientras se realizan peticiones ajax al servidor -->
+		<div id="modalAlert" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+						<h4 class="modal-title">Mensaje del sistema</h4>
+					</div>
+					<div class="modal-body">
+						<strong id="msjAlert"></strong>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Toolbar para la tabla de previsualizacion de la vista -->
+		<div id="toolbar">
+			<div class="row form-inline">
+				<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
+					<button type="button" class="btn btn-success btn-block btn-sm" data-toggle="tooltip" data-placement="bottom" id="agregarParte" title="Agregar un producto especial"><i class="fa fa-plus-square"></i> <font class="hidden-xs">Agregar</font></button>
+				</div>
+				<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
+					<button type="button" class="btn btn-warning btn-block  btn-sm" data-toggle="tooltip" data-placement="bottom" id="removerFila" title="Quitar el producto seleccionado de la cotización"><i class="fa fa-eraser"></i> <font class="hidden-xs">Quitar</font></button>
+				</div>
+				<div class="col-xs-6 col-sm-3 col-md-2 col-lg-3">
+					<div class="input-group input-group-sm">
+						<span class="input-group-addon">T.C.</span>
+						<input type="text" class="form-control text-right  btn-sm" name="tc" id="tc" data-toggle="tooltip" data-placement="bottom">
+					</div>
+				</div>
+				<div class="col-xs-5 col-sm-3 col-md-2 col-lg-3">
+					<div class="input-group input-group-sm">
+						<span class="input-group-addon">Replica</span>
+						<input type="text" class="form-control text-right" id="replica" value="1">
+					</div>
+				</div>
+				<div class="col-xs-7 col-sm-4 col-md-3 col-lg-3 hidden">
+					<div class="input-group input-group-sm">
+						<span class="input-group-addon" >Descuento %</span>
+						<input type="text" class="form-control text-right" id="std" value="0">
+					</div>
+				</div>
+				<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
+					<div class="input-group input-group-sm">
+					<div class="checkbox">
+						<label><input type="checkbox" name="tipo" id="tipo"> Armado</label>
+					</div>
+					</div>
+				</div>
+			</div>
+			<div class="row" id="divArmado">
+					<textarea class="form-control" rows="1" id="taArmado" name="taArmado" placeholder="Proporciona la descripción del producto armado"></textarea>
+			</div>
+		</div>
+		<!-- Toolbar para la tabla de historico de cotizaciones -->
+		<div class="row" id="toolbarCotizaciones">
+			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
+				<div class="input-group input-group-sm"">
+					<span class="input-group-addon"><i class="fa fa-calendar"></i> <font class="hidden-xs hidden-sm">Desde</font></span>
+					<input type="text" class="form-control text-center simple-dp" name="inputfi" id="inputfi" readonly placeholder="Desde">
+				</div>
+			</div>
+			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
+				<div class="input-group input-group-sm">
+					<span class="input-group-addon"><i class="fa fa-calendar"></i> <font class="hidden-xs hidden-sm">Hasta</font></span>
+					<input type="text" class="form-control text-center simple-dp" name="inputff" id="inputff"  readonly placeholder="Hasta">
+				</div>
+			</div>
+			<div class="col-xs-6 col-sm-1 col-md-1 col-lg-2">
+				<button type="button" class="btn btn-warning btn-sm btn-block" id="filtrarCotizaciones" title="Buscar Cotizaciones acorde a los parametros proporcionados" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-filter"></i> <font class="hidden-sm hidden-md">Buscar</font></button>
 			</div>
 		</div>
 		<script src="<?php echo base_url('resources/jquery/dist/jquery.min.js')?>"></script>
@@ -432,15 +390,11 @@
 		<script src="<?php echo base_url('resources/moment/locale/es.js')?>"></script>
 		<script src="<?php echo base_url('resources/datetimepicker/build/js/bootstrap-datetimepicker.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/dropzone/dist/min/dropzone.min.js')?>"></script>
-		<script src="<?php echo base_url('resources/cropper/dist/cropper.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap-table/bootstrap-table.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap-table/locale/bootstrap-table-es-MX.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-table-editable.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.js')?>"></script>
-		<script src="<?php echo base_url('resources/js.cookie/js.cookie.js')?>"></script>
-		<script src="<?php echo base_url('resources/iCheck/icheck.min.js')?>"></script>
-		<script src="<?php echo base_url('/build/js/custom.js')?>"></script>
-		<script src="<?php echo base_url('/build/js/cotizador.js')?>"></script>
-		<script src="<?php echo base_url('/build/js/maincropper.js')?>"></script>
+		<script src="<?php echo base_url('/public/js/custom.js')?>"></script>
+		<script src="<?php echo base_url('/public/js/cotizador.js')?>"></script>
 	</body>
 </html>
