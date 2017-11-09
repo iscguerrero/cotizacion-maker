@@ -7,19 +7,20 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Cotizador </title>
 		<link rel='icon' type='image/jpeg' href="<?php echo base_url('public/images/trilogiq.png')?>" />
-		<link href="<?php echo base_url('resources/bootstrap/dist/css/bootstrap.min.css')?>">
-		<link href="<?php echo base_url('resources/jquery-ui/jquery-ui.min.css')?>">
-		<link href="<?php echo base_url('resources/font-awesome/css/font-awesome.min.css')?>">
-		<link href="<?php echo base_url('resources/nprogress/nprogress.css')?>">
-		<link href="<?php echo base_url('resources/datetimepicker/build/css/bootstrap-datetimepicker.css')?>">
-		<link href="<?php echo base_url('resources/dropzone/dist/min/dropzone.min.css')?>">
-		<link href="<?php echo base_url('resources/bootstrap-table/bootstrap-table.min.css')?>">
-		<link href="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.css')?>">
-		<link href="<?php echo base_url('public/css/custom.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap/dist/css/bootstrap.min.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('resources/jquery-ui/jquery-ui.min.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('resources/font-awesome/css/font-awesome.min.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('resources/nprogress/nprogress.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('resources/datetimepicker/build/css/bootstrap-datetimepicker.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('resources/dropzone/dist/min/dropzone.min.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap-table/bootstrap-table.min.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('public/css/custom.css')?>">
 	</head>
 	<body style="padding-right: 0 !important">
-		<div class="container-fluid">
-		<!-- Lista de Acciones sobre la cotizacion -->
+		<div class="container-fluid" style="max-width: 1200px">
+
+			<!-- Lista de Acciones sobre la cotizacion -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<ul class="nav nav-pills pull-right form-inline">
@@ -41,6 +42,7 @@
 				</div>
 			</div>
 			<hr style="margin-top: 2px; margin-bottom: 10px; border: 0;" />
+
 			<!-- Panel para mostrar los datos del cliente -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -129,6 +131,7 @@
 					</div>
 				</div>
 			</div>
+
 			<!-- Panel para cargar la cotizacion en formato xls -->
 			<div class="row" id="rowCargar">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -147,6 +150,7 @@
 					</div>
 				</div>
 			</div>
+
 			<!-- Panel para previsualizar la cotizacion proporcionada en el archivo de excel -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -223,6 +227,7 @@
 					</div>
 				</div>
 			</div>
+
 			<!-- Panel para cargar y editar las imagenes que se anexaran a la cotizacion -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -262,7 +267,9 @@
 					</div>
 				</div>
 			</div>
+
 		</div>
+
 		<!-- Modal para cargar un producto especial -->
 		<div id="modalProducto" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-sm">
@@ -296,6 +303,7 @@
 				</div>
 			</div>
 		</div>
+		
 		<!-- Modal para cargar el listado de cotizaciones -->
 		<div id="modalCotizaciones" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-lg">
@@ -310,6 +318,7 @@
 				</div>
 			</div>
 		</div>
+
 		<!-- Modal para bloquear la vista mientras se realizan peticiones ajax al servidor -->
 		<div id="modalAlert" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-sm">
@@ -324,6 +333,7 @@
 				</div>
 			</div>
 		</div>
+
 		<!-- Toolbar para la tabla de previsualizacion de la vista -->
 		<div id="toolbar">
 			<div class="row form-inline">
@@ -363,6 +373,7 @@
 					<textarea class="form-control" rows="1" id="taArmado" name="taArmado" placeholder="Proporciona la descripción del producto armado"></textarea>
 			</div>
 		</div>
+
 		<!-- Toolbar para la tabla de historico de cotizaciones -->
 		<div class="row" id="toolbarCotizaciones">
 			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
@@ -381,6 +392,7 @@
 				<button type="button" class="btn btn-warning btn-sm btn-block" id="filtrarCotizaciones" title="Buscar Cotizaciones acorde a los parametros proporcionados" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-filter"></i> <font class="hidden-sm hidden-md">Buscar</font></button>
 			</div>
 		</div>
+
 		<script src="<?php echo base_url('resources/jquery/dist/jquery.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap/dist/js/bootstrap.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/jquery-ui/jquery-ui.min.js')?>"></script>
