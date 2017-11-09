@@ -228,7 +228,7 @@
 				</div>
 			</div>
 
-			<!-- Panel para cargar y editar las imagenes que se anexaran a la cotizacion -->
+			<!-- Panel para cargar las imagenes que se anexaran a la cotizacion -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel"">
@@ -241,28 +241,26 @@
 							<div class="clearfix"></div>
 						</div>
 						<div class="x_content">
-							<div class="row">
-								<div class="col-md-55">
-										<div class="thumbnail">
-											<div class="image view view-first">
-												<img style="width: 100%; display: block;" src="<?php echo base_url('/uploads/dropzone.jpg') ?>" alt="image" />
-												<div class="mask">
-													<p>Your Text</p>
-													<div class="tools tools-bottom">
-														<a href="#"><i class="fa fa-link"></i></a>
-														<a href="#"><i class="fa fa-pencil"></i></a>
-														<a href="#"><i class="fa fa-times"></i></a>
-													</div>
-												</div>
-											</div>
-											<div class="caption">
-												<p>Snow and Ice Incoming for the South</p>
-											</div>
-										</div>
-									</div>
-							</div>
-							<hr>
 							<form enctype="multipart/form-data" action="#" class="dropzone" id = 'imgArea'></form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Panel para cargar las imagenes que se anexaran a la cotizacion -->
+			<div class="row">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+					<div class="x_panel"">
+						<div class="x_title">
+							<h2>Imágenes en la cotización</i></h2>
+							<ul class="nav navbar-right panel_toolbox">
+								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+								</li>
+							</ul>
+							<div class="clearfix"></div>
+						</div>
+						<div class="x_content">
+							<div class="row" id="galeria"></div>
 						</div>
 					</div>
 				</div>

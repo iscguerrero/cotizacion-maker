@@ -472,12 +472,12 @@ $(document).ready(function(){
 // Configuracion del dropzone para cargar el excel de la cotizacion
 	$('#imgArea').dropzone({
 		// URL a donde se envia el archivo en los controladores
-		url: 'Productos/RecibirImagen',
+		url: 'Cotizador/RecibirImagen',
 		// Configuracion de las propiedades del archivo que se pueden cargar al servidor
 		maxFilesize: 5,
-		paramName: 'cotizacion',
-		maxFiles: 4,
-		acceptedFiles: '.JPEG, .GIF, .BMP, .TIFF, .PNG, .jpeg, .gif, .bmp, .tiff, .png',
+		paramName: 'imagen',
+		maxFiles: 1,
+		acceptedFiles: '.jpg, .jpeg, .gif, .bmp, .tiff, .png',
 		addRemoveLinks: true,
 		capture: true,
 		// Configuracion de los mensajes del dropzone
@@ -489,12 +489,13 @@ $(document).ready(function(){
 		dictCancelUpload: 'Cancelar',
 		dictCancelUploadConfirmation: '¿Estás seguro de querer cancelar la carga del archivo?',
 		dictRemoveFile: 'Remover archivo',
-		dictMaxFilesExceeded: 'Solo se permiten cargar 4 archivo a la vez',
+		dictMaxFilesExceeded: 'Solo se permiten cargar un archivo a la vez',
 		// Manipulacion de los momentos del enviado de archivos
 		init:function(){
 			var self = this;
 			self.on('sending', function (file, xhr, formData) {
-				//formData.append("id_cliente", $('#ID').val());
+				formData.append("folio", $('#folio').val());
+				formData.append("pre_folio", $('#pre_folio').val());
 				modalAlert.modal('show');
 				$('#msjAlert').html('ESPERA UN MOMENTO POR FAVOR, CARGANDO ARCHIVOS...');
 			});
@@ -504,13 +505,19 @@ $(document).ready(function(){
 					$('#msjAlert').html(response.msj);
 					modalAlert.modal('show');
 				} else{
-					// RECARGAR LA GALERIA
+					recargarGaleria();
 					modalAlert.modal('hide');
-					$('#rowCargar').hide();
 				}
 				self.removeFile(file);
 			});
 		}
+	});
+
+	// Funcion para remover una imagen
+	$('#galeria').on('click', 'a.quitarimagen', function(e) {
+		e.preventDefault();
+		folio = $(this).prop('id');
+		removerImagen(folio);
 	});
 
 });
@@ -763,6 +770,8 @@ $(document).ready(function(){
 					setearPartidas();
 					$('#rowCargar').hide();
 
+					recargarGaleria();
+
 					modalAlert.modal('hide');
 					$('#modalCotizaciones').modal('hide');
 				}
@@ -828,6 +837,7 @@ $(document).ready(function(){
 				if(json.bandera == true) {
 					$('#folio').val(json.folio);
 					setearPartidas();
+					recargarGaleria();
 					folios.length = 0;
 					modalAlert.modal('hide');
 				}
@@ -888,4 +898,62 @@ $(document).ready(function(){
 			}
 		});
 		return data;
+	}
+
+// Funcion para recargar la galeria de imagenes de la cotizacion
+	var recargarGaleria = function() {
+		$.ajax({
+			async: false,
+			type: 'POST',
+			cache: false,
+			data: {folio: $('#folio').val(), pre_folio: $('#pre_folio').val()},
+			url: 'Cotizador/ObtenerImagenes',
+			dataType: 'json',
+			success: function(json){
+				if(json.bandera == true) {
+					$('#galeria').empty();
+					$.each(json.imgs, function(index, img){
+						$('#galeria').append(pintarImagen(img));
+					});
+				}
+			}
+		});
+	}
+
+// Funcion para cargar una nueva imagen en la galeria de imagenes
+	var pintarImagen = function(img) {
+		return "" +
+		"<div class='col-md-55'>" +
+		"	<div class='thumbnail'>" +
+		"		<div class='image view view-first'>" +
+		"			<img style='width: 100%; display: block;' src='" + img.url + "' 'alt='image' />" +
+		"			<div class='mask'>" +
+		"				<p>Clic x para quitar</p>" +
+		"				<div class='tools tools-bottom'>" +
+		"					<a href='#' class='quitarimagen' id='" + img.folio + "'><i class='fa fa-times'></i></a>" +
+		"				</div>" +
+		"			</div>" +
+		"		</div>" +
+		"		<div class='caption'>" +
+		"		<p>" + img.nombre_original + "</p>" +
+		"		</div>" +
+		"	</div>" +
+		"</div>";
+	}
+
+// Funcion para remover una imagen de la cotizacion
+	var removerImagen = function(folio) {
+		$.ajax({
+			async: false,
+			type: 'POST',
+			cache: false,
+			data: {folio: folio},
+			url: 'Cotizador/BorrarImagen',
+			dataType: 'json',
+			success: function(json){
+				if(json.bandera == true) {
+					recargarGaleria();
+				}
+			}
+		});
 	}

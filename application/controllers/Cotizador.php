@@ -97,6 +97,7 @@ class Cotizador extends Base_Controller {
 		}
 
 		$this->nuevaPagina($pdf, $encabezado, $partidas);
+		$this->paginaImagenes($pdf, $encabezado);
 
 		$pdf->Output();
 	}
@@ -119,7 +120,7 @@ class Cotizador extends Base_Controller {
 			$pdf->RoundedRect(115, 40, 95, 5, 1, 'DF', '');
 			$pdf->RoundedRect(115, 45, 95, 25, 1, 'D', '34');
 
-		# Cuadro inferior donde ira el contenido de la orden de compra
+		# Cuadro inferior donde ira el contenido de la cotizacion
 			$pdf->RoundedRect(15, 75, 195, 5, 1, 'DF', '12');
 			$pdf->RoundedRect(15, 80, 195, 125, 1, 'D', '34');
 
@@ -203,6 +204,27 @@ class Cotizador extends Base_Controller {
 			foreach ($partidas as $key => $partida) {
 				$pdf->Row(array(($partida->no_partida)*1, utf8_decode($partida->cve_art), utf8_decode($partida->descripcion), number_format($partida->precioPiezaAD, 2), $partida->replicas, number_format($partida->descuento, 1) . ' %', number_format($partida->precioReplicaDD, 2)));
 			}
+	}
+
+	# Funcion para agregar una nueva pagina a la cotizacion bulk
+	public function paginaImagenes($pdf, $encabezado) {
+		$pdf->AddPage();
+		$pdf->SetFont('Courier', 'B', 12);
+		$pdf->RoundedRect(15, 30, 195, 10, 1, 'DF', '1234');
+		$pdf->setXY(16, 30); $pdf->Cell(95, 5, utf8_decode('Ilustraciones de referencia, cotización con folio ' . $encabezado->folio), 0, 0, 'L', false);
+		$pdf->RoundedRect(15, 40, 195, 210, 1, 'D', '1234');
+
+		$this->load->model('imagenes_cotizacion');
+		$imagenes = $this->imagenes_cotizacion->obtenerImagenes($encabezado->folio, $encabezado->folio_preencabezado);
+
+		$x = 20;
+		$y = 45;
+		foreach ($imagenes as $imagen) {
+			$pdf->Image(base_url('uploads/' . $imagen->nombre_unico), $x, $y, 34.9, 14.4);
+			$y += 45;
+		}
+
+
 
 	}
 
@@ -423,5 +445,67 @@ class Cotizador extends Base_Controller {
 		$this->partidas_cotizacion_armado->altaPartida($data);
 		exit(json_encode(array('bandera'=>true)));
 	}
+
+	# Metodo para cargar una nueva imagen a la cotizacion
+	public function RecibirImagen(){
+		if(!$this->input->is_ajax_request()) show_404();
+		# Obtenemos los parametros adicionales con los que se calculara el precio final del producto
+		$folio = $this->input->post('folio');
+		$pre_folio = $this->input->post('pre_folio');
+
+		if($folio == '' && $pre_folio == '')
+			exit(json_encode(array('bandera'=>false, 'msj'=>'Abre o crea una nueva cotización para poder cargar imágenes')));
+
+		# Guardamos el archivo en la carpeta de uploads para futuras referencias
+		$nombre = $_FILES['imagen']['name'];
+		$ext = pathinfo($nombre, PATHINFO_EXTENSION);
+		$nombre_unico = date('ljSFYhisA') . '.' . $ext;
+		$file = 'uploads/' . $nombre_unico;
+		if(!move_uploaded_file($_FILES['imagen']['tmp_name'], $file)) exit(json_encode(array('bandera'=>false, 'msj'=>'Se presento un error al cargar la imagen a la cotizacion')));
+
+		$data = array(
+			'folio_encabezado' => $folio,
+			'folio_preencabezado' => $pre_folio,
+			'nombre_original' => $nombre,
+			'nombre_unico' => $nombre_unico,
+			'estatus' => 'A'
+		);
+		$this->load->model('imagenes_cotizacion');
+		$imagenes = $this->imagenes_cotizacion->altaImagen($data);
+
+		exit(json_encode(array('bandera'=>true, 'msj'=>'Imagen cargada con éxito')));
+	}
+
+	# Metodo para obtener la url de las imagenes asociadas a la cotizacion
+	public function ObtenerImagenes() {
+		if(!$this->input->is_ajax_request()) show_404();
+
+		$folio = $this->input->post('folio');
+		$pre_folio = $this->input->post('pre_folio');
+
+		$this->load->model('imagenes_cotizacion');
+		$imagenes = $this->imagenes_cotizacion->obtenerImagenes($folio, $pre_folio);
+
+		foreach ($imagenes as $imagen) {
+			$imagen->url = base_url('uploads/' . $imagen->nombre_unico);
+		}
+
+		exit(json_encode(array('bandera' => true, 'imgs'=>$imagenes)));
+	}
+
+	# Metodo para borrar una imagen de la cotizacion
+	public function BorrarImagen() {
+		if(!$this->input->is_ajax_request()) show_404();
+
+		$folio = $this->input->post('folio');
+
+		$this->load->model('imagenes_cotizacion');
+		if( $this->imagenes_cotizacion->borrarImagen($folio) ) {
+			exit(json_encode(array('bandera' => true)));
+		} else {
+			exit(json_encode(array('bandera' => false)));
+		}
+	}
+
 
 }
