@@ -16,9 +16,10 @@
 		<link href="<?php echo base_url('resources/bootstrap-table/bootstrap-table.min.css')?>" rel="stylesheet">
 		<link href="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.css')?>" rel="stylesheet">
 		<link href="<?php echo base_url('resources/cropper/dist/cropper.min.css')?>" rel="stylesheet">
+		<link href="<?php echo base_url('resources/iCheck/skins/flat/green.css')?>" rel="stylesheet">
 		<link href="<?php echo base_url('build/css/custom.css')?>" rel="stylesheet">
 	</head>
-	<body>
+	<body style="padding-right: 0 !important">
 		<!-- Modal para mostrar la imagen antes de cargarla al servidor -->
 		<div class="modal fade docs-cropped" id="getCroppedCanvasModal" role="dialog" aria-hidden="true" aria-labelledby="getCroppedCanvasTitle" tabindex="-1">
 			<div class="modal-dialog">
@@ -41,15 +42,12 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-						<h4 class="modal-title">PRODUCTO ESPECIAL</h4>
+						<h4 class="modal-title">Producto especial</h4>
 					</div>
 					<form method="POST" action="#" id="formProducto">
 						<div class="modal-body">
 							<input type="hidden" name="ult_costo" id="ult_costo">
-							<div class="form-group">
-								<label for="inputPieza">Pieza</label>
-								<input type="text" class="form-control" name="inputPieza" id="inputPieza" readonly>
-							</div>
+							<input type="hidden" name="inputPieza" id="inputPieza">
 							<div class="form-group">
 								<label for="inputProducto">Producto</label>
 								<input type="text" class="form-control" name="inputProducto" id="inputProducto">
@@ -71,26 +69,6 @@
 				</div>
 			</div>
 		</div>
-		<!-- Modal para cargar la partida armada de la cotizacion -->
-		<div id="modalArmado" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-sm">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-						<h4 class="modal-title">Producto Armado</h4>
-					</div>
-					<form method="POST" action="#" id="formArmado">
-						<div class="modal-body">
-							<textarea class="form-control" rows="3" id="taArmado" name="taArmado" placeholder="Proporciona la descripción del producto armado"></textarea>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-							<button type="button" class="btn btn-success" id="confirmarPartida"><i class="fa fa-send"></i> Hecho</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
 		<!-- Toolbar para la tabla de historico de cotizaciones -->
 		<div class="row" id="toolbarCotizaciones">
 			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
@@ -105,12 +83,6 @@
 					<input type="text" class="form-control text-center simple-dp" name="inputff" id="inputff"  readonly placeholder="Hasta">
 				</div>
 			</div>
-			<!--div class="col-xs-6 col-sm-3 col-md-3 col-lg-3">
-				<div class="input-group input-group-sm">
-					<span class="input-group-addon"><i class="fa fa-ticket"></i> <font class="hidden-xs hidden-sm">Folio</font></span>
-					<input type="text" class="form-control text-center" name="inputCotizacion" id="inputCotizacion" placeholder="Folio">
-				</div>
-			</div-->
 			<div class="col-xs-6 col-sm-1 col-md-1 col-lg-2">
 				<button type="button" class="btn btn-warning btn-sm btn-block" id="filtrarCotizaciones" title="Buscar Cotizaciones acorde a los parametros proporcionados" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-filter"></i> <font class="hidden-sm hidden-md">Buscar</font></button>
 			</div>
@@ -121,7 +93,7 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-						<h4 class="modal-title">COTIZACIONES</h4>
+						<h4 class="modal-title">Cotizaciones</h4>
 					</div>
 					<div class="modal-body">
 						<table id="tablaCotizaciones"></table>
@@ -135,7 +107,7 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-						<h4 class="modal-title">MENSAJE DEL SISTEMA</h4>
+						<h4 class="modal-title">Mensaje del sistema</h4>
 					</div>
 					<div class="modal-body">
 						<strong id="msjAlert"></strong>
@@ -146,7 +118,7 @@
 		<div class="container-fluid">
 		<!-- Lista de Acciones sobre la cotizacion -->
 			<div class="row">
-				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<ul class="nav nav-pills pull-right form-inline">
 						<input type="text" class="form-control text-center" name="pre_folio" id="pre_folio" value="" readonly placeholder="Pre-folio">
 						<input type="text" class="form-control text-center" name="folio" id="folio" value="" readonly placeholder="Folio">
@@ -154,31 +126,21 @@
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o"></i> <font class="hidden-xs">Guardar</font></button></li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización"><i class="fa fa-unlock"></i> <font class="hidden-xs">Autorizar</font></button></li>
 						<li role="presentation" id="liImprimir">
-							<div class="btn-group">
-								<button type="button" class="btn btn-info"><i class="fa fa-file-pdf-o"></i> Imprimir</button>
-								<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-									<span class="caret"></span>
-									<span class="sr-only">Imprimir</span>
-								</button>
-								<ul class="dropdown-menu" role="menu">
-									<li><a href="#" id="aBulk">Bulk</a></li>
-									<li><a href="#" id="aArmado">Armado</a></li>
-								</ul>
-							</div>
+							<button type="button" id="btnImprimir" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" title="Imprimir cotización"><i class="fa fa-file-pdf-o"></i> <font class="hidden-xs">Imprimir</font></button>
 						</li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-warning" title="Rechazar uso de la cotización"><i class="fa fa-close"></i> <font class="hidden-xs">Rechazar</font></button></li>
 					</ul>
 				</div>
 			</div>
 			<div class="row" id="rowMsj">
-				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<strong style="color: red">Cotizaciones con descuentos mayores a 15% deben ser aprobados para su impresión</strong>
 				</div>
 			</div>
 			<hr style="margin-top: 2px; margin-bottom: 10px; border: 0;" />
 			<!-- Panel para mostrar los datos del cliente -->
 			<div class="row">
-				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel"">
 						<form method="POST" action="#" id="formCliente">
 							<div class="x_title">
@@ -266,7 +228,7 @@
 			</div>
 			<!-- Panel para cargar la cotizacion en formato xls -->
 			<div class="row" id="rowCargar">
-				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel"">
 						<div class="x_title">
 							<h2>Cargar archivo de cotización</i></h2>
@@ -284,7 +246,7 @@
 			</div>
 			<!-- Panel para previsualizar la cotizacion proporcionada en el archivo de excel -->
 			<div class="row">
-				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel"">
 						<div class="x_title">
 							<h2>Pre visualizacion</h2>
@@ -298,7 +260,7 @@
 							<table id="tablaCotizacion" class="jambo_table bulk_action">
 								<tfoot>
 									<tr>
-										<th colspan="5"><label id="gestorDeCuenta"></label></th>
+										<th colspan="6"><label id="gestorDeCuenta"></label></th>
 										<th colspan="3" class="text-right">SubTotal Usd</th>
 										<th id="stUsdPrecioPDD" class="text-right"></th>
 										<th></th>
@@ -306,7 +268,7 @@
 										<th id="stUsdPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
-										<th colspan="6" rowspan="3"><label id="terminosVenta"></label></th>
+										<th colspan="7" rowspan="3"><label id="terminosVenta"></label></th>
 										<th colspan="2" class="text-right">Subtotal Mxn</th>
 										<th id="stMxpPrecioPDD" class="text-right"></th>
 										<th></th>
@@ -329,7 +291,7 @@
 										<th id="stPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
-									<th colspan="6" rowspan="2"><label id="observaciones"></label></th>
+									<th colspan="7" rowspan="2"><label id="observaciones"></label></th>
 										<th class="text-right">Impuestos</th>
 										<th class="text-right"><label id="impuestos">16</label></th>
 										<th id="ivaPrecioPDD" class="text-right"></th>
@@ -345,12 +307,12 @@
 										<th id="totalPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
-										<th colspan="6"></th>
+										<th colspan="7"></th>
 										<th colspan="2" class="text-right">Utilidad Bruta</th>
 										<th colspan="4" id="utilidad" class="text-right"></th>
 									</tr>
 									<tr>
-										<th colspan="12" id="faltantes"></th>
+										<th colspan="13" id="faltantes"></th>
 									</tr>
 								</tfoot>
 							</table>
@@ -359,21 +321,21 @@
 				</div>
 			</div>
 			<!-- Toolbar para la tabla de previsualizacion de la vista -->
-			<div class="form-inline" id="toolbar">
-				<div class="row pull-right">
+			<div id="toolbar">
+				<div class="row form-inline">
 					<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
 						<button type="button" class="btn btn-success btn-block btn-sm" data-toggle="tooltip" data-placement="bottom" id="agregarParte" title="Agregar un producto especial"><i class="fa fa-plus-square"></i> <font class="hidden-xs">Agregar</font></button>
 					</div>
 					<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
 						<button type="button" class="btn btn-warning btn-block  btn-sm" data-toggle="tooltip" data-placement="bottom" id="removerFila" title="Quitar el producto seleccionado de la cotización"><i class="fa fa-eraser"></i> <font class="hidden-xs">Quitar</font></button>
 					</div>
-					<div class="col-xs-6 col-sm-3 col-md-2 col-lg-2">
+					<div class="col-xs-6 col-sm-3 col-md-2 col-lg-3">
 						<div class="input-group input-group-sm">
 							<span class="input-group-addon">T.C.</span>
 							<input type="text" class="form-control text-right  btn-sm" name="tc" id="tc" data-toggle="tooltip" data-placement="bottom">
 						</div>
 					</div>
-					<div class="col-xs-5 col-sm-3 col-md-2 col-lg-2">
+					<div class="col-xs-5 col-sm-3 col-md-2 col-lg-3">
 						<div class="input-group input-group-sm">
 							<span class="input-group-addon">Replica</span>
 							<input type="text" class="form-control text-right" id="replica" value="1">
@@ -385,11 +347,21 @@
 							<input type="text" class="form-control text-right" id="std" value="0">
 						</div>
 					</div>
+					<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
+						<div class="input-group input-group-sm">
+						<div class="checkbox">
+							<label><input type="checkbox" name="tipo" id="tipo"> Armado</label>
+						</div>
+						</div>
+					</div>
+				</div>
+				<div class="row" id="divArmado">
+						<textarea class="form-control" rows="1" id="taArmado" name="taArmado" placeholder="Proporciona la descripción del producto armado"></textarea>
 				</div>
 			</div>
 			<!-- Panel para cargar y editar las imagenes que se anexaran a la cotizacion -->
 			<div class="row hidden-xs">
-				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-offset-1 col-lg-10">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel">
 						<div class="x_title">
 							<h2>Cargar imagenes</h2>
@@ -466,6 +438,7 @@
 		<script src="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-table-editable.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.js')?>"></script>
 		<script src="<?php echo base_url('resources/js.cookie/js.cookie.js')?>"></script>
+		<script src="<?php echo base_url('resources/iCheck/icheck.min.js')?>"></script>
 		<script src="<?php echo base_url('/build/js/custom.js')?>"></script>
 		<script src="<?php echo base_url('/build/js/cotizador.js')?>"></script>
 		<script src="<?php echo base_url('/build/js/maincropper.js')?>"></script>

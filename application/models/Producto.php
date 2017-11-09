@@ -15,8 +15,7 @@ class Producto extends CI_Model{
 	}
 
 	public function obtenerProductoPorNombre($descr){
-		$descr = strtoupper($descr);
-		$query = $this->db->query("SELECT CVE_ART, DESCR, CON_SERIE, ULT_COSTO FROM INVE03 WHERE trim(CVE_ART) CONTAINING '$descr' OR trim(DESCR) CONTAINING '$descr'");
+		$query = $this->db->query("SELECT CVE_ART, (CVE_ART || ' - ' || DESCR) AS DESCR, CON_SERIE, ULT_COSTO FROM INVE03 WHERE trim(CVE_ART) CONTAINING '$descr' OR trim(DESCR) CONTAINING '$descr'");
 		return $query->result();
 		#return $this->db->get_compiled_select();
 	}

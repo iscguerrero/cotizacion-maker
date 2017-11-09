@@ -3,6 +3,14 @@ $(document).ready(function(){
 	nuevaCotizacion();
 	folios = [];
 	$('#rowMsj').hide();
+	$('#divArmado').hide();
+	$('#tipo').change(function(){
+		if($(this).is(':checked')) {
+			$('#divArmado').show();
+		} else {
+			$('#divArmado').hide();
+		}
+	});
 /*************** CONFIGURACION GENERAL DEL COMPORTAMIENTO DE LA VISTA ***************/
 // Configuracion del tooltip en la vista
 	$('[data-toggle="tooltip"]').tooltip();
@@ -41,13 +49,9 @@ $(document).ready(function(){
 		source: "Productos/ObtenerProductoPorNombre",
 		minLength: 1,
 		select:function(evt, ui){
-			$(this).val(ui.item.value);
-			$('#inputFam').val(ui.item.CON_SERIE);
 			$('#inputPieza').val(ui.item.CVE_ART);
-			$('#inputProducto').val(ui.item.DESCR);
 			$('#inputPrecio').val(ui.item.PRECIO);
 			$('#ult_costo').val(ui.item.ULT_COSTO);
-			console.log(ui.item.CVE_ART.substring(0,1));
 			if(ui.item.CVE_ART.substring(0,1) == 'Z' || ui.item.CVE_ART.substring(0,1) == 'z') {
 				$('#inputPrecio').prop('readonly', false);
 			}
@@ -61,13 +65,14 @@ $(document).ready(function(){
 		precioPiezaDD = precioPiezaAD - (precioPiezaAD * descuento / 100);
 		piezas = $('#inputPiezas').val();
 		replicas = piezas * $('#replica').val();
+		arrayProducto = $('#inputProducto').val().split(' - ');
 		if($('#inputPiezas').val() != ''){
 			var row = {
 				no_partida: 0,
 				folio: '',
 				ult_costo: $('#ult_costo').val(),
 				cve_art: $('#inputPieza').val(),
-				descripcion: $('#inputProducto').val(),
+				descripcion: arrayProducto[1],
 				precioPiezaAD: precioPiezaAD,
 				precioPiezaDD: precioPiezaDD,
 				piezas: piezas,
@@ -222,11 +227,20 @@ $(document).ready(function(){
 		toolbar: '#toolbar',
 		uniqueId: 'no',
 		columns: [[
-			{title: 'Información de las Piezas', halign: 'center', valign: 'middle', colspan: 6},
+			{title: 'Información de las Piezas', halign: 'center', valign: 'middle', colspan: 7},
 			{title: 'Información de las Partes', halign: 'center', valign: 'middle', colspan: 3},
 			{title: 'Información de las Replicas', halign: 'center', valign: 'middle', colspan: 3}
 		], [
 			{radio: true, align: 'center'},
+			{field: 'partida_armado', title: 'Incluir en Armado', align: 'center', editable: {
+				type: 'select',
+				mode: 'popup',
+				showbuttons: false,
+				source: [
+					{value: 'N', text: 'No'},
+					{value: 'S', text: 'Si'},
+				]
+			}},
 			{field: 'no_partida', title: 'Item', align: 'center', halign: 'center', valign: 'middle',formatter: function (value, row, index) {
 				return parseInt(value);
 			}},
@@ -436,29 +450,17 @@ $(document).ready(function(){
 	});
 
 // Imprimir la cotizacion en formato bulk
-	$('#aBulk').click(function(e){
+	$('#btnImprimir').click(function(e){
 		e.preventDefault();
 		if($('#folio').val() == '') {
 			$('#msjAlert').html('ABRE O CREA UNA NUEVA COTIZACION QUE IMPRIMIR');
 			modalAlert.modal('show');
 			return true;
 		}
-		window.open('Cotizador/ImprimirCotizacion/'+$('#folio').val() + '/bulk');
-	});
-
-// Imprimir la cotizacion en formato armado
-	$('#aArmado').click(function(e){
-		e.preventDefault();
-		if($('#folio').val() == '') {
-			$('#msjAlert').html('ABRE O CREA UNA NUEVA COTIZACION QUE IMPRIMIR');
-			modalAlert.modal('show');
-			return true;
-		}
-		if(partidasArmado().length == 0) {
-			$('#taArmado').val('');
-			$('#modalArmado').modal('show');
-		} else {
+		if($('#tipo').is(':checked')) {
 			window.open('Cotizador/ImprimirCotizacion/'+$('#folio').val() + '/armado');
+		} else {
+			window.open('Cotizador/ImprimirCotizacion/'+$('#folio').val() + '/bulk');
 		}
 	});
 
@@ -704,6 +706,16 @@ $(document).ready(function(){
 					$('#observaciones').html(en.observaciones);
 					$('#descuento').html(parseFloat(en.descuentost, 2));
 					$('#impuestos').html(parseFloat(en.tasa_impuesto, 2));
+					if( en.tipo_impresion == 'A' ) {
+						//$('#tipo').iCheck('check');
+						$('#tipo').prop('checked', true);
+						$('#divArmado').show();
+					} else {
+						//$('#tipo').iCheck('uncheck');
+						$('#tipo').prop('checked', false);
+						$('#divArmado').hide();
+					}
+					$('#taArmado').val(en.descripcion);
 					setearPartidas();
 					$('#rowCargar').hide();
 
@@ -716,6 +728,11 @@ $(document).ready(function(){
 
 // Funcion para guardar los cambios sobre la cotizacion
 	var guardarCotizacion = function(){
+		if($('#tipo').is(':checked') && $('#taArmado').val() == '') {
+			$('#msjAlert').html('Debes proporcionar la descrición del producto si es una cotización por armado');
+			modalAlert.modal('show');
+			return true;
+		}
 		pre_folio = $('#pre_folio').val();
 		folio = $('#folio').val();
 		cliente = $('#formCliente').serializeArray();
@@ -747,7 +764,9 @@ $(document).ready(function(){
 			totalPrecioRDD: $('#totalPrecioRDD').html(),
 			utilidad: $('#utilidad').html(),
 			tasa_impuesto: $('#impuestos').html(),
-			descuentost: $('#descuento').html()
+			descuentost: $('#descuento').html(),
+			tipo: $('#tipo').prop('checked'),
+			descripcion_partida: $('#taArmado').val()
 		}
 		$.ajax({
 			async: true,

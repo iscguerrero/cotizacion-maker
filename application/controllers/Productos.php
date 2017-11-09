@@ -240,6 +240,10 @@ class Productos extends Base_Controller {
 		if($this->db->trans_status() === FALSE)
 			exit(json_encode(array('bandera'=>false, 'msj'=>'SE PRESENTO UN ERROR AL GENERAR LA PRECOTIZACIÓN')));
 
+		foreach ($existentes as $key => $existente) {
+			$existentes[$key]['partida_armado'] = 'N';
+		}
+
 		exit(json_encode(array('flag'=>true, 'msj'=>'ARCHIVO RECIBIDO CON EXITO', 'data'=>$existentes, 'faltantes'=>$faltantes, 'pre_folio'=>$folio_encabezado)));
 	}
 }

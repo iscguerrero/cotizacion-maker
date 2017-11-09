@@ -30,6 +30,17 @@ class partidas_cotizacion_bulk extends CI_Model{
 		return $query->result();
 	}
 
+	# Obtener las partidas de producto especial
+	public function obtenerPartidasArmado($folio, $tipo) {
+		$this->db->select("*");
+		$this->db->from('partidas_cotizacion_bulk');
+		$this->db->where('folio_encabezado', $folio);
+		$this->db->where('estatus', 'A');
+		$this->db->where('partida_armado', $tipo);
+		$query = $this->db->get();
+		return $query->result();
+	}
+
 	# Metodo para borrar una partida
 	public function borrarPartida($folio) {
 		$this->db->limit(1);

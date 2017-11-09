@@ -63,11 +63,36 @@ class Cotizador extends Base_Controller {
 		} else {
 			$this->load->model('partidas_cotizacion_armado');
 			$partidas = $this->partidas_cotizacion_armado->obtenerPartidas($folio);
+			$this->load->model('partidas_cotizacion_bulk');
+			$partidas_bulk = $this->partidas_cotizacion_bulk->obtenerPartidasArmado($folio, 'N');
+			$pua = 0;
+			$pdd = 0;
+			$da = 0;
+			foreach ($partidas_bulk as $partida) {
+				$pua += $partida->precioReplicaAD;
+				$pdd += $partida->precioReplicaDD;
+			}
+			$da = (($pdd * 100 / $pua) - 100) * -1;
 			foreach ($partidas as $partida) {
 				$partida->cve_art = 'armada';
-				$partida->precioPiezaAD = $encabezado->stUsdPrecioRAD;
+				/*$partida->precioPiezaAD = $encabezado->stUsdPrecioRAD;
+				$partida->precioReplicaDD = $encabezado->stUsdPrecioRDD;*/
+				$partida->precioPiezaAD = $pua;
+				$partida->precioReplicaDD = $pdd;
+				$partida->descuento = $da;
 				$partida->replicas = 1;
-				$partida->precioReplicaDD = $encabezado->stUsdPrecioRDD;
+			}
+			
+			$partidas_armado = $this->partidas_cotizacion_bulk->obtenerPartidasArmado($folio, 'S');
+			if(count($partidas_armado) > 0) {
+				foreach ($partidas_armado as $pa) {
+					$partidas[] = $pa;
+				}
+			}
+			$no_partida = 1;
+			foreach ($partidas as $partida) {
+				$partida->no_partida = $no_partida;
+				$no_partida++;
 			}
 		}
 
@@ -176,7 +201,7 @@ class Cotizador extends Base_Controller {
 			$pdf->SetAligns(array('C', 'C', 'L', 'R', 'R', 'R', 'R'));
 			$pdf->setXY(15, 80);
 			foreach ($partidas as $key => $partida) {
-				$pdf->Row(array(($partida->no_partida)*1, $partida->cve_art, $partida->descripcion, number_format($partida->precioPiezaAD, 2), $partida->replicas, number_format($partida->descuento, 1) . ' %', number_format($partida->precioReplicaDD, 2)));
+				$pdf->Row(array(($partida->no_partida)*1, utf8_decode($partida->cve_art), utf8_decode($partida->descripcion), number_format($partida->precioPiezaAD, 2), $partida->replicas, number_format($partida->descuento, 1) . ' %', number_format($partida->precioReplicaDD, 2)));
 			}
 
 	}
@@ -191,6 +216,8 @@ class Cotizador extends Base_Controller {
 		$encabezado = $this->input->post('encabezado');
 		$partidas = $this->input->post('partidas');
 		$folios = $this->input->post('folios');
+
+		$tipo_impresion = $encabezado['tipo'] == 'true' ? 'A' : 'B';
 
 		# Comprobamos que el nombre del cliente haya sido proporcionado
 		if($cliente[2]['value'] == null || $cliente[2]['value'] == '')
@@ -242,7 +269,7 @@ class Cotizador extends Base_Controller {
 			'totalPrecioRDD' => str_replace(',', '', $encabezado['totalPrecioRDD']),
 			'utilidad' => str_replace(',', '', $encabezado['utilidad']),
 			'descuentost' => str_replace(',', '', $encabezado['descuentost']),
-			'tipo_impresion' => 'A',
+			'tipo_impresion' => $tipo_impresion,
 			'created_user' => $this->created_user,
 			'updated_user' => $this->updated_user,
 			'created_at' => date('Y-m-j H:i:s'),
@@ -299,7 +326,8 @@ class Cotizador extends Base_Controller {
 					'replicas' => $partida['replicas'],
 					'precioReplicaAD' => $partida['precioReplicaAD'],
 					'precioReplicaDD' => $partida['precioReplicaDD'],
-					'estatus' => 'A'
+					'estatus' => 'A',
+					'partida_armado' => $partida['partida_armado']
 				);
 				$partida['folio'] == null || $partida['folio'] == '' ? $this->partidas_cotizacion_bulk->altaPartida($data) : $this->partidas_cotizacion_bulk->editarPartida($data);
 				if(count($folios) > 0) {
@@ -308,6 +336,23 @@ class Cotizador extends Base_Controller {
 					}
 				}
 			}
+		}
+
+		$this->load->model('partidas_cotizacion_armado');
+		$pe = $this->partidas_cotizacion_armado->obtenerPartidas($folio_encabezado);
+		if(count($pe) == 0) {
+			$data = array(
+				'folio_encabezado' => $folio_encabezado,
+				'no_partida' => 1,
+				'descripcion' => $encabezado['descripcion_partida'],
+				'estatus' => 'A'
+			);
+			$this->load->model('partidas_cotizacion_armado');
+			$this->partidas_cotizacion_armado->altaPartida($data);
+		} else {
+			$this->db->set('descripcion', $encabezado['descripcion_partida']);
+			$this->db->where('folio_encabezado', $folio_encabezado);
+			$this->db->update('partidas_cotizacion_armado');
 		}
 
 		$this->db->trans_complete();
