@@ -208,7 +208,8 @@ class Productos extends Base_Controller {
 		$totalPrecioRAD = $stPrecioRAD + $ivaPrecioRAD;
 		$totalPrecioRDD = $stPrecioRDD + $ivaPrecioRDD;
 
-		$utilidad = $totalPrecioRDD - $costo_total;
+		#$utilidad = $totalPrecioRDD - $costo_total;
+		$utilidad = ($totalPrecioRDD * 100 / $costo_total) - 100;
 
 		$data = array(
 			'folio' => $folio_encabezado,

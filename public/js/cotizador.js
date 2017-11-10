@@ -81,6 +81,7 @@ $(document).ready(function(){
 				replicas: replicas,
 				precioReplicaAD: precioPiezaAD * replicas,
 				precioReplicaDD: precioPiezaDD * replicas,
+				partida_armado: 'N'
 			};
 			console.log(row);
 			$('#tablaCotizacion').bootstrapTable('append', row);
@@ -671,7 +672,8 @@ $(document).ready(function(){
 		totalPrecioRAD = stPrecioRAD + ivaPrecioRAD;
 		totalPrecioRDD = stPrecioRDD + ivaPrecioRDD;
 
-		utilidad = totalPrecioRDD - costo_total;
+		//utilidad = totalPrecioRDD - costo_total;
+		utilidad = (totalPrecioRDD * 100 / costo_total) - 100;
 
 		if((stPrecioRDD / stMxpPrecioRAD * 100) < 84.99) {
 			$('#liImprimir').hide();

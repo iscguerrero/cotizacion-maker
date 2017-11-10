@@ -97,7 +97,13 @@ class Cotizador extends Base_Controller {
 		}
 
 		$this->nuevaPagina($pdf, $encabezado, $partidas);
-		$this->paginaImagenes($pdf, $encabezado);
+
+
+		$this->load->model('imagenes_cotizacion');
+		$imagenes = $this->imagenes_cotizacion->obtenerImagenes($encabezado->folio, $encabezado->folio_preencabezado);
+		if(count($imagenes) > 0) {
+			$this->paginaImagenes($pdf, $encabezado, $imagenes);
+		}
 
 		$pdf->Output();
 	}
@@ -207,24 +213,34 @@ class Cotizador extends Base_Controller {
 	}
 
 	# Funcion para agregar una nueva pagina a la cotizacion bulk
-	public function paginaImagenes($pdf, $encabezado) {
+	public function paginaImagenes($pdf, $encabezado, $imagenes) {
 		$pdf->AddPage();
 		$pdf->SetFont('Courier', 'B', 12);
 		$pdf->RoundedRect(15, 30, 195, 10, 1, 'DF', '1234');
 		$pdf->setXY(16, 30); $pdf->Cell(95, 5, utf8_decode('Ilustraciones de referencia, cotización con folio ' . $encabezado->folio), 0, 0, 'L', false);
-		$pdf->RoundedRect(15, 40, 195, 210, 1, 'D', '1234');
+		$pdf->RoundedRect(15, 43, 195, 210, 1, 'D', '1234');
 
-		$this->load->model('imagenes_cotizacion');
-		$imagenes = $this->imagenes_cotizacion->obtenerImagenes($encabezado->folio, $encabezado->folio_preencabezado);
-
-		$x = 20;
+		$x = 17;
 		$y = 45;
+		$break = 0;
 		foreach ($imagenes as $imagen) {
-			$pdf->Image(base_url('uploads/' . $imagen->nombre_unico), $x, $y, 34.9, 14.4);
-			$y += 45;
+			# 94 * 62
+			#$size = getimagesize(base_url('uploads/' . $imagen->nombre_unico));
+			#$yl = $size[1];
+
+
+			$pdf->Image(base_url('uploads/' . $imagen->nombre_unico), $x, $y, 94, 62);
+
+			$break += 1;
+
+			if($break % 2 == 0) {
+				$x = 17;
+				$y += 64;
+			} else{
+				$x = 113;
+			}
+
 		}
-
-
 
 	}
 

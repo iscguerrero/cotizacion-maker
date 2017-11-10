@@ -6,7 +6,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Cotizador </title>
-		<link rel='icon' type='image/jpeg' href="<?php echo base_url('public/images/trilogiq.png')?>" />
+		<link rel='icon' type='image/jpeg' href="<?php echo base_url('public/images/trilogiq.jpeg')?>" />
 		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap/dist/css/bootstrap.min.css')?>">
 		<link rel="stylesheet" href="<?php echo base_url('resources/jquery-ui/jquery-ui.min.css')?>">
 		<link rel="stylesheet" href="<?php echo base_url('resources/font-awesome/css/font-awesome.min.css')?>">
@@ -30,7 +30,7 @@
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o"></i> <font class="hidden-xs">Guardar</font></button></li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización"><i class="fa fa-unlock"></i> <font class="hidden-xs">Autorizar</font></button></li>
 						<li role="presentation" id="liImprimir">
-							<button type="button" id="btnImprimir" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" title="Imprimir cotización"><i class="fa fa-file-pdf-o"></i> <font class="hidden-xs">Imprimir</font></button>
+							<button type="button" id="btnImprimir" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" title="Imprimir cotización (Guarda cambios antes de imprimir)"><i class="fa fa-file-pdf-o"></i> <font class="hidden-xs">Imprimir</font></button>
 						</li>
 						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-warning" title="Rechazar uso de la cotización"><i class="fa fa-close"></i> <font class="hidden-xs">Rechazar</font></button></li>
 					</ul>
@@ -215,7 +215,7 @@
 									</tr>
 									<tr>
 										<th colspan="7"></th>
-										<th colspan="2" class="text-right">Utilidad Bruta</th>
+										<th colspan="2" class="text-right">Utilidad Bruta(%)</th>
 										<th colspan="4" id="utilidad" class="text-right"></th>
 									</tr>
 									<tr>

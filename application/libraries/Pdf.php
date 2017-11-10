@@ -5,7 +5,7 @@
 
 	class Pdf extends rounded_rect {
 		function Header() {
-			$this->Image(base_url('public/images/trilogiq.png'), 15, 15, 32.3, 15.6);
+			$this->Image(base_url('public/images/trilogiq.jpeg'), 15, 15, 32.3, 15.6);
 			$this->Image(base_url('public/images/leantek.jpg'), 179, 15, 34.9, 14.4);
 		}
 		function Footer() {
