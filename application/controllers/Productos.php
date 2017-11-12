@@ -186,19 +186,14 @@ class Productos extends Base_Controller {
 			$stUsdPrecioRDD += $existente['precioReplicaDD'];
 			$costo_total += ($existente['ult_costo'] * $existente['replicas']);
 		}
-		$costo_total = $costo_total * $tc;
 
-		$stMxpPrecioPDD = $stUsdPrecioPDD * $tc;
-		$stMxpPrecioRAD = $stUsdPrecioRAD * $tc;
-		$stMxpPrecioRDD = $stUsdPrecioRDD * $tc;
+		$descuentoPrecioPDD = $stUsdPrecioPDD * $descuentost / 100;
+		$descuentoPrecioRAD = $stUsdPrecioRAD * $descuentost / 100;
+		$descuentoPrecioRDD = $stUsdPrecioRDD * $descuentost / 100;
 
-		$descuentoPrecioPDD = $stMxpPrecioPDD * $descuentost / 100;
-		$descuentoPrecioRAD = $stMxpPrecioRAD * $descuentost / 100;
-		$descuentoPrecioRDD = $stMxpPrecioRDD * $descuentost / 100;
-
-		$stPrecioPDD = $stMxpPrecioPDD - $descuentoPrecioPDD;
-		$stPrecioRAD = $stMxpPrecioRAD - $descuentoPrecioRAD;
-		$stPrecioRDD = $stMxpPrecioRDD -$descuentoPrecioRDD;
+		$stPrecioPDD = $stUsdPrecioPDD - $descuentoPrecioPDD;
+		$stPrecioRAD = $stUsdPrecioRAD - $descuentoPrecioRAD;
+		$stPrecioRDD = $stUsdPrecioRDD -$descuentoPrecioRDD;
 
 		$ivaPrecioPDD = $stPrecioPDD * $impuestos / 100;
 		$ivaPrecioRAD = $stPrecioRAD * $impuestos / 100;
@@ -208,7 +203,10 @@ class Productos extends Base_Controller {
 		$totalPrecioRAD = $stPrecioRAD + $ivaPrecioRAD;
 		$totalPrecioRDD = $stPrecioRDD + $ivaPrecioRDD;
 
-		#$utilidad = $totalPrecioRDD - $costo_total;
+		$stMxpPrecioPDD = $stUsdPrecioPDD * $tc;
+		$stMxpPrecioRAD = $stUsdPrecioRAD * $tc;
+		$stMxpPrecioRDD = $stUsdPrecioRDD * $tc;
+
 		$utilidad = ($totalPrecioRDD * 100 / $costo_total) - 100;
 
 		$data = array(

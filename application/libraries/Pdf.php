@@ -9,10 +9,9 @@
 			$this->Image(base_url('public/images/leantek.jpg'), 179, 15, 34.9, 14.4);
 		}
 		function Footer() {
-			$this->setY(-20);
+			$this->setY(-17);
 			$this->SetFont('Courier', '', 8);
-			$this->MultiCell(0, 3, utf8_decode("TRILOGIC MÉXICO SA DE CV"), 0, 'C', false);
-			$this->MultiCell(0, 3, utf8_decode("TRI051027UQ1"), 0, 'C', false);
+			$this->MultiCell(0, 3, utf8_decode("TRILOGIC MÉXICO SA DE CV TRI051027UQ1"), 0, 'C', false);
 			$this->MultiCell(0, 3, utf8_decode("Nezahualcoyotl #40, col. Cumbres de Conín, El Marques, Querétaro, C.P. 76246 México "), 0, 'C', false);
 			$this->MultiCell(0, 3, utf8_decode("Lugar de Expedición QUERETARO"), 0, 'C', false);
 		}

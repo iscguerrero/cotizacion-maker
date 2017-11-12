@@ -1,9 +1,9 @@
+$('#rowMsj').hide();
+$('#divArmado').hide();
 $(document).ready(function(){
 /*************** CARGA INICIAL DE LA INFORMACION DE LA COTIZACION ***************/
 	nuevaCotizacion();
 	folios = [];
-	$('#rowMsj').hide();
-	$('#divArmado').hide();
 	$('#tipo').change(function(){
 		if($(this).is(':checked')) {
 			$('#divArmado').show();
@@ -21,6 +21,11 @@ $(document).ready(function(){
 		format: 'DD-MMMM-YYYY',
 		ignoreReadonly: true,
 		allowInputToggle: true
+	});
+
+// Recargar la vista para crear una nueva cotizacion
+	$('#nuevaCotizacion').click(function() {
+		location.reload();
 	});
 
 // Configuracion del modal de mensajes del sistema
@@ -399,24 +404,38 @@ $(document).ready(function(){
 						string = "<span class='label label-primary'>Autorizada</span>"
 						break;
 					case 'C':
-						string = "<span class='label label-info'>Impresa</span>"
+						string = "<span class='label label-danger'>Rechazada</span>"
 						break;
-					case 'B':
+					case 'D':
 						string = "<span class='label label-success'>Cerrada</span>"
 						break;
-					case 'B':
-						string = "<span class='label label-danger'>Rechazada</span>"
+					default:
+						string = "<span class='label label-default'>N/A</span>"
 						break;
 				}
 				return string
 			}},
-			{title: 'Abrir', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
-				return "<button type='button' class='btn btn-xs bttn-primary open'><i class='fa fa-folder-open-o'></i></button>"
+			{title: 'Acciones', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
+				str = "<button type='button' class='btn btn-xs btn-primary open' title='Cargar esta cotización en el editor'><i class='fa fa-folder-open-o'></i></button>";
+				if(row.estatus == 'A' || row.estatus == 'B') {
+					str += "&nbsp;<button type='button' class='btn btn-xs btn-success cerrar' title='Cerrar esta cotización'><i class='fa fa-lock'></i></button>";
+				}
+				return str
 			}},
 		],
 		onClickRow: function(row, $element, field){
-			cargarCotizacion(row.folio);
+			window.folio = row.folio;
 		}
+	});
+
+// Abrir la cotizacion seleccionada
+	$('#tablaCotizaciones tbody').on('click', 'button.open', function() {
+		cargarCotizacion(window.folio);
+	});
+// Cerrar la cotizacion seleccionada
+	$('#tablaCotizaciones tbody').on('click', 'button.cerrar', function(e) {
+		e.preventDefault();
+		cerrarCotizacion();
 	});
 
 // Guardamos los cambios hechos sobre la cotizacion
@@ -435,19 +454,7 @@ $(document).ready(function(){
 // Obtener el listado de cotizaciones
 	$('#filtrarCotizaciones').click(function(e){
 		e.preventDefault();
-		fi = $('#inputfi').val();
-		ff = $('#inputff').val();
-		$.ajax({
-			async: true,
-			type: 'POST',
-			cache: false,
-			data: {fi: fi, ff: ff},
-			url: 'Cotizador/ObtenerCotizaciones',
-			dataType: 'json',
-			success: function(json){
-				$('#tablaCotizaciones').bootstrapTable('load', json);
-			}
-		});
+		filtrarCotizaciones();
 	});
 
 // Imprimir la cotizacion en formato bulk
@@ -463,6 +470,28 @@ $(document).ready(function(){
 		} else {
 			window.open('Cotizador/ImprimirCotizacion/'+$('#folio').val() + '/bulk');
 		}
+	});
+
+// Autorizar una cotizacion
+	$('#btnAutorizar').click(function(e){
+		e.preventDefault();
+		if($('#folio').val() == '') {
+			$('#msjAlert').html('ABRE O CREA UNA NUEVA COTIZACION QUE IMPRIMIR');
+			modalAlert.modal('show');
+			return true;
+		}
+		cambiarEstado('B');
+	});
+
+// Rechazar una cotizacion
+	$('#btnRechazar').click(function(e){
+		e.preventDefault();
+		if($('#folio').val() == '') {
+			$('#msjAlert').html('ABRE O CREA UNA NUEVA COTIZACION QUE IMPRIMIR');
+			modalAlert.modal('show');
+			return true;
+		}
+		cambiarEstado('C');
 	});
 
 // Guardar la partida armado de la cotizacion
@@ -651,18 +680,13 @@ $(document).ready(function(){
 			costo_total = costo_total + (parseFloat(row['ult_costo']) * parseFloat(row['replicas']));
 		});
 
-		stMxpPrecioPDD = stUsdPrecioPDD * tc;
-		stMxpPrecioRAD = stUsdPrecioRAD * tc;
-		stMxpPrecioRDD = stUsdPrecioRDD * tc;
-		costo_total = costo_total * tc;
+		descuentoPrecioPDD = stUsdPrecioPDD * descuento / 100;
+		descuentoPrecioRAD = stUsdPrecioRAD * descuento / 100;
+		descuentoPrecioRDD = stUsdPrecioRDD * descuento / 100;
 
-		descuentoPrecioPDD = stMxpPrecioPDD * descuento / 100;
-		descuentoPrecioRAD = stMxpPrecioRAD * descuento / 100;
-		descuentoPrecioRDD = stMxpPrecioRDD * descuento / 100;
-
-		stPrecioPDD = stMxpPrecioPDD - descuentoPrecioPDD;
-		stPrecioRAD = stMxpPrecioRAD - descuentoPrecioRAD;
-		stPrecioRDD = stMxpPrecioRDD -descuentoPrecioRDD;
+		stPrecioPDD = stUsdPrecioPDD - descuentoPrecioPDD;
+		stPrecioRAD = stUsdPrecioRAD - descuentoPrecioRAD;
+		stPrecioRDD = stUsdPrecioRDD -descuentoPrecioRDD;
 
 		ivaPrecioPDD = stPrecioPDD * impuestos / 100;
 		ivaPrecioRAD = stPrecioRAD * impuestos / 100;
@@ -672,17 +696,19 @@ $(document).ready(function(){
 		totalPrecioRAD = stPrecioRAD + ivaPrecioRAD;
 		totalPrecioRDD = stPrecioRDD + ivaPrecioRDD;
 
-		//utilidad = totalPrecioRDD - costo_total;
 		utilidad = (totalPrecioRDD * 100 / costo_total) - 100;
 
-		if((stPrecioRDD / stMxpPrecioRAD * 100) < 84.99) {
+		if((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
 			$('#liImprimir').hide();
 			$('#rowMsj').show();
 		} else {
 			$('#liImprimir').show();
 			$('#rowMsj').hide();
 		}
-		console.log(stPrecioRDD / stMxpPrecioRAD * 100);
+
+		stMxpPrecioPDD = stUsdPrecioPDD * tc;
+		stMxpPrecioRAD = stUsdPrecioRAD * tc;
+		stMxpPrecioRDD = stUsdPrecioRDD * tc;
 
 		// Se actualizan los valores de los controles de los totales
 		$('#stUsdPrecioPDD').html(formato_numero(stUsdPrecioPDD, 2, '.', ','));
@@ -760,22 +786,53 @@ $(document).ready(function(){
 					$('#descuento').html(parseFloat(en.descuentost, 2));
 					$('#impuestos').html(parseFloat(en.tasa_impuesto, 2));
 					if( en.tipo_impresion == 'A' ) {
-						//$('#tipo').iCheck('check');
 						$('#tipo').prop('checked', true);
 						$('#divArmado').show();
 					} else {
-						//$('#tipo').iCheck('uncheck');
 						$('#tipo').prop('checked', false);
 						$('#divArmado').hide();
 					}
 					$('#taArmado').val(en.descripcion);
 					setearPartidas();
-					$('#rowCargar').hide();
-
 					recargarGaleria();
-
 					modalAlert.modal('hide');
 					$('#modalCotizaciones').modal('hide');
+					$('#rowCargar').hide();
+					strig = '';
+
+					if( en.estatus == 'A' ) {
+						$('#liGuardar').show();
+						$('#liAutorizar').show();
+						$('#liRechazar').show();
+						$('#rowCargaImg').show();
+						$('#rowGaleria').show();
+						string = "<span class='label label-default'>Abierta</span>";
+					}
+					if( en.estatus == 'B' ) {
+						$('#liGuardar').hide();
+						$('#liAutorizar').hide();
+						$('#liRechazar').show();
+						$('#rowCargaImg').hide();
+						$('#rowGaleria').hide();
+						string = "<span class='label label-primary'>Autorizada</span>";
+					}
+					if( en.estatus == 'C' ) {
+						$('#liGuardar').hide();
+						$('#liAutorizar').hide();
+						$('#liRechazar').hide();
+						$('#rowCargaImg').hide();
+						$('#rowGaleria').hide();
+						string = "<span class='label label-danger'>Rechazada</span>";
+					}
+					if( en.estatus == 'D' ) {
+						$('#liGuardar').hide();
+						$('#liAutorizar').hide();
+						$('#liRechazar').hide();
+						$('#rowCargaImg').hide();
+						$('#rowGaleria').hide();
+						string = "<span class='label label-success'>Cerrada</span>"
+					}
+					$('#liEstatus').html(string);
 				}
 			}
 		});
@@ -838,8 +895,7 @@ $(document).ready(function(){
 				$('#msjAlert').html(json.msj);
 				if(json.bandera == true) {
 					$('#folio').val(json.folio);
-					setearPartidas();
-					recargarGaleria();
+					cargarCotizacion(json.folio);
 					folios.length = 0;
 					modalAlert.modal('hide');
 				}
@@ -959,3 +1015,61 @@ $(document).ready(function(){
 			}
 		});
 	}
+
+// Funcion para cambiar el estatus de una cotizacion
+	var cambiarEstado = function(estado) {
+		$.ajax({
+			async: true,
+			type: 'POST',
+			cache: false,
+			data: {folio: $('#folio').val(), estatus: estado},
+			url: 'Cotizador/CambiarEstado',
+			dataType: 'json',
+			success: function(json){
+				if(json.bandera == false) {
+					$('#msjAlert').html(json.msj);
+					modalAlert.modal('show');
+				} else{
+					cargarCotizacion($('#folio').val());
+				}
+			}
+		});
+	}
+
+// Funcion para cerrar una cotizacion
+	var cerrarCotizacion = function() {
+		$.ajax({
+			async: true,
+			type: 'POST',
+			cache: false,
+			data: {folio: window.folio},
+			url: 'Cotizador/CerrarCotizacion',
+			dataType: 'json',
+			success: function(json){
+				if(json.bandera == false) {
+					$('#msjAlert').html(json.msj);
+					modalAlert.modal('show');
+				} else{
+					filtrarCotizaciones();
+				}
+			}
+		});
+	}
+
+// Funcion para filtrar las cotizaciones segun los parametros seleccionados
+var filtrarCotizaciones = function() {
+	fi = $('#inputfi').val();
+	ff = $('#inputff').val();
+	estatus = $('#estatusCot').val();
+	$.ajax({
+		async: true,
+		type: 'POST',
+		cache: false,
+		data: {fi: fi, ff: ff, estatus: estatus},
+		url: 'Cotizador/ObtenerCotizaciones',
+		dataType: 'json',
+		success: function(json){
+			$('#tablaCotizaciones').bootstrapTable('load', json);
+		}
+	});
+}

@@ -75,14 +75,11 @@ class Cotizador extends Base_Controller {
 			$da = (($pdd * 100 / $pua) - 100) * -1;
 			foreach ($partidas as $partida) {
 				$partida->cve_art = 'armada';
-				/*$partida->precioPiezaAD = $encabezado->stUsdPrecioRAD;
-				$partida->precioReplicaDD = $encabezado->stUsdPrecioRDD;*/
 				$partida->precioPiezaAD = $pua;
 				$partida->precioReplicaDD = $pdd;
 				$partida->descuento = $da;
 				$partida->replicas = 1;
 			}
-			
 			$partidas_armado = $this->partidas_cotizacion_bulk->obtenerPartidasArmado($folio, 'S');
 			if(count($partidas_armado) > 0) {
 				foreach ($partidas_armado as $pa) {
@@ -95,16 +92,13 @@ class Cotizador extends Base_Controller {
 				$no_partida++;
 			}
 		}
-
 		$this->nuevaPagina($pdf, $encabezado, $partidas);
-
 
 		$this->load->model('imagenes_cotizacion');
 		$imagenes = $this->imagenes_cotizacion->obtenerImagenes($encabezado->folio, $encabezado->folio_preencabezado);
 		if(count($imagenes) > 0) {
-			$this->paginaImagenes($pdf, $encabezado, $imagenes);
+			$this->paginaImagenes($pdf, $encabezado, $imagenes, 0);
 		}
-
 		$pdf->Output();
 	}
 
@@ -142,19 +136,27 @@ class Cotizador extends Base_Controller {
 			$pdf->Line(20, 220, 80, 220);
 			$pdf->Line(90, 220, 150, 220);
 
+		# Cuadros de terminos y condiciones
+			$pdf->RoundedRect(15, 224.5, 140, 15.5, 1, 'D', '1');
+			$pdf->RoundedRect(15, 240, 195, 20, 1, 'D', '4');
+
 		# Cuadro totales
-			$pdf->RoundedRect(155, 205, 55, 35, 1, 'D', '34');
+			$pdf->RoundedRect(155, 205, 55, 35, 1, 'D', '');
 
 		# Leyendas del formato / encabezado
 			$pdf->SetFont('Courier', 'B', 14);
-			$pdf->setXY(15, 20); $pdf->Cell(0, 5, utf8_decode('COTIZACIÓN'), 0, 0, 'C', false);
+			$pdf->setXY(15, 20); $pdf->Cell(0, 5, utf8_decode('COTIZACIÓN'), 0, 1, 'C', false);
+			$pdf->SetFont('Courier', 'B', 12);
+			$pdf->SetTextColor(255, 0, 0);
+			if( $encabezado->estatus == 'C' ) $pdf->Cell(0, 5, utf8_decode('Cotización rechazada, prohibido su uso'), 0, 0, 'C', false);
+			$pdf->SetTextColor(0, 0, 0);
 			$pdf->SetFont('Courier', 'B', 11);
 			$pdf->setXY(15, 30); $pdf->Cell(95, 5, utf8_decode('Información del cliente'), 0, 0, 'L', false);
 			$pdf->setXY(15, 60); $pdf->Cell(95, 5, 'Representante de ventas', 0, 0, 'L', false);
 			$pdf->setXY(115, 30); $pdf->Cell(25, 5, 'T. C.', 0, 0, 'C', false);
 			$pdf->setXY(140, 30); $pdf->Cell(35, 5, 'Folio', 0, 0, 'C', false);
 			$pdf->setXY(175, 30); $pdf->Cell(35, 5, 'Fecha', 0, 0, 'C', false);
-			$pdf->setXY(115, 40); $pdf->Cell(95, 5, utf8_decode('Términos y condiciones de venta'), 0, 0, 'L', false);
+			$pdf->setXY(115, 40); $pdf->Cell(95, 5, utf8_decode('Observaciones'), 0, 0, 'L', false);
 
 		# Leyendas del formato / partidas
 			$pdf->SetFont('Courier', 'B', 10);
@@ -168,11 +170,11 @@ class Cotizador extends Base_Controller {
 
 		# Leyendas del pie de página
 			$pdf->SetFont('Courier', 'B', 9);
-			$pdf->setXY(155, 205); $pdf->Cell(22, 7, 'Subtotal USD', 0, 0, 'L', false);
-			$pdf->setXY(155, 212); $pdf->Cell(22, 7, 'Subtotal MXN', 0, 0, 'L', false);
-			$pdf->setXY(155, 219); $pdf->Cell(22, 7, 'Descuento ST %', 0, 0, 'L', false);
-			$pdf->setXY(155, 226); $pdf->Cell(22, 7, 'Impuesto %', 0, 0, 'L', false);
-			$pdf->setXY(155, 233); $pdf->Cell(22, 7, 'Total', 0, 0, 'L', false);
+			$pdf->setXY(155, 205); $pdf->Cell(22, 7, 'Subtotal', 0, 0, 'L', false);
+			$pdf->setXY(155, 212); $pdf->Cell(22, 7, 'Descuento ST %', 0, 0, 'L', false);
+			$pdf->setXY(155, 219); $pdf->Cell(22, 7, 'Impuesto %', 0, 0, 'L', false);
+			$pdf->setXY(155, 226); $pdf->Cell(22, 7, 'Total', 0, 0, 'L', false);
+			$pdf->setXY(155, 233); $pdf->Cell(22, 7, 'Moneda USD', 0, 0, 'L', false);
 
 		# Se descarga la informacion de la cotizacion
 			$pdf->SetFont('Courier', '', 9);
@@ -182,25 +184,30 @@ class Cotizador extends Base_Controller {
 			$pdf->Cell(95, 5, utf8_decode('Telelefono: '.$encabezado->telefono), 0, 1, 'L', false);
 			$pdf->Cell(95, 5, utf8_decode('Correo: '. $encabezado->correo), 0, 1, 'L', false);
 			$pdf->Ln(5);
-			$pdf->Cell(95, 5, utf8_decode($encabezado->representante_ventas), 0, 0, 'L', false);
+			$pdf->Cell(95, 5, utf8_decode($encabezado->representante_ventas == 'Representante de Ventas' ? '' : utf8_decode($encabezado->representante_ventas)), 0, 0, 'L', false);
 
 			$pdf->setXY(115, 35); $pdf->Cell(25, 5, utf8_decode($encabezado->tipo_cambios), 0, 0, 'C', false);
 			$pdf->Cell(35, 5, str_pad($encabezado->folio, '0', STR_PAD_LEFT), 0, 0, 'C', false);
 			$pdf->Cell(35, 5, utf8_decode($encabezado->ffecha), 0, 1, 'C', false);
 			$pdf->Ln();
-			$pdf->setX(115); $pdf->MultiCell(95, 5, utf8_decode($encabezado->terminos_y_condiciones), 0, 'J', false);
+			$pdf->setX(115); $pdf->MultiCell(95, 3, utf8_decode($encabezado->observaciones == 'Observaciones' ? '' : $encabezado->observaciones), 0, 'J', false);
 
-			$pdf->setXY(20, 215); $pdf->Cell(60, 5, utf8_decode($encabezado->representante_ventas), 0, 0, 'C', false);
+			$pdf->setXY(20, 215); $pdf->Cell(60, 5, $encabezado->representante_ventas == 'Representante de Ventas' ? '' : utf8_decode($encabezado->representante_ventas), 0, 0, 'C', false);
 			$pdf->setXY(20, 220); $pdf->Cell(60, 5, 'Representante de ventas', 0, 0, 'C', false);
 			$pdf->setXY(90, 220); $pdf->Cell(60, 5, 'Vo. Bo.', 0, 0, 'C', false);
-			$pdf->setXY(20, 225); $pdf->Cell(130, 5, utf8_decode('Observaciones: ' . $encabezado->observaciones), 0, 0, 'J', false);
+
+			$pdf->SetFont('Courier', '', 8);
+			$pdf->setXY(15, 225); $pdf->MultiCell(130, 3, utf8_decode('Términos y condiciones de venta: ') . utf8_decode($encabezado->terminos_y_condiciones == 'Términos y Condiciones de Venta' ? '' : $encabezado->terminos_y_condiciones), 0, 'J', false);
+
+			$pdf->setXY(15, 240); $pdf->MultiCell(195, 3, utf8_decode('Lineamientos generales: Integer vitae mi id lorem lobortis consectetur a nec nunc. Pellentesque semper augue non efficitur dictum. Mauris pharetra diam sit amet nulla luctus, vel condimentum ipsum ornare. Sed ut magna non justo tincidunt aliquam. Praesent luctus, metus ut dapibus volutpat, urna nibh vehicula erat, non vulputate magna metus in ligula. Fusce non ornare ligula, non placerat mi. Vivamus imperdiet elementum magna, in interdum massa. Integer pretium elit nec gravida venenatis. Proin aliquam justo laoreet tortor mollis scelerisque iaculis a tortor. Integer nisi nulla, tristique a vehicula tincidunt, feugiat quis purus. Praesent sed tellus lacus.'), 0, 'J', false);
 
 			$pdf->SetFont('Courier', 'B', 9);
 			$pdf->setXY(155, 205); $pdf->Cell(55, 7, number_format($encabezado->stUsdPrecioRDD, 2), 1, 0, 'R', false);
-			$pdf->setXY(155, 212); $pdf->Cell(55, 7, number_format($encabezado->stMxpPrecioRDD, 2), 1, 0, 'R', false);
-			$pdf->setXY(155, 219); $pdf->Cell(55, 7, number_format($encabezado->descuentost, 2), 1, 0, 'R', false);
-			$pdf->setXY(155, 226); $pdf->Cell(55, 7, number_format($encabezado->tasa_impuesto, 2), 1, 0, 'R', false);
-			$pdf->setXY(155, 233); $pdf->Cell(55, 7, number_format($encabezado->totalPrecioRDD, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 212); $pdf->Cell(55, 7, number_format($encabezado->descuentost, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 219); $pdf->Cell(55, 7, number_format($encabezado->tasa_impuesto, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 226); $pdf->Cell(55, 7, number_format($encabezado->totalPrecioRDD, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 233); $pdf->Cell(55, 7, '', 1, 0, 'R', false);
+			#number_format($encabezado->stMxpPrecioRDD, 2)
 
 		# Se descarga la informacion de las partidas de la cotizacion
 			$pdf->SetFont('Courier', '', 9);
@@ -209,39 +216,44 @@ class Cotizador extends Base_Controller {
 			$pdf->setXY(15, 80);
 			foreach ($partidas as $key => $partida) {
 				$pdf->Row(array(($partida->no_partida)*1, utf8_decode($partida->cve_art), utf8_decode($partida->descripcion), number_format($partida->precioPiezaAD, 2), $partida->replicas, number_format($partida->descuento, 1) . ' %', number_format($partida->precioReplicaDD, 2)));
+				unset($partidas[$key]);
+				if($pdf->getY() > 195) break;
+			}
+			if(count($partidas) > 0) {
+				$this->nuevaPagina($pdf, $encabezado, $partidas);
 			}
 	}
 
 	# Funcion para agregar una nueva pagina a la cotizacion bulk
-	public function paginaImagenes($pdf, $encabezado, $imagenes) {
+	public function paginaImagenes($pdf, $encabezado, $imagenes, $key) {
 		$pdf->AddPage();
 		$pdf->SetFont('Courier', 'B', 12);
 		$pdf->RoundedRect(15, 30, 195, 10, 1, 'DF', '1234');
 		$pdf->setXY(16, 30); $pdf->Cell(95, 5, utf8_decode('Ilustraciones de referencia, cotización con folio ' . $encabezado->folio), 0, 0, 'L', false);
 		$pdf->RoundedRect(15, 43, 195, 210, 1, 'D', '1234');
-
 		$x = 17;
 		$y = 45;
 		$break = 0;
+		$i = 0;
 		foreach ($imagenes as $imagen) {
-			# 94 * 62
-			#$size = getimagesize(base_url('uploads/' . $imagen->nombre_unico));
-			#$yl = $size[1];
-
-
-			$pdf->Image(base_url('uploads/' . $imagen->nombre_unico), $x, $y, 94, 62);
-
+			# Se escalan las imágenes con un ancho de 90px
+			$size = getimagesize(base_url('uploads/' . $imagen->nombre_unico));
+			$yl = (100 * 90 / $size[0]) * $size[1] / 100;
+			$pdf->Image(base_url('uploads/' . $imagen->nombre_unico), $x, $y, 90, $yl);
 			$break += 1;
-
 			if($break % 2 == 0) {
 				$x = 17;
 				$y += 64;
 			} else{
 				$x = 113;
 			}
-
+			unset($imagenes[$key]);
+			$key++; $i++;
+			if($i == 6) break;
 		}
-
+		if(count($imagenes) > 0) {
+			$this->paginaImagenes($pdf, $encabezado, $imagenes, $key);
+		}
 	}
 
 	# Metodo para guardar los cambios en la cotizacion
@@ -433,8 +445,9 @@ class Cotizador extends Base_Controller {
 		} else {
 			$fi = $this->str_to_date($this->input->post('fi'));
 			$ff = $this->str_to_date($this->input->post('ff'));
+			$estatus = $this->input->post('estatus');
 			$this->load->model('encabezado_cotizacion');
-			exit(json_encode($this->encabezado_cotizacion->obtenerCotizaciones($fi, $ff)));
+			exit(json_encode($this->encabezado_cotizacion->obtenerCotizaciones($fi, $ff, $estatus)));
 		}
 	}
 
@@ -523,5 +536,32 @@ class Cotizador extends Base_Controller {
 		}
 	}
 
+	# Metodo para autorizar una cotizacion
+	public function CambiarEstado() {
+		if(!$this->input->is_ajax_request()) show_404();
+		if($this->session->userdata('cve_perfil') != '1') {
+			exit(json_encode(array('bandera' => false, 'msj'=>'No cuentas con los permisos necesarios para realizar esta acción')));
+		}
+		$folio = $this->input->post('folio');
+		$estatus = $this->input->post('estatus');
+		$this->load->model('encabezado_cotizacion');
+		if( $this->encabezado_cotizacion->editarEncabezado(array('folio'=>$folio, 'estatus'=>$estatus)) ) {
+			exit(json_encode(array('bandera' => true)));
+		} else {
+			exit(json_encode(array('bandera' => false, 'msj'=>'Se presento un error al cambiar el estatus de la cotización')));
+		}
+	}
+
+	# Metodo para cerrar una cotizacion
+	public function CerrarCotizacion() {
+		if(!$this->input->is_ajax_request()) show_404();
+		$folio = $this->input->post('folio');
+		$this->load->model('encabezado_cotizacion');
+		if( $this->encabezado_cotizacion->editarEncabezado(array('folio'=>$folio, 'estatus'=>'D')) ) {
+			exit(json_encode(array('bandera' => true)));
+		} else {
+			exit(json_encode(array('bandera' => false, 'msj'=>'Se presento un error al cerrar la cotización')));
+		}
+	}
 
 }

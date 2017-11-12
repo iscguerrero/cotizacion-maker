@@ -30,18 +30,19 @@ class encabezado_cotizacion extends CI_Model{
 	}
 
 	# Funcion para obtener la lista de cotizaciones en el periodo seleccionado
-	public function obtenerCotizaciones($fi, $ff) {
+	public function obtenerCotizaciones($fi, $ff, $estatus) {
 		$this->db->select("folio, nombre_cliente, DATE_FORMAT(created_at, '%d-%M-%Y') AS fecha, totalPrecioRDD, estatus");
 		$this->db->from('encabezado_cotizacion');
 		$this->db->where('created_at >', $fi);
 		$this->db->where('created_at <', $ff.' 23:59:59');
+		if($estatus != '') $this->db->where('estatus', $estatus);
 		$query = $this->db->get();
 		return $query->result();
 	}
 
 	# Metodo para obtener el encabezado de una cotizacion
 	public function obtenerEncabezado($folio){
-		$this->db->select('e.folio, e.folio_preencabezado, e.nombre_cliente, e.nombre_empresa, e.id_cliente, e.rfc, e.direccion, e.colonia, e.municipio, e.estado, e.codigo_postal, e.nombre_contacto, e.telefono, e.correo, e.tipo_cambios, e.replicas, e.descuento_sobre_pieza, e.representante_ventas, e.terminos_y_condiciones, e.observaciones, e.descuentost, e.tasa_impuesto, e.utilidad, e.tipo_impresion, p.descripcion');
+		$this->db->select('e.folio, e.folio_preencabezado, e.nombre_cliente, e.nombre_empresa, e.id_cliente, e.rfc, e.direccion, e.colonia, e.municipio, e.estado, e.codigo_postal, e.nombre_contacto, e.telefono, e.correo, e.tipo_cambios, e.replicas, e.descuento_sobre_pieza, e.representante_ventas, e.terminos_y_condiciones, e.observaciones, e.descuentost, e.tasa_impuesto, e.utilidad, e.tipo_impresion, e.estatus, p.descripcion');
 		$this->db->from('encabezado_cotizacion e');
 		$this->db->join('partidas_cotizacion_armado p', 'e.folio = p.folio_encabezado', 'LEFT');
 		$this->db->where('e.folio', $folio);

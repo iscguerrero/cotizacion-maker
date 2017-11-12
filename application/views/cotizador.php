@@ -24,15 +24,17 @@
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<ul class="nav nav-pills pull-right form-inline">
-						<input type="text" class="form-control text-center" name="pre_folio" id="pre_folio" value="" readonly placeholder="Pre-folio">
-						<input type="text" class="form-control text-center" name="folio" id="folio" value="" readonly placeholder="Folio">
-						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="abrirCotizacion" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o"></i> <font class="hidden-xs">Abrir...</font></button></li>
-						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o"></i> <font class="hidden-xs">Guardar</font></button></li>
-						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización"><i class="fa fa-unlock"></i> <font class="hidden-xs">Autorizar</font></button></li>
+						<li role="presentation"><input type="text" class="form-control text-center" name="pre_folio" id="pre_folio" value="" readonly placeholder="Pre-folio"></li>
+						<li role="presentation"><input type="text" class="form-control text-center" name="folio" id="folio" value="" readonly placeholder="Folio"></li>
+						<li role="presentation" id="liNueva"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="nuevaCotizacion" title="Crear nueva cotización"><i class="fa fa-file-o"></i> <font class="hidden-xs">Nueva</font></button></li>
+						<li role="presentation" id="liAbrir"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="abrirCotizacion" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o"></i> <font class="hidden-xs">Abrir...</font></button></li>
+						<li role="presentation" id="liGuardar"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o"></i> <font class="hidden-xs">Guardar</font></button></li>
+						<li role="presentation" id="liAutorizar"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización" id="btnAutorizar"><i class="fa fa-unlock"></i> <font class="hidden-xs">Autorizar</font></button></li>
+						<li role="presentation" id="liRechazar"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-danger" title="Rechazar uso de la cotización" id="btnRechazar"><i class="fa fa-close"></i> <font class="hidden-xs">Rechazar</font></button></li>
 						<li role="presentation" id="liImprimir">
 							<button type="button" id="btnImprimir" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" title="Imprimir cotización (Guarda cambios antes de imprimir)"><i class="fa fa-file-pdf-o"></i> <font class="hidden-xs">Imprimir</font></button>
+							<li role="presentation" id="liEstatus"></li>
 						</li>
-						<li role="presentation"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-warning" title="Rechazar uso de la cotización"><i class="fa fa-close"></i> <font class="hidden-xs">Rechazar</font></button></li>
 					</ul>
 				</div>
 			</div>
@@ -175,14 +177,7 @@
 										<th id="stUsdPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
-										<th colspan="7" rowspan="3"><label id="terminosVenta"></label></th>
-										<th colspan="2" class="text-right">Subtotal Mxn</th>
-										<th id="stMxpPrecioPDD" class="text-right"></th>
-										<th></th>
-										<th id="stMxpPrecioRAD" class="text-right"></th>
-										<th id="stMxpPrecioRDD" class="text-right"></th>
-									</tr>
-									<tr>
+										<th colspan="7" rowspan="3"><label id="observaciones"></label></th>
 										<th class="text-right">Descuento</th>
 										<th class="text-right"><label id="descuento">0</label></th>
 										<th id="descuentoPrecioPDD" class="text-right"></th>
@@ -191,14 +186,13 @@
 										<th id="descuentoPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
-										<th colspan="2" class="text-right">Subtotal Mxn DD</th>
+										<th colspan="2" class="text-right">Subtotal Usd DD</th>
 										<th id="stPrecioPDD" class="text-right"></th>
 										<th></th>
 										<th id="stPrecioRAD" class="text-right"></th>
 										<th id="stPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
-									<th colspan="7" rowspan="2"><label id="observaciones"></label></th>
 										<th class="text-right">Impuestos</th>
 										<th class="text-right"><label id="impuestos">16</label></th>
 										<th id="ivaPrecioPDD" class="text-right"></th>
@@ -207,6 +201,7 @@
 										<th id="ivaPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
+										<th colspan="7" rowspan="2"><label id="terminosVenta"></label></th>
 										<th colspan="2" class="text-right">Total</th>
 										<th id="totalPrecioPDD" class="text-right"></th>
 										<th></th>
@@ -214,9 +209,15 @@
 										<th id="totalPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
-										<th colspan="7"></th>
 										<th colspan="2" class="text-right">Utilidad Bruta(%)</th>
 										<th colspan="4" id="utilidad" class="text-right"></th>
+									</tr>
+									<tr class="hidden">
+										<th colspan="2" class="text-right">Subtotal Mxn</th>
+										<th id="stMxpPrecioPDD" class="text-right"></th>
+										<th></th>
+										<th id="stMxpPrecioRAD" class="text-right"></th>
+										<th id="stMxpPrecioRDD" class="text-right"></th>
 									</tr>
 									<tr>
 										<th colspan="13" id="faltantes"></th>
@@ -229,7 +230,7 @@
 			</div>
 
 			<!-- Panel para cargar las imagenes que se anexaran a la cotizacion -->
-			<div class="row">
+			<div class="row" id="rowCargaImg">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel"">
 						<div class="x_title">
@@ -247,8 +248,8 @@
 				</div>
 			</div>
 
-			<!-- Panel para cargar las imagenes que se anexaran a la cotizacion -->
-			<div class="row">
+			<!-- Panel de la galeria de las imagenes de la cotizacion -->
+			<div class="row" id="rowGaleria">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel"">
 						<div class="x_title">
@@ -385,6 +386,15 @@
 					<span class="input-group-addon"><i class="fa fa-calendar"></i> <font class="hidden-xs hidden-sm">Hasta</font></span>
 					<input type="text" class="form-control text-center simple-dp" name="inputff" id="inputff"  readonly placeholder="Hasta">
 				</div>
+			</div>
+			<div class="col-xs-6 col-sm-3 col-md-2 col-lg-2">
+				<select class="form-control input-sm" name="estatusCot" id="estatusCot">
+					<option value="">Estatus...</option>
+					<option value="A">Abiertas</option>
+					<option value="B">Autorizadas</option>
+					<option value="C">Rechazadas</option>
+					<option value="D">Cerradas</option>
+				</select>
 			</div>
 			<div class="col-xs-6 col-sm-1 col-md-1 col-lg-2">
 				<button type="button" class="btn btn-warning btn-sm btn-block" id="filtrarCotizaciones" title="Buscar Cotizaciones acorde a los parametros proporcionados" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-filter"></i> <font class="hidden-sm hidden-md">Buscar</font></button>
