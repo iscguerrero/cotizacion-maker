@@ -349,7 +349,8 @@ class Cotizador extends Base_Controller {
 					'replicas' => $partida['replicas'],
 					'precioReplicaAD' => $partida['precioReplicaAD'],
 					'precioReplicaDD' => $partida['precioReplicaDD'],
-					'estatus' => 'A'
+					'estatus' => 'A',
+					'partida_armado' => $partida['partida_armado']
 				);
 				$this->partidas_cotizacion_bulk->altaPartida($data);
 			}

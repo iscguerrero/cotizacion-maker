@@ -698,13 +698,23 @@ $(document).ready(function(){
 
 		utilidad = (totalPrecioRDD * 100 / costo_total) - 100;
 
-		if((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
-			$('#liImprimir').hide();
-			$('#rowMsj').show();
-		} else {
+		/*if(window.estatus == 'A' || window.estatus == 'B' || window.estatus == 'D') {
 			$('#liImprimir').show();
 			$('#rowMsj').hide();
-		}
+		} else {*/
+			if((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
+				if( window.estatus == 'B' ) {
+					$('#liImprimir').show();
+					$('#rowMsj').hide();
+				} else {
+					$('#liImprimir').hide();
+					$('#rowMsj').show();
+				}
+			} else {
+				$('#liImprimir').show();
+				$('#rowMsj').hide();
+			}
+		//}
 
 		stMxpPrecioPDD = stUsdPrecioPDD * tc;
 		stMxpPrecioRAD = stUsdPrecioRAD * tc;
@@ -799,7 +809,7 @@ $(document).ready(function(){
 					$('#modalCotizaciones').modal('hide');
 					$('#rowCargar').hide();
 					strig = '';
-
+					window.estatus = en.estatus;
 					if( en.estatus == 'A' ) {
 						$('#liGuardar').show();
 						$('#liAutorizar').show();

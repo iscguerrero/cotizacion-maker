@@ -11,7 +11,7 @@
 		function Footer() {
 			$this->setY(-17);
 			$this->SetFont('Courier', '', 8);
-			$this->MultiCell(0, 3, utf8_decode("TRILOGIC MÉXICO SA DE CV TRI051027UQ1"), 0, 'C', false);
+			$this->MultiCell(0, 3, utf8_decode("TRILOGIQ MÉXICO SA DE CV TRI051027UQ1"), 0, 'C', false);
 			$this->MultiCell(0, 3, utf8_decode("Nezahualcoyotl #40, col. Cumbres de Conín, El Marques, Querétaro, C.P. 76246 México "), 0, 'C', false);
 			$this->MultiCell(0, 3, utf8_decode("Lugar de Expedición QUERETARO"), 0, 'C', false);
 		}
