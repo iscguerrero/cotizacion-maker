@@ -99,6 +99,13 @@ class Cotizador extends Base_Controller {
 		if(count($imagenes) > 0) {
 			$this->paginaImagenes($pdf, $encabezado, $imagenes, 0);
 		}
+
+		# Se incluye la página de términos y condiciones
+			$this->load->model('terminosycondiciones');
+			$terminos = $this->terminosycondiciones->obtenerRegistros('A', 'tyc');
+			$observaciones = $this->terminosycondiciones->obtenerRegistros('A', 'obs');
+			$this->paginaTerminos($pdf, $encabezado, $terminos, $observaciones);
+
 		$pdf->Output();
 	}
 
@@ -109,36 +116,32 @@ class Cotizador extends Base_Controller {
 		# Cuadro superior izquierda
 			$pdf->RoundedRect(15, 30, 95, 5, 1, 'DF', '12');
 			$pdf->RoundedRect(15, 35, 95, 25, 1, 'D', '');
-			$pdf->RoundedRect(15, 60, 95, 5, 1, 'DF', '');
-			$pdf->RoundedRect(15, 65, 95, 5, 1, 'D', '34');
 
 		# Cuadro superior derecho
 			$pdf->RoundedRect(115, 30, 95, 5, 1, 'DF', '12');
 			$pdf->RoundedRect(115, 35, 25, 5, 1, 'D', '');
 			$pdf->RoundedRect(140, 35, 35, 5, 1, 'D', '');
 			$pdf->RoundedRect(175, 35, 35, 5, 1, 'D', '');
+
 			$pdf->RoundedRect(115, 40, 95, 5, 1, 'DF', '');
-			$pdf->RoundedRect(115, 45, 95, 25, 1, 'D', '34');
+			$pdf->RoundedRect(115, 45, 95, 5, 1, 'D', '34');
+
 
 		# Cuadro inferior donde ira el contenido de la cotizacion
-			$pdf->RoundedRect(15, 75, 195, 5, 1, 'DF', '12');
-			$pdf->RoundedRect(15, 80, 195, 125, 1, 'D', '34');
+			$pdf->RoundedRect(15, 65, 195, 5, 1, 'DF', '12');
+			$pdf->RoundedRect(15, 70, 195, 135, 1, 'D', '34');
 
 		# Pintamos las partidas de la orden de compra
-			$pdf->Line(25, 80, 25, 205);
-			$pdf->Line(45, 80, 45, 205);
-			$pdf->Line(117, 80, 117, 205);
-			$pdf->Line(142, 80, 142, 205);
-			$pdf->Line(163, 80, 163, 205);
-			$pdf->Line(185, 80, 185, 205);
+			$pdf->Line(25, 70, 25, 205);
+			$pdf->Line(45, 70, 45, 205);
+			$pdf->Line(117, 70, 117, 205);
+			$pdf->Line(142, 70, 142, 205);
+			$pdf->Line(163, 70, 163, 205);
+			$pdf->Line(185, 70, 185, 205);
 
 		# Firmas de pie de página
-			$pdf->Line(20, 220, 80, 220);
-			$pdf->Line(90, 220, 150, 220);
-
-		# Cuadros de terminos y condiciones
-			$pdf->RoundedRect(15, 224.5, 140, 15.5, 1, 'D', '1');
-			$pdf->RoundedRect(15, 240, 195, 20, 1, 'D', '4');
+			$pdf->Line(20, 240, 80, 240);
+			$pdf->Line(90, 240, 150, 240);
 
 		# Cuadro totales
 			$pdf->RoundedRect(155, 205, 55, 35, 1, 'D', '');
@@ -152,21 +155,20 @@ class Cotizador extends Base_Controller {
 			$pdf->SetTextColor(0, 0, 0);
 			$pdf->SetFont('Courier', 'B', 11);
 			$pdf->setXY(15, 30); $pdf->Cell(95, 5, utf8_decode('Información del cliente'), 0, 0, 'L', false);
-			$pdf->setXY(15, 60); $pdf->Cell(95, 5, 'Representante de ventas', 0, 0, 'L', false);
 			$pdf->setXY(115, 30); $pdf->Cell(25, 5, 'T. C.', 0, 0, 'C', false);
 			$pdf->setXY(140, 30); $pdf->Cell(35, 5, 'Folio', 0, 0, 'C', false);
 			$pdf->setXY(175, 30); $pdf->Cell(35, 5, 'Fecha', 0, 0, 'C', false);
-			$pdf->setXY(115, 40); $pdf->Cell(95, 5, utf8_decode('Observaciones'), 0, 0, 'L', false);
+			$pdf->setXY(115, 40); $pdf->Cell(95, 5, utf8_decode('Representante de Ventas'), 0, 0, 'L', false);
 
 		# Leyendas del formato / partidas
 			$pdf->SetFont('Courier', 'B', 10);
-			$pdf->setXY(15, 75); $pdf->Cell(10, 5, '#', 1, 0, 'C', false);
-			$pdf->Cell(20, 5, utf8_decode('Código'), 1, 0, 'C', false);
-			$pdf->Cell(72, 5, utf8_decode('Descripción'), 1, 0, 'L', false);
-			$pdf->Cell(25, 5, 'Precio U.', 1, 0, 'R', false);
-			$pdf->Cell(21, 5, 'Cantidad', 1, 0, 'R', false);
-			$pdf->Cell(22, 5, 'Descuento', 1, 0, 'R', false);
-			$pdf->Cell(25, 5, 'Total', 1, 1, 'R', false);
+			$pdf->setXY(15, 65); $pdf->Cell(10, 5, '#', 0, 0, 'C', false);
+			$pdf->Cell(20, 5, utf8_decode('Código'), 0, 0, 'C', false);
+			$pdf->Cell(72, 5, utf8_decode('Descripción'), 0, 0, 'L', false);
+			$pdf->Cell(25, 5, 'Precio U.', 0, 0, 'R', false);
+			$pdf->Cell(21, 5, 'Cantidad', 0, 0, 'R', false);
+			$pdf->Cell(22, 5, 'Descuento', 0, 0, 'R', false);
+			$pdf->Cell(25, 5, 'Total', 0, 0, 'R', false);
 
 		# Leyendas del pie de página
 			$pdf->SetFont('Courier', 'B', 9);
@@ -183,24 +185,18 @@ class Cotizador extends Base_Controller {
 			$pdf->Cell(95, 5, utf8_decode('Contacto: ' . $encabezado->nombre_contacto), 0, 1, 'L', false);
 			$pdf->Cell(95, 5, utf8_decode('Telelefono: '.$encabezado->telefono), 0, 1, 'L', false);
 			$pdf->Cell(95, 5, utf8_decode('Correo: '. $encabezado->correo), 0, 1, 'L', false);
-			$pdf->Ln(5);
-			$pdf->Cell(95, 5, utf8_decode($encabezado->representante_ventas == 'Representante de Ventas' ? '' : utf8_decode($encabezado->representante_ventas)), 0, 0, 'L', false);
 
 			$pdf->setXY(115, 35); $pdf->Cell(25, 5, utf8_decode($encabezado->tipo_cambios), 0, 0, 'C', false);
 			$pdf->Cell(35, 5, str_pad($encabezado->folio, '0', STR_PAD_LEFT), 0, 0, 'C', false);
 			$pdf->Cell(35, 5, utf8_decode($encabezado->ffecha), 0, 1, 'C', false);
-			$pdf->Ln();
-			$pdf->setX(115); $pdf->MultiCell(95, 3, utf8_decode($encabezado->observaciones == 'Observaciones' ? '' : $encabezado->observaciones), 0, 'J', false);
+			$pdf->Ln(6);
+			$pdf->setX(115); $pdf->MultiCell(95, 3, utf8_decode($encabezado->representante_ventas == 'Representante de Ventas' ? '' : utf8_decode($encabezado->representante_ventas)), 0, 'J', false);
 
-			$pdf->setXY(20, 215); $pdf->Cell(60, 5, $encabezado->representante_ventas == 'Representante de Ventas' ? '' : utf8_decode($encabezado->representante_ventas), 0, 0, 'C', false);
-			$pdf->setXY(20, 220); $pdf->Cell(60, 5, 'Representante de ventas', 0, 0, 'C', false);
-			$pdf->setXY(90, 220); $pdf->Cell(60, 5, 'Vo. Bo.', 0, 0, 'C', false);
+			$pdf->setXY(20, 235); $pdf->Cell(60, 5, $encabezado->representante_ventas == 'Representante de Ventas' ? '' : utf8_decode($encabezado->representante_ventas), 0, 0, 'C', false);
+			$pdf->setXY(20, 240); $pdf->Cell(60, 5, 'Representante de ventas', 0, 0, 'C', false);
+			$pdf->setXY(90, 240); $pdf->Cell(60, 5, 'Vo. Bo.', 0, 0, 'C', false);
 
-			$pdf->SetFont('Courier', '', 8);
-			$pdf->setXY(15, 225); $pdf->MultiCell(130, 3, utf8_decode('Términos y condiciones de venta: ') . utf8_decode($encabezado->terminos_y_condiciones == 'Términos y Condiciones de Venta' ? '' : $encabezado->terminos_y_condiciones), 0, 'J', false);
-
-			$pdf->setXY(15, 240); $pdf->MultiCell(195, 3, utf8_decode('Lineamientos generales: Integer vitae mi id lorem lobortis consectetur a nec nunc. Pellentesque semper augue non efficitur dictum. Mauris pharetra diam sit amet nulla luctus, vel condimentum ipsum ornare. Sed ut magna non justo tincidunt aliquam. Praesent luctus, metus ut dapibus volutpat, urna nibh vehicula erat, non vulputate magna metus in ligula. Fusce non ornare ligula, non placerat mi. Vivamus imperdiet elementum magna, in interdum massa. Integer pretium elit nec gravida venenatis. Proin aliquam justo laoreet tortor mollis scelerisque iaculis a tortor. Integer nisi nulla, tristique a vehicula tincidunt, feugiat quis purus. Praesent sed tellus lacus.'), 0, 'J', false);
-
+			# Totales de la cotizacion
 			$pdf->SetFont('Courier', 'B', 9);
 			$pdf->setXY(155, 205); $pdf->Cell(55, 7, number_format($encabezado->stUsdPrecioRDD, 2), 1, 0, 'R', false);
 			$pdf->setXY(155, 212); $pdf->Cell(55, 7, number_format($encabezado->descuentost, 2), 1, 0, 'R', false);
@@ -213,7 +209,7 @@ class Cotizador extends Base_Controller {
 			$pdf->SetFont('Courier', '', 9);
 			$pdf->SetWidths(array(10, 20, 72, 25, 21, 22, 25));
 			$pdf->SetAligns(array('C', 'C', 'L', 'R', 'R', 'R', 'R'));
-			$pdf->setXY(15, 80);
+			$pdf->setXY(15, 70);
 			foreach ($partidas as $key => $partida) {
 				$pdf->Row(array(($partida->no_partida)*1, utf8_decode($partida->cve_art), utf8_decode($partida->descripcion), number_format($partida->precioPiezaAD, 2), $partida->replicas, number_format($partida->descuento, 1) . ' %', number_format($partida->precioReplicaDD, 2)));
 				unset($partidas[$key]);
@@ -254,6 +250,47 @@ class Cotizador extends Base_Controller {
 		if(count($imagenes) > 0) {
 			$this->paginaImagenes($pdf, $encabezado, $imagenes, $key);
 		}
+	}
+
+	# Funcion para cargar la pagina de terminos y condiciones de venta
+	public function paginaTerminos($pdf, $encabezado, $terminos, $observaciones) {
+		$pdf->AddPage();
+		$pdf->SetAutoPageBreak(true, 17);
+		$pdf->SetMargins(15, 35 , 15);
+
+		$pdf->SetFont('Courier', 'B', 12);
+		$pdf->setXY(16, 30); $pdf->Cell(0, 5, utf8_decode('Términos y condiciones de venta'), 0, 1, 'C', false);
+		$tipo = '';
+		foreach($terminos as $termino) {
+			if($termino->tipo != $tipo) {
+				$pdf->SetFont('Courier', 'B', 10);
+				$pdf->Cell(0, 5, utf8_decode($termino->tipo), 0, 1, 'L', false);
+			}
+			$pdf->SetFont('Courier', '', 9);
+			$pdf->MultiCell(0, 4, '		-' . utf8_decode($termino->redaccion), 0, 'J', false);
+			$tipo = $termino->tipo;
+		}
+		$pdf->Ln();
+		$pdf->SetFont('Courier', 'B', 12);
+		$pdf->Cell(0, 5, utf8_decode('Observaciones generales'), 0, 1, 'C', false);
+					$pdf->SetFont('Courier', '', 9);
+		foreach($observaciones as $observacion) {
+			$pdf->MultiCell(0, 4, '	- ' . utf8_decode($observacion->redaccion), 0, 'J', false);
+			$tipo = $termino->tipo;
+		}
+
+		$pdf->Ln();
+		$pdf->SetFont('Courier', 'B', 12);
+		$pdf->Cell(0, 5, utf8_decode('Términos y condiciones específicas de la cotización ' . $encabezado->folio), 0, 1, 'C', false);
+		$pdf->SetFont('Courier', '', 9);
+		$pdf->MultiCell(0, 4, utf8_decode($encabezado->terminos_y_condiciones == 'Términos y Condiciones de Venta' ? '' : $encabezado->terminos_y_condiciones), 0, 'J', false);
+
+		$pdf->Ln();
+		$pdf->SetFont('Courier', 'B', 12);
+		$pdf->Cell(0, 5, utf8_decode('Observaciones específicas de la cotización ' . $encabezado->folio), 0, 1, 'C', false);
+		$pdf->SetFont('Courier', '', 9);
+		$pdf->MultiCell(0, 4, utf8_decode($encabezado->observaciones == 'Observaciones' ? '' : $encabezado->observaciones), 0, 'J', false);
+
 	}
 
 	# Metodo para guardar los cambios en la cotizacion

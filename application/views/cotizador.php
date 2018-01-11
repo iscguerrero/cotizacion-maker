@@ -19,7 +19,6 @@
 	</head>
 	<body style="padding-right: 0 !important">
 		<div class="container-fluid" style="max-width: 1200px">
-
 			<!-- Lista de Acciones sobre la cotizacion -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -38,6 +37,7 @@
 					</ul>
 				</div>
 			</div>
+
 			<div class="row" id="rowMsj">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<strong style="color: red">Cotizaciones con descuentos mayores a 15% deben ser aprobados para su impresión</strong>
@@ -126,6 +126,12 @@
 											<label for="correo">Correo</label>
 											<input type="text" class="form-control" name="correo" id="correo" readonly>
 										</div>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-xs-12 text-right">
+										<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo cliente o prospecto" id="btnCliente"><i class="fa fa-user-plus"></i> Alta Cliente</button>
+										<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo contacto" id="btnContacto"><i class="fa fa-phone"></i> Alta Contacto</button>
 									</div>
 								</div>
 							</div>
@@ -318,21 +324,6 @@
 			</div>
 		</div>
 
-		<!-- Modal para bloquear la vista mientras se realizan peticiones ajax al servidor -->
-		<div id="modalAlert" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-sm">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-						<h4 class="modal-title">Mensaje del sistema</h4>
-					</div>
-					<div class="modal-body">
-						<strong id="msjAlert"></strong>
-					</div>
-				</div>
-			</div>
-		</div>
-
 		<!-- Toolbar para la tabla de previsualizacion de la vista -->
 		<div id="toolbar">
 			<div class="row form-inline">
@@ -401,6 +392,150 @@
 			</div>
 		</div>
 
+		<!-- Modal para dar de alta un cliente -->
+		<div id="modalCliente" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+						<h4 class="modal-title">Cliente</h4>
+					</div>
+					<form method="POST" action="#" id="formCrudCliente" class="form-horizontal form-label-left input_mask">
+						<div class="modal-body">
+							<div class="row">
+								<div class="col-xs-6">
+									<label for="inEmpresa">Empresa</label>
+									<div class="input-group">
+										<span class="input-group-btn"><button type="button" class="btn btn-default" id="btnId">ID Cliente</button></span>
+										<input type="text" class="form-control" name="inEmpresa" id="inEmpresa" placeholder="Nombre Empresa">
+									</div>
+									<div class="form-group">
+										<label for="inEstatus">Estatus</label>
+										<select name="inEstatus" id="inEstatus" class="form-control"></select>
+									</div>
+									<div class="form-group">
+										<label for="inRFC">RFC</label>
+										<input type="text" class="form-control" name="inRFC" id="inRFC">
+									</div>
+									<div class="form-group">
+										<label for="inTelefono">Teléfono</label>
+										<input type="text" class="form-control" name="inTelefono" id="inTelefono">
+									</div>
+									<div class="form-group">
+										<label for="inCorreo">Correo</label>
+										<input type="text" class="form-control" name="inCorreo" id="inCorreo">
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label for="inEstado">Estado</label>
+										<select name="inEstado" id="inEstado" class="form-control"></select>
+									</div>
+									<div class="form-group">
+										<label for="inMunicipio">Municipio</label>
+										<select name="inMunicipio" id="inMunicipio" class="form-control"></select>
+									</div>
+									<div class="form-group">
+										<label for="inColonia">Colonia</label>
+										<input type="text" class="form-control" name="inColonia" id="inColonia">
+									</div>
+									<div class="form-group">
+										<label for="inCP">Código Postal</label>
+										<input type="text" class="form-control" name="inCP" id="inCP">
+									</div>
+									<div class="form-group">
+										<label for="inDirección">Dirección</label>
+										<textarea class="form-control" name="inDireccion" id="inDireccion" rows="2"></textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+							<button type="submit" class="btn btn-success" id="confirmarAltaCliente"><i class="fa fa-send"></i> Guardar</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal para dar de alta un contacto -->
+		<div id="modalContacto" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+						<h4 class="modal-title">Alta Contacto</h4>
+					</div>
+					<form method="POST" action="#" id="formContacto">
+						<div class="modal-body">
+							<div class="row">
+								<div class="col-xs-12">
+									<div class="row">
+										<div class="col-xs-6">
+											<div class="form-group">
+												<label for="icIdEmpresa">ID Empresa</label>
+												<input type="text" class="form-control" name="icIdEmpresa" id="icIdEmpresa" readonly>
+											</div>
+										</div>
+										<div class="col-xs-6">
+											<div class="form-group">
+												<label for="icIdContacto">ID Contacto</label>
+												<input type="text" class="form-control" name="icIdContacto" id="icIdContacto" readonly>
+											</div>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="icEmpresa">Empresa</label>
+										<input type="text" class="form-control" name="icEmpresa" id="icEmpresa">
+									</div>
+									<div class="form-group">
+										<label for="icContacto">Contacto</label>
+										<input type="text" class="form-control" name="icContacto" id="icContacto">
+									</div>
+									<div class="form-group">
+										<label for="icTelefono">Teléfono</label>
+										<input type="text" class="form-control" name="icTelefono" id="icTelefono">
+									</div>
+									<div class="form-group">
+										<label for="icCorreo">Correo</label>
+										<input type="text" class="form-control" name="icCorreo" id="icCorreo">
+									</div>
+									<div class="form-group">
+										<label for="icTipoContacto">Tipo contacto</label>
+										<select name="icTipoContacto" id="icTipoContacto" class="form-control"></select>
+									</div>
+									<div class="form-group">
+										<label for="icArea">Área</label>
+										<input type="text" name="icArea" id="icArea" class="form-control">
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+							<button type="submit" class="btn btn-success"><i class="fa fa-send"></i> Guardar</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal para bloquear la vista mientras se realizan peticiones ajax al servidor -->
+		<div id="modalAlert" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+						<h4 class="modal-title">Mensaje del sistema</h4>
+					</div>
+					<div class="modal-body">
+						<strong id="msjAlert"></strong>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<script src="<?php echo base_url('resources/jquery/dist/jquery.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap/dist/js/bootstrap.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/jquery-ui/jquery-ui.min.js')?>"></script>
@@ -416,5 +551,6 @@
 		<script src="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.js')?>"></script>
 		<script src="<?php echo base_url('/public/js/custom.js')?>"></script>
 		<script src="<?php echo base_url('/public/js/cotizador.js')?>"></script>
+		<script src="<?php echo base_url('/public/js/clientes.js')?>"></script>
 	</body>
 </html>
