@@ -77,11 +77,8 @@ class Clientes extends Base_Controller {
 		$this->load->model('Cliente');
 		$this->db->trans_start();
 
-		if( count($this->Cliente->VerificarRfc($data['inRFC'])) > 0 ) exit(json_encode(array('bandera'=>false, 'msj'=>'El rfc proporcionado ya se encuentra registrado en el sistema')));
-
 		if( $data['id'] == 'ID Cliente' ) {
-			#$cliente = $this->Cliente->ObtenerId();
-			#$data['id'] = $cliente->id;
+			if( count($this->Cliente->VerificarRfc($data['inRFC'])) > 0 ) exit(json_encode(array('bandera'=>false, 'msj'=>'El rfc proporcionado ya se encuentra registrado en el sistema')));
 			$this->Cliente->AltaCliente($data);
 		} else {
 			$this->Cliente->EditarCliente($data);
@@ -143,6 +140,22 @@ class Clientes extends Base_Controller {
 		$this->db->trans_complete();
 
 		$this->db->trans_status() === FALSE ? exit(json_encode(array('bandera'=>false, 'msj'=>'Se presento un error al ejecutar la operación'))) : exit(json_encode(array('bandera'=>true, 'msj'=>'La operación se realizó con éxito')));
+	}
+	# Metodo para obtener la lista de contactos de una empresa
+	public function ObtenerContactos() {
+		if(!$this->input->is_ajax_request()) show_404();
+		$this->load->model('Cliente');
+		$response = $this->Cliente->ObtenerContactos($this->input->post('idempresa'));
+		exit(json_encode($response));
+	}
+	# Metodo para obtener un contacto con su id
+	# Metodo usado para obtener los datos del autocomplete del contacto
+	public function ObtenerContactoByID(){
+		if(!$this->input->is_ajax_request()) show_404();
+		# Cargamos el modelo para obtener los datos del contacto
+			$this->load->model('Cliente');
+			$response = $this->Cliente->ObtenerContactoByID($this->input->post('contacto'));
+		exit(json_encode($response));
 	}
 
 }

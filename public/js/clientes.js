@@ -11,6 +11,13 @@ $(document).ready(function () {
 		minLength: 3,
 		select: function (evt, ui) {
 			setearClienteEdit(ui.item);
+			setearContactos(ui.item);
+		}
+	});
+	// Cargar la información básica del contacto cuando se selecciona del combo del formulario del cliente
+	$('#innContacto').change(function () {
+		if ($(this).val() != '') {
+			setearContactoCliente($(this).val());
 		}
 	});
 	// Configuracion del autocomplete de empresa en el formulario de contacto
@@ -55,6 +62,8 @@ $(document).ready(function () {
 	$('#modalCliente').on('hidden.bs.modal', function (e) {
 		var data = { id: 'ID Cliente', value: '', estatus: '', rfc: '', telefono: '', mail: '', estado: 0, municipio: 0, colonia: '', direccion: '' }
 		setearClienteEdit(data);
+		$('#innContacto').empty();
+		$('#innTelefono, #innCorreo, #innArea').val('');
 	});
 	// Resetear el formulario al cerrar el modal del contacto
 	$('#modalContacto').on('hidden.bs.modal', function (e) {
@@ -77,6 +86,43 @@ function setearClienteEdit(data) {
 	$('#inColonia').val(data.colonia);
 	$('#inCP').val(data.cp);
 	$('#inDireccion').val(data.direccion);
+}
+
+// Funcion para setear la lista de contactos de la empresa seleccionada
+function setearContactos(cliente) {
+	$.ajax({
+		type: 'POST',
+		url: 'Clientes/ObtenerContactos',
+		dataType: 'json',
+		data: {idempresa: cliente.id},
+		async: false,
+		success: function (response) {
+			if (response.length > 0) {
+				$('#innContacto').empty().append("<option value=''>Selecciona...</option>");
+				$.each(response, function (index, item) {
+					$('#innContacto').append("<option value=" + item.intidcontacto + ">" + item.strnombre + "</option>");
+				});
+			}
+		}
+	});
+}
+
+// Funcion para setear la información del contacto en el formulario del cliente
+function setearContactoCliente(contacto) {
+	$.ajax({
+		type: 'POST',
+		url: 'Clientes/ObtenerContactoByID',
+		dataType: 'json',
+		data: { contacto: contacto },
+		async: false,
+		success: function (response) {
+		//	if (response.length > 0) {
+				$('#innTelefono').val(response.strtelefono1);
+				$('#innCorreo').val(response.stremail);
+				$('#innArea').val(response.strcampo1);
+	//		}
+		}
+	});
 }
 
 // Funcion para cargar la lista de posibles estatus del cliente

@@ -19,6 +19,7 @@
 	</head>
 	<body style="padding-right: 0 !important">
 		<div class="container-fluid" style="max-width: 1200px">
+
 			<!-- Lista de Acciones sobre la cotizacion -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -38,7 +39,8 @@
 				</div>
 			</div>
 
-			<div class="row" id="rowMsj">
+			<!-- Mensaje de alerta sobre el descuento sobre la cotizacion -->
+			<div class="row hidden" id="rowMsj">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<strong style="color: red">Cotizaciones con descuentos mayores a 15% deben ser aprobados para su impresión</strong>
 				</div>
@@ -48,18 +50,33 @@
 			<!-- Panel para mostrar los datos del cliente -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-					<div class="x_panel"">
+					<div class="x_panel">
 						<form method="POST" action="#" id="formCliente">
 							<div class="x_title">
-								<h2>Datos del cliente</h2>
+								<h2>Detalles del cliente</h2>
 								<ul class="nav navbar-right panel_toolbox">
-									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-									</li>
+									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
 								</ul>
-								<input type="text" class="form-control autocomplete" name="nombre" id="nombre" placeholder="Buscar por nombre de cliente" autofocus >
 								<div class="clearfix"></div>
 							</div>
 							<div class="x_content">
+								<div class="row">
+									<div class="col-xs-3">
+										<label for="tipoCotizacion">Tipo Cotizacion</label>
+										<select class="form-control" name="tipoCotizacion" id="tipoCotizacion" autofocus >
+											<?php
+												foreach($tipos as $key => $item) {
+													echo "<option value=".$item['value'].">".$item['text']."</option>";
+												}
+											?>
+										</select>
+									</div>
+									<div class="col-xs-9">
+										<label for="nombre">Nombre</label>
+										<input type="text" class="form-control autocomplete" name="nombre" id="nombre" placeholder="Buscar por nombre de cliente" readonly>
+									</div>
+								</div>
+								<hr>
 								<div class="row">
 									<div class="col-xs-12 col-sm-9 col-md-6">
 										<div class="form-group">
@@ -130,8 +147,8 @@
 								</div>
 								<div class="row">
 									<div class="col-xs-12 text-right">
-										<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo cliente o prospecto" id="btnCliente"><i class="fa fa-user-plus"></i> Alta Cliente</button>
-										<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo contacto" id="btnContacto"><i class="fa fa-phone"></i> Alta Contacto</button>
+										<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo cliente o prospecto" id="btnCliente"><i class="fa fa-user-plus"></i> Cliente</button>
+										<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo contacto" id="btnContacto"><i class="fa fa-phone"></i> Contacto</button>
 									</div>
 								</div>
 							</div>
@@ -143,7 +160,7 @@
 			<!-- Panel para cargar la cotizacion en formato xls -->
 			<div class="row" id="rowCargar">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-					<div class="x_panel"">
+					<div class="x_panel">
 						<div class="x_title">
 							<h2>Cargar archivo de cotización</i></h2>
 							<ul class="nav navbar-right panel_toolbox">
@@ -162,7 +179,7 @@
 			<!-- Panel para previsualizar la cotizacion proporcionada en el archivo de excel -->
 			<div class="row">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-					<div class="x_panel"">
+					<div class="x_panel">
 						<div class="x_title">
 							<h2>Pre visualizacion</h2>
 							<ul class="nav navbar-right panel_toolbox">
@@ -238,7 +255,7 @@
 			<!-- Panel para cargar las imagenes que se anexaran a la cotizacion -->
 			<div class="row" id="rowCargaImg">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-					<div class="x_panel"">
+					<div class="x_panel">
 						<div class="x_title">
 							<h2>Cargar imágenes</i></h2>
 							<ul class="nav navbar-right panel_toolbox">
@@ -257,7 +274,7 @@
 			<!-- Panel de la galeria de las imagenes de la cotizacion -->
 			<div class="row" id="rowGaleria">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-					<div class="x_panel"">
+					<div class="x_panel">
 						<div class="x_title">
 							<h2>Imágenes en la cotización</i></h2>
 							<ul class="nav navbar-right panel_toolbox">
@@ -351,23 +368,13 @@
 						<input type="text" class="form-control text-right" id="std" value="0">
 					</div>
 				</div>
-				<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
-					<div class="input-group input-group-sm">
-					<div class="checkbox">
-						<label><input type="checkbox" name="tipo" id="tipo"> Armado</label>
-					</div>
-					</div>
-				</div>
-			</div>
-			<div class="row" id="divArmado">
-					<textarea class="form-control" rows="1" id="taArmado" name="taArmado" placeholder="Proporciona la descripción del producto armado"></textarea>
 			</div>
 		</div>
 
 		<!-- Toolbar para la tabla de historico de cotizaciones -->
 		<div class="row" id="toolbarCotizaciones">
 			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
-				<div class="input-group input-group-sm"">
+				<div class="input-group input-group-sm">
 					<span class="input-group-addon"><i class="fa fa-calendar"></i> <font class="hidden-xs hidden-sm">Desde</font></span>
 					<input type="text" class="form-control text-center simple-dp" name="inputfi" id="inputfi" readonly placeholder="Desde">
 				</div>
@@ -400,8 +407,8 @@
 						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 						<h4 class="modal-title">Cliente</h4>
 					</div>
-					<form method="POST" action="#" id="formCrudCliente" class="form-horizontal form-label-left input_mask">
-						<div class="modal-body">
+					<div class="modal-body">
+						<form method="POST" action="#" id="formCrudCliente" class="form-horizontal form-label-left input_mask">
 							<div class="row">
 								<div class="col-xs-6">
 									<label for="inEmpresa">Empresa</label>
@@ -410,51 +417,92 @@
 										<input type="text" class="form-control" name="inEmpresa" id="inEmpresa" placeholder="Nombre Empresa">
 									</div>
 									<div class="form-group">
-										<label for="inEstatus">Estatus</label>
-										<select name="inEstatus" id="inEstatus" class="form-control"></select>
-									</div>
-									<div class="form-group">
-										<label for="inRFC">RFC</label>
-										<input type="text" class="form-control" name="inRFC" id="inRFC">
-									</div>
-									<div class="form-group">
-										<label for="inTelefono">Teléfono</label>
-										<input type="text" class="form-control" name="inTelefono" id="inTelefono">
-									</div>
-									<div class="form-group">
-										<label for="inCorreo">Correo</label>
-										<input type="text" class="form-control" name="inCorreo" id="inCorreo">
-									</div>
-								</div>
-								<div class="col-xs-6">
-									<div class="form-group">
 										<label for="inEstado">Estado</label>
 										<select name="inEstado" id="inEstado" class="form-control"></select>
-									</div>
-									<div class="form-group">
-										<label for="inMunicipio">Municipio</label>
-										<select name="inMunicipio" id="inMunicipio" class="form-control"></select>
 									</div>
 									<div class="form-group">
 										<label for="inColonia">Colonia</label>
 										<input type="text" class="form-control" name="inColonia" id="inColonia">
 									</div>
 									<div class="form-group">
-										<label for="inCP">Código Postal</label>
-										<input type="text" class="form-control" name="inCP" id="inCP">
-									</div>
-									<div class="form-group">
 										<label for="inDirección">Dirección</label>
 										<textarea class="form-control" name="inDireccion" id="inDireccion" rows="2"></textarea>
 									</div>
 								</div>
+								<div class="col-xs-6">
+									<div class="row">
+										<div class="col-xs-6">
+											<div class="form-group">
+												<label for="inRFC">RFC</label>
+												<input type="text" class="form-control" name="inRFC" id="inRFC">
+											</div>
+										</div>
+										<div class="col-xs-6">
+											<div class="form-group">
+												<label for="inEstatus">Estatus</label>
+												<select name="inEstatus" id="inEstatus" class="form-control"></select>
+											</div>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="inMunicipio">Municipio</label>
+										<select name="inMunicipio" id="inMunicipio" class="form-control"></select>
+									</div>
+									<div class="row">
+										<div class="col-xs-6">
+											<div class="form-group">
+												<label for="inCP">Código Postal</label>
+												<input type="text" class="form-control" name="inCP" id="inCP">
+											</div>
+										</div>
+										<div class="col-xs-6">
+											<div class="form-group">
+												<label for="inTelefono">Teléfono</label>
+												<input type="text" class="form-control" name="inTelefono" id="inTelefono">
+											</div>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="inCorreo">Correo</label>
+										<input type="text" class="form-control" name="inCorreo" id="inCorreo">
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-12 text-right">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+									<button type="submit" class="btn btn-success" id="confirmarAltaCliente"><i class="fa fa-send"></i> Guardar</button>
+								</div>
+							</div>
+						</form>
+						<hr>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label for="innContacto">Contacto</label>
+									<select class="form-control" name="innContacto" id="innContacto"></select>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label for="innTelefono">Teléfono</label>
+									<input type="text" class="form-control" name="innTelefono" id="innTelefono" readonly>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label for="innCorreo">Correo</label>
+									<input type="text" class="form-control" name="innCorreo" id="innCorreo" readonly>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label for="innArea">Área</label>
+									<input type="text" class="form-control" name="innArea" id="innArea" readonly>
+								</div>
 							</div>
 						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-							<button type="submit" class="btn btn-success" id="confirmarAltaCliente"><i class="fa fa-send"></i> Guardar</button>
-						</div>
-					</form>
+					</div>
 				</div>
 			</div>
 		</div>

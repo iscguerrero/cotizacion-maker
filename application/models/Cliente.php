@@ -84,4 +84,14 @@ class Cliente extends CI_Model{
 		where intidempresa = '".$data['icIdEmpresa']."' and intidcontacto = '".$data['icIdContacto']."'");
 	}
 
+	public function ObtenerContactos($idempresa) {
+		$query = $this->db->query("SELECT TOP 1000 [intidcontacto], [intidempresa], [strnombre], [stremail], [strtelefono1], [strcampo1] FROM [cbctecnologia_trilogiq].[cbctecnologia_trilogiq].[contactos] where intidempresa = '$idempresa'");
+		return $query->result();
+	}
+
+	public function ObtenerContactoByID($contacto) {
+		$query = $this->db->query("SELECT stremail, strtelefono1, strcampo1 from [cbctecnologia_trilogiq].[contactos] where [intidcontacto] = '$contacto'");
+		return $query->row();
+	}
+
 }

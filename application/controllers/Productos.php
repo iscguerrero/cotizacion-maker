@@ -48,13 +48,13 @@ class Productos extends Base_Controller {
 		$representante_ventas = $this->input->post('representante_ventas');
 		$terminos_y_condiciones = $this->input->post('terminos_y_condiciones');
 		$observaciones = $this->input->post('observaciones');
-		$tipo_impresion = 'A';
 		$estatus  = 'A';
 		$tc = $this->input->post('tc');
 		$replica = $this->input->post('replica');
 		$std = $this->input->post('std');
 		$impuestos = $this->input->post('impuestos');
 		$descuentost = $this->input->post('descuento');
+		$tipo_impresion = $this->input->post('tipo') == 0 ? 'B' : 'A';
 
 		# Comprobamos que el nombre del cliente haya sido proporcionado
 		if($id_cliente == null || $id_cliente == '')
@@ -78,9 +78,15 @@ class Productos extends Base_Controller {
 				array_push($items, array(
 					'cve_art'=>$worksheet->getCell('A'.$row)->getValue(),
 					'piezas'=>$worksheet->getCell('B'.$row)->getValue(),
+					'precioPiezaAD'=>$worksheet->getCell('C'.$row)->getValue(),
 				));
 			}
 		}
+		$descripcionArmada = $worksheet->getCell('D2')->getValue();
+
+		if($tipo_impresion == 'A' && ($descripcionArmada == null || $descripcionArmada == ''))
+			die(json_encode(array('bandera'=>false, 'msj'=>'Es necesario proporcionar el nombre del ensamble para poder generar una cotización armada')));
+
 		$this->load->model('Producto');
 		$this->load->model('Precio');
 		$existentes = $faltantes = array();
@@ -89,15 +95,14 @@ class Productos extends Base_Controller {
 			$producto = json_decode(json_encode($this->Producto->obtenerProducto($item['cve_art'])), TRUE);
 
 			if(count($producto) > 0){
-				$precio = $this->Precio->obtenerPrecio($item['cve_art'], 2);
+				#$precio = $this->Precio->obtenerPrecio($item['cve_art'], 2);
 				array_push($existentes, array(
 					'cve_art' => $item['cve_art'],
 					'piezas' => $item['piezas'],
 					'descripcion' => $producto[0]['DESCR'],
-					'ult_costo' => $producto[0]['ULT_COSTO'],
-					'precioPiezaAD' => isset($precio[0]) ? $precio[0]->PRECIO : 0
+					'ult_costo' => $producto[0]['ULT_COSTO']
 				));
-				unset($precio);
+				#unset($precio);
 			} else{
 				array_push($faltantes, $item['cve_art']);
 			}

@@ -1,15 +1,9 @@
-$('#rowMsj').hide();
-$('#divArmado').hide();
 $(document).ready(function(){
 /*************** CARGA INICIAL DE LA INFORMACION DE LA COTIZACION ***************/
 	nuevaCotizacion();
 	folios = [];
-	$('#tipo').change(function(){
-		if($(this).is(':checked')) {
-			$('#divArmado').show();
-		} else {
-			$('#divArmado').hide();
-		}
+	$('#tipoCotizacion').change(function () {
+		$('#nombre').prop('readonly', $(this).val() != '' ? false : true);
 	});
 /*************** CONFIGURACION GENERAL DEL COMPORTAMIENTO DE LA VISTA ***************/
 // Configuracion del tooltip en la vista
@@ -126,6 +120,7 @@ $(document).ready(function(){
 		init:function(){
 			var self = this;
 			self.on('sending', function (file, xhr, formData) {
+				formData.append("tipo", $('#tipoCotizacion').val());
 				formData.append("id_cliente", $('#ID').val());
 				formData.append("nombre_cliente", $('#nombre').val());
 				formData.append("nombre_empresa", $('#nombreEmpresa').val());
@@ -148,9 +143,6 @@ $(document).ready(function(){
 				formData.append("descuento", $('#descuento').html());
 				modalAlert.modal('show');
 				$('#msjAlert').html('ESPERA UN MOMENTO POR FAVOR, CARGANDO ARCHIVO...');
-			});
-			self.on("queuecomplete", function (progress) {
-				//modalAlert.modal('hide');
 			});
 			self.on("success", function (file, response) {
 				response = JSON.parse(response);
@@ -432,6 +424,7 @@ $(document).ready(function(){
 	$('#tablaCotizaciones tbody').on('click', 'button.open', function() {
 		cargarCotizacion(window.folio);
 	});
+
 // Cerrar la cotizacion seleccionada
 	$('#tablaCotizaciones tbody').on('click', 'button.cerrar', function(e) {
 		e.preventDefault();
@@ -698,23 +691,20 @@ $(document).ready(function(){
 
 		utilidad = (totalPrecioRDD * 100 / costo_total) - 100;
 
-		/*if(window.estatus == 'A' || window.estatus == 'B' || window.estatus == 'D') {
-			$('#liImprimir').show();
-			$('#rowMsj').hide();
-		} else {*/
-			if((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
-				if( window.estatus == 'B' ) {
-					$('#liImprimir').show();
-					$('#rowMsj').hide();
-				} else {
-					$('#liImprimir').hide();
-					$('#rowMsj').show();
-				}
-			} else {
+
+		if((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
+			if( window.estatus == 'B' ) {
 				$('#liImprimir').show();
-				$('#rowMsj').hide();
+				$('#rowMsj').addClass('hidden');
+			} else {
+				$('#liImprimir').hide();
+				$('#rowMsj').removeClass('hidden');
 			}
-		//}
+		} else {
+			$('#liImprimir').show();
+			$('#rowMsj').addClass('hidden');
+		}
+
 
 		stMxpPrecioPDD = stUsdPrecioPDD * tc;
 		stMxpPrecioRAD = stUsdPrecioRAD * tc;
@@ -1067,19 +1057,19 @@ $(document).ready(function(){
 	}
 
 // Funcion para filtrar las cotizaciones segun los parametros seleccionados
-var filtrarCotizaciones = function() {
-	fi = $('#inputfi').val();
-	ff = $('#inputff').val();
-	estatus = $('#estatusCot').val();
-	$.ajax({
-		async: true,
-		type: 'POST',
-		cache: false,
-		data: {fi: fi, ff: ff, estatus: estatus},
-		url: 'Cotizador/ObtenerCotizaciones',
-		dataType: 'json',
-		success: function(json){
-			$('#tablaCotizaciones').bootstrapTable('load', json);
-		}
-	});
-}
+	var filtrarCotizaciones = function() {
+		fi = $('#inputfi').val();
+		ff = $('#inputff').val();
+		estatus = $('#estatusCot').val();
+		$.ajax({
+			async: true,
+			type: 'POST',
+			cache: false,
+			data: {fi: fi, ff: ff, estatus: estatus},
+			url: 'Cotizador/ObtenerCotizaciones',
+			dataType: 'json',
+			success: function(json){
+				$('#tablaCotizaciones').bootstrapTable('load', json);
+			}
+		});
+	}

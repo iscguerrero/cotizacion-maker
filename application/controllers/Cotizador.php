@@ -11,7 +11,15 @@ class Cotizador extends Base_Controller {
 
 	# Este metodo simplemente se encarga de retornar la vista principal del controlador en la carpeta views
 	public function index() {
-		$this->load->view('cotizador');
+		$data['tipos'] = $this->session->userdata('tipo_usuario') == 'ventas' ? array(
+			array('value'=>'', 'text'=>'Selecciona...'),
+			array('value'=>'0', 'text'=>'Bulk')
+		) : array(
+			array('value'=>'', 'text'=>'Selecciona...'),
+			array('value'=>'0', 'text'=>'Bulk'),
+			array('value'=>'1', 'text'=>'Armada')
+		);
+		$this->load->view('cotizador', $data);
 	}
 
 	# Este método se encarga de consumir un web service para obtener el tipo de cambio del dia
