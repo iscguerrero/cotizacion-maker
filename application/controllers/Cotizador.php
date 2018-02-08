@@ -311,8 +311,8 @@ class Cotizador extends Base_Controller {
 		$encabezado = $this->input->post('encabezado');
 		$partidas = $this->input->post('partidas');
 		$folios = $this->input->post('folios');
-
-		$tipo_impresion = $encabezado['tipo'] == 'true' ? 'A' : 'B';
+		$combos = $this->input->post('combos');
+		$tipo_impresion = $encabezado['tipo'] == 1 ? 'A' : 'B';
 
 		# Comprobamos que el nombre del cliente haya sido proporcionado
 		if($cliente[2]['value'] == null || $cliente[2]['value'] == '')
@@ -320,6 +320,7 @@ class Cotizador extends Base_Controller {
 
 		# Cargamos los modelos necesarios para guardar la cotizacion
 		$this->load->model('encabezado_cotizacion');
+		$this->load->model('preencabezado_cotizacion');
 		$this->load->model('partidas_cotizacion_bulk');
 
 		# Obtenemos los datos del cliente
@@ -349,13 +350,9 @@ class Cotizador extends Base_Controller {
 			'stUsdPrecioPDD' => str_replace(',', '', $encabezado['stUsdPrecioPDD']),
 			'stUsdPrecioRAD' => str_replace(',', '', $encabezado['stUsdPrecioRAD']),
 			'stUsdPrecioRDD' => str_replace(',', '', $encabezado['stUsdPrecioRDD']),
-			'stMxpPrecioPDD' => str_replace(',', '', $encabezado['stMxpPrecioPDD']),
-			'stMxpPrecioRAD' => str_replace(',', '', $encabezado['stMxpPrecioRAD']),
-			'stMxpPrecioRDD' => str_replace(',', '', $encabezado['stMxpPrecioRDD']),
 			'stPrecioPDD' => str_replace(',', '', $encabezado['stPrecioPDD']),
 			'stPrecioRAD' => str_replace(',', '', $encabezado['stPrecioRAD']),
 			'stPrecioRDD' => str_replace(',', '', $encabezado['stPrecioRDD']),
-			'descuento_sobre_pieza' => $encabezado['std'],
 			'tasa_impuesto' => $encabezado['tasa_impuesto'],
 			'tipo_cambios' => $encabezado['tc'],
 			'terminos_y_condiciones' => $encabezado['terminos'],
@@ -375,17 +372,44 @@ class Cotizador extends Base_Controller {
 		$this->db->trans_start();
 
 		if($folio == ''){
+			# Damos de alta el encabezado de la cotizacion
 			$ultimo_folio = $this->encabezado_cotizacion->obtenerUltimoFolio();
 			$folio_encabezado = $ultimo_folio->folio + 1;
 			$data['folio'] = $folio_encabezado;
+			$preencabezado = $this->preencabezado_cotizacion->obtenerDescripcionArmada($prefolio);
+			$data['descripcion_armado'] = $preencabezado->descripcion_armado;
 			$this->encabezado_cotizacion->altaEncabezado($data);
+			# Damos de al ta las partidas de la cotizacion
 			foreach ($partidas as $key => $partida) {
+				 switch ($partida['cve_art']) {
+					 case 'TUB':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'RIE':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'GUI':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'SUP':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'TOR':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'OTR':
+						 $desPartida = 'Ninguno';
+						 break;
+					 default:
+						 $desPartida = $partida['descripcion'];
+						 break;
+				 }
 				$data = array(
 					'folio_encabezado' => $folio_encabezado,
 					'no_partida' => $partida['no_partida'],
 					'ult_costo' => $partida['ult_costo'],
 					'cve_art' => $partida['cve_art'],
-					'descripcion' => $partida['descripcion'],
+					'descripcion' => $desPartida,
 					'precioPiezaAD' => $partida['precioPiezaAD'],
 					'precioPiezaDD' => $partida['precioPiezaDD'],
 					'piezas' => $partida['piezas'],
@@ -395,25 +419,114 @@ class Cotizador extends Base_Controller {
 					'precioReplicaAD' => $partida['precioReplicaAD'],
 					'precioReplicaDD' => $partida['precioReplicaDD'],
 					'estatus' => 'A',
-					'partida_armado' => $partida['partida_armado']
+					'partida_armado' => $partida['partida_armado'],
+					'utilidad' => $partida['utilidad']
 				);
 				$this->partidas_cotizacion_bulk->altaPartida($data);
 			}
+			# Damos de alta las partidas de la cotizacion armada en caso de existir
+			if( $tipo_impresion == 'A' ) {
+				$this->load->model('partidas_cotizacion_armado');
+				if( count($combos['tub']) > 0 && $combos['tub'] != '') {
+					foreach ($combos['tub'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'TUB'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['rie']) > 0 && $combos['rie'] != '' ) {
+					foreach ($combos['rie'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'RIE'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['gui']) > 0 && $combos['gui'] != '' ) {
+					foreach ($combos['gui'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'GUI'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['sup']) > 0 && $combos['sup'] != '' ) {
+					foreach ($combos['sup'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'SUP'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['tor']) > 0 && $combos['tor'] != '' ) {
+					foreach ($combos['tor'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'TOR'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['otr']) > 0 && $combos['otr'] != '' ) {
+					foreach ($combos['otr'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'OTR'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+			}
 		} else {
+			# Actualizamos el encabezado de la cotizacion
 			$data['folio'] = $folio;
 			$folio_encabezado = $folio;
 			unset($data['created_user']);
 			unset($data['created_at']);
 			$this->encabezado_cotizacion->editarEncabezado($data);
-
+			# Editamos, damos de alta y cancelamos las partidas correspondientes de la cotizacion
 			foreach ($partidas as $key => $partida) {
+				switch ($partida['cve_art']) {
+					 case 'TUB':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'RIE':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'GUI':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'SUP':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'TOR':
+						 $desPartida = 'Ninguno';
+						 break;
+					 case 'OTR':
+						 $desPartida = 'Ninguno';
+						 break;
+					 default:
+						 $desPartida = $partida['descripcion'];
+						 break;
+				 }
 				$data = array(
 					'folio_encabezado' => $folio_encabezado,
 					'folio' => $partida['folio'],
 					'no_partida' => $partida['no_partida'],
 					'ult_costo' => $partida['ult_costo'],
 					'cve_art' => $partida['cve_art'],
-					'descripcion' => $partida['descripcion'],
+					'descripcion' => $desPartida,
 					'precioPiezaAD' => $partida['precioPiezaAD'],
 					'precioPiezaDD' => $partida['precioPiezaDD'],
 					'piezas' => $partida['piezas'],
@@ -423,7 +536,8 @@ class Cotizador extends Base_Controller {
 					'precioReplicaAD' => $partida['precioReplicaAD'],
 					'precioReplicaDD' => $partida['precioReplicaDD'],
 					'estatus' => 'A',
-					'partida_armado' => $partida['partida_armado']
+					'partida_armado' => $partida['partida_armado'],
+					'utilidad' => $partida['utilidad']
 				);
 				$partida['folio'] == null || $partida['folio'] == '' ? $this->partidas_cotizacion_bulk->altaPartida($data) : $this->partidas_cotizacion_bulk->editarPartida($data);
 				if(count($folios) > 0) {
@@ -432,23 +546,71 @@ class Cotizador extends Base_Controller {
 					}
 				}
 			}
-		}
-
-		$this->load->model('partidas_cotizacion_armado');
-		$pe = $this->partidas_cotizacion_armado->obtenerPartidas($folio_encabezado);
-		if(count($pe) == 0) {
-			$data = array(
-				'folio_encabezado' => $folio_encabezado,
-				'no_partida' => 1,
-				'descripcion' => $encabezado['descripcion_partida'],
-				'estatus' => 'A'
-			);
-			$this->load->model('partidas_cotizacion_armado');
-			$this->partidas_cotizacion_armado->altaPartida($data);
-		} else {
-			$this->db->set('descripcion', $encabezado['descripcion_partida']);
-			$this->db->where('folio_encabezado', $folio_encabezado);
-			$this->db->update('partidas_cotizacion_armado');
+			# Actualizamos la informacion de las partidas de la cotizacion armada en caso de ser necesario
+			if( $tipo_impresion == 'A' ) {
+				$this->load->model('partidas_cotizacion_armado');
+				$this->partidas_cotizacion_armado->borrarPartidas($folio_encabezado);
+				if( count($combos['tub']) > 0 && $combos['tub'] != '' ) {
+					foreach ($combos['tub'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'TUB'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['rie']) > 0 && $combos['rie'] != '' ) {
+					foreach ($combos['rie'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'RIE'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['gui']) > 0 && $combos['gui'] != '' ) {
+					foreach ($combos['gui'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'GUI'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['sup']) > 0 && $combos['sup'] != '' ) {
+					foreach ($combos['sup'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'SUP'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['tor']) > 0 && $combos['tor'] != '' ) {
+					foreach ($combos['tor'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'TOR'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+				if( count($combos['otr']) > 0 && $combos['otr'] != '' ) {
+					foreach ($combos['otr'] as $key => $item) {
+						$data = array(
+							'folio_encabezado' => $folio_encabezado,
+							'cve_art' => $item,
+							'clasificador' => 'OTR'
+						);
+						$this->partidas_cotizacion_armado->altaPartida($data);
+					}
+				}
+			}
 		}
 
 		$this->db->trans_complete();
@@ -466,7 +628,100 @@ class Cotizador extends Base_Controller {
 		if(!$this->input->is_ajax_request()) show_404();
 		$folio = $this->input->post('folio');
 		$this->load->model('partidas_cotizacion_bulk');
-		exit(json_encode($this->partidas_cotizacion_bulk->obtenerPartidas($folio)));
+		$this->load->model('partidas_cotizacion_armado');
+		$partidas = $this->partidas_cotizacion_bulk->obtenerPartidas($folio);
+
+		$tubos = $this->partidas_cotizacion_armado->obtenerPartidasClasificador($folio, 'TUB');
+		$rieles = $this->partidas_cotizacion_armado->obtenerPartidasClasificador($folio, 'RIE');
+		$guias = $this->partidas_cotizacion_armado->obtenerPartidasClasificador($folio, 'GUI');
+		$superficies = $this->partidas_cotizacion_armado->obtenerPartidasClasificador($folio, 'SUP');
+		$tornillos = $this->partidas_cotizacion_armado->obtenerPartidasClasificador($folio, 'TOR');
+		$otros = $this->partidas_cotizacion_armado->obtenerPartidasClasificador($folio, 'OTR');
+
+		$this->db->close();
+		$firebird = $this->load->database('firebird');
+		$this->load->model('Producto');
+
+		if(count($tubos) > 0) {
+			$desc = '';
+			foreach ($tubos as $item) {
+				$producto = $this->Producto->obtenerProducto($item->cve_art);
+				$desc .= $producto->DESCR . ' <strong>&&</strong> ';
+			}
+			$desc = substr($desc, 0, -21);
+			foreach ($partidas as $partida) {
+				if( $partida->cve_art == 'TUB' ) {
+					$partida->descripcion = $desc;
+				}
+			}
+		}
+		if(count($rieles) > 0) {
+			$desc = '';
+			foreach ($rieles as $item) {
+				$producto = $this->Producto->obtenerProducto($item->cve_art);
+				$desc .= $producto->DESCR . ' <strong>&&</strong> ';
+			}
+			$desc = substr($desc, 0, -21);
+			foreach ($partidas as $partida) {
+				if( $partida->cve_art == 'RIE' ) {
+					$partida->descripcion = $desc;
+				}
+			}
+		}
+		if(count($guias) > 0) {
+			$desc = '';
+			foreach ($guias as $item) {
+				$producto = $this->Producto->obtenerProducto($item->cve_art);
+				$desc .= $producto->DESCR . ' <strong>&&</strong> ';
+			}
+			$desc = substr($desc, 0, -21);
+			foreach ($partidas as $partida) {
+				if( $partida->cve_art == 'GUI' ) {
+					$partida->descripcion = $desc;
+				}
+			}
+		}
+		if(count($superficies) > 0) {
+			$desc = '';
+			foreach ($superficies as $item) {
+				$producto = $this->Producto->obtenerProducto($item->cve_art);
+				$desc .= $producto->DESCR . ' <strong>&&</strong> ';
+			}
+			$desc = substr($desc, 0, -21);
+			foreach ($partidas as $partida) {
+				if( $partida->cve_art == 'SUP' ) {
+					$partida->descripcion = $desc;
+				}
+			}
+		}
+		if(count($tornillos) > 0) {
+			$desc = '';
+			foreach ($tornillos as $item) {
+				$producto = $this->Producto->obtenerProducto($item->cve_art);
+				$desc .= $producto->DESCR . ' <strong>&&</strong> ';
+			}
+			$desc = substr($desc, 0, -21);
+			foreach ($partidas as $partida) {
+				if( $partida->cve_art == 'TOR' ) {
+					$partida->descripcion = $desc;
+				}
+			}
+		}
+		if(count($otros) > 0) {
+			$desc = '';
+			foreach ($otros as $item) {
+				$producto = $this->Producto->obtenerProducto($item->cve_art);
+				$desc .= $producto->DESCR . ' <strong>&&</strong> ';
+			}
+			$desc = substr($desc, 0, -21);
+			foreach ($partidas as $partida) {
+				if( $partida->cve_art == 'OTR' ) {
+					$partida->descripcion = $desc;
+				}
+			}
+		}
+
+		exit(json_encode(array('partidas' => $partidas, 'tubos'=>$tubos, 'rieles'=>$rieles, 'guias'=>$guias, 'superficies'=>$superficies, 'tornillos'=>$tornillos, 'otros'=>$otros)));
 	}
 
 	# Metodo para obtener las partidas armadas de la cotizacion

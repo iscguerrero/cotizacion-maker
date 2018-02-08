@@ -12,8 +12,7 @@ class Precio extends CI_Model{
 		$this->db->where('pp.CVE_ART', $cve_art);
 		$this->db->where('pp.CVE_PRECIO', $cve_precio);
 		$this->db->limit(1);
-		$query = $this->db->get();
-		return $query->result();
+		return $this->db->get()->row();
 		#return $this->db->get_compiled_select();
 	}
 }

@@ -10,8 +10,7 @@ class Producto extends CI_Model{
 		$this->db->from('INVE03');
 		$this->db->where('CVE_ART', $cve_art);
 		$this->db->limit(1);
-		$query = $this->db->get();
-		return $query->result();
+		return $this->db->get()->row();
 	}
 
 	public function obtenerProductoPorNombre($descr){
@@ -19,4 +18,22 @@ class Producto extends CI_Model{
 		return $query->result();
 		#return $this->db->get_compiled_select();
 	}
+
+	public function obtenerPorAgrupador($agrupador){
+		$this->db->select('CVE_ART, DESCR');
+		$this->db->from('INVE03');
+		$this->db->where('COLOR ', $agrupador);
+		$query = $this->db->get();
+		return $query->result();
+	}
+
+	public function obtenerSeleccion($agrupador, $valores){
+		$this->db->select('CVE_ART, DESCR, ULT_COSTO');
+		$this->db->from('INVE03');
+		$this->db->where('COLOR ', $agrupador);
+		$this->db->where_in('CVE_ART ', $valores);
+		$query = $this->db->get();
+		return $query->result();
+	}
+
 }

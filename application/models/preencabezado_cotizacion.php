@@ -17,6 +17,15 @@ class preencabezado_cotizacion extends CI_Model{
 		return $this->db->get()->row();
 	}
 
+	#Metodo para obtener la descripcion de la cotizacion armada
+	public function obtenerDescripcionArmada($folio){
+		$this->db->select('descripcion_armado');
+		$this->db->from('preencabezado_cotizacion');
+		$this->db->where('folio', $folio);
+		$this->db->limit(1);
+		return $this->db->get()->row();
+	}
+
 	# Metodo para crear un nuevo registro en el catalogo de usuarios
 	public function altaPreencabezado($data) {
 		return $this->db->insert('preencabezado_cotizacion', $data);

@@ -15,6 +15,7 @@
 		<link rel="stylesheet" href="<?php echo base_url('resources/dropzone/dist/min/dropzone.min.css')?>">
 		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap-table/bootstrap-table.min.css')?>">
 		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.css')?>">
+		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap-select.min.css')?>">
 		<link rel="stylesheet" href="<?php echo base_url('public/css/custom.css')?>">
 	</head>
 	<body style="padding-right: 0 !important">
@@ -22,20 +23,28 @@
 
 			<!-- Lista de Acciones sobre la cotizacion -->
 			<div class="row">
-				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-					<ul class="nav nav-pills pull-right form-inline">
-						<li role="presentation"><input type="text" class="form-control text-center" name="pre_folio" id="pre_folio" value="" readonly placeholder="Pre-folio"></li>
-						<li role="presentation"><input type="text" class="form-control text-center" name="folio" id="folio" value="" readonly placeholder="Folio"></li>
-						<li role="presentation" id="liNueva"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="nuevaCotizacion" title="Crear nueva cotización"><i class="fa fa-file-o"></i> <font class="hidden-xs">Nueva</font></button></li>
-						<li role="presentation" id="liAbrir"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="abrirCotizacion" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o"></i> <font class="hidden-xs">Abrir...</font></button></li>
-						<li role="presentation" id="liGuardar"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o"></i> <font class="hidden-xs">Guardar</font></button></li>
-						<li role="presentation" id="liAutorizar"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización" id="btnAutorizar"><i class="fa fa-unlock"></i> <font class="hidden-xs">Autorizar</font></button></li>
-						<li role="presentation" id="liRechazar"><button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-danger" title="Rechazar uso de la cotización" id="btnRechazar"><i class="fa fa-close"></i> <font class="hidden-xs">Rechazar</font></button></li>
-						<li role="presentation" id="liImprimir">
-							<button type="button" id="btnImprimir" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" title="Imprimir cotización (Guarda cambios antes de imprimir)"><i class="fa fa-file-pdf-o"></i> <font class="hidden-xs">Imprimir</font></button>
-							<li role="presentation" id="liEstatus"></li>
-						</li>
-					</ul>
+				<div class="col-xs-12 form-inline">
+					<div class="btn-group" role="group">
+						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo cliente o prospecto" id="btnCliente"><i class="fa fa-users hidden-lg"></i> <font class="visible-lg">Clientes</font></button>
+
+						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo contacto" id="btnContacto"><i class="fa fa-phone hidden-lg"></i> <font class="visible-lg">Contactos</font></button>
+					</div>
+					<input type="text" class="form-control text-center" name="pre_folio" id="pre_folio" value="" readonly placeholder="Pre-folio">
+					<input type="text" class="form-control text-center" name="folio" id="folio" value="" readonly placeholder="Folio">
+					<font id="liEstatus"></font>
+					<div class="btn-group pull-right" role="group">
+						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="nuevaCotizacion" title="Crear nueva cotización"><i class="fa fa-file-o hidden-lg"></i> <font class="visible-lg">Nueva</font></button>
+
+						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="abrirCotizacion" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o hidden-lg"></i> <font class="visible-lg">Abrir</font></button>
+
+						<button type="button" id="btnImprimir" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" title="Imprimir cotización (Guarda cambios antes de imprimir)"><i class="fa fa-file-pdf-o hidden-lg"></i> <font class="visible-lg">Imprimir</font>
+
+						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o hidden-lg"></i> <font class="visible-lg">Guardar</font></button>
+
+						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización" id="btnAutorizar"><i class="fa fa-unlock hidden-lg"></i> <font class="visible-lg">Autorizar</font></button>
+
+						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-danger" title="Rechazar uso de la cotización" id="btnRechazar"><i class="fa fa-close hidden-lg"></i> <font class="visible-lg">Rechazar</font></button>
+					</div>
 				</div>
 			</div>
 
@@ -62,8 +71,8 @@
 							<div class="x_content">
 								<div class="row">
 									<div class="col-xs-3">
-										<label for="tipoCotizacion">Tipo Cotizacion</label>
-										<select class="form-control" name="tipoCotizacion" id="tipoCotizacion" autofocus >
+										<label for="tipo">Tipo Cotizacion</label>
+										<select class="form-control" name="tipo" id="tipo" autofocus >
 											<?php
 												foreach($tipos as $key => $item) {
 													echo "<option value=".$item['value'].">".$item['text']."</option>";
@@ -73,7 +82,7 @@
 									</div>
 									<div class="col-xs-9">
 										<label for="nombre">Nombre</label>
-										<input type="text" class="form-control autocomplete" name="nombre" id="nombre" placeholder="Buscar por nombre de cliente" readonly>
+										<input type="text" class="form-control autocomplete" name="nombre" id="nombre" placeholder="Por nombre (Al seleccionar el cliente no se podrá cambiar el tipo de cotización)" readonly>
 									</div>
 								</div>
 								<hr>
@@ -145,12 +154,6 @@
 										</div>
 									</div>
 								</div>
-								<div class="row">
-									<div class="col-xs-12 text-right">
-										<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo cliente o prospecto" id="btnCliente"><i class="fa fa-user-plus"></i> Cliente</button>
-										<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo contacto" id="btnContacto"><i class="fa fa-phone"></i> Contacto</button>
-									</div>
-								</div>
 							</div>
 						</form>
 					</div>
@@ -181,7 +184,7 @@
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel">
 						<div class="x_title">
-							<h2>Pre visualizacion</h2>
+							<h2>Partidas</h2>
 							<ul class="nav navbar-right panel_toolbox">
 								<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
 								</li>
@@ -189,58 +192,55 @@
 							<div class="clearfix"></div>
 						</div>
 						<div class="x_content">
-							<table id="tablaCotizacion" class="jambo_table bulk_action">
+							<table id="tablaCotizacion" class="jambo_table bulk_action table-bordered">
 								<tfoot>
 									<tr>
 										<th colspan="6"><label id="gestorDeCuenta"></label></th>
-										<th colspan="3" class="text-right">SubTotal Usd</th>
+										<th class="text-right">SubTotal</th>
+										<th></th>
 										<th id="stUsdPrecioPDD" class="text-right"></th>
 										<th></th>
 										<th id="stUsdPrecioRAD" class="text-right"></th>
 										<th id="stUsdPrecioRDD" class="text-right"></th>
+										<th></th>
 									</tr>
 									<tr>
-										<th colspan="7" rowspan="3"><label id="observaciones"></label></th>
+										<th colspan="6" rowspan="2"><label id="observaciones"></label></th>
 										<th class="text-right">Descuento</th>
 										<th class="text-right"><label id="descuento">0</label></th>
 										<th id="descuentoPrecioPDD" class="text-right"></th>
 										<th></th>
 										<th id="descuentoPrecioRAD" class="text-right"></th>
 										<th id="descuentoPrecioRDD" class="text-right"></th>
+										<th></th>
 									</tr>
 									<tr>
-										<th colspan="2" class="text-right">Subtotal Usd DD</th>
+										<th class="text-right">SubTotal DD</th>
+										<th></th>
 										<th id="stPrecioPDD" class="text-right"></th>
 										<th></th>
 										<th id="stPrecioRAD" class="text-right"></th>
 										<th id="stPrecioRDD" class="text-right"></th>
+										<th></th>
 									</tr>
 									<tr>
+										<th colspan="6" rowspan="2"><label id="terminosVenta"></label></th>
 										<th class="text-right">Impuestos</th>
 										<th class="text-right"><label id="impuestos">16</label></th>
 										<th id="ivaPrecioPDD" class="text-right"></th>
 										<th></th>
 										<th id="ivaPrecioRAD" class="text-right"></th>
 										<th id="ivaPrecioRDD" class="text-right"></th>
+										<th></th>
 									</tr>
 									<tr>
-										<th colspan="7" rowspan="2"><label id="terminosVenta"></label></th>
-										<th colspan="2" class="text-right">Total</th>
+										<th class="text-right">Total</th>
+										<th></th>
 										<th id="totalPrecioPDD" class="text-right"></th>
 										<th></th>
 										<th id="totalPrecioRAD" class="text-right"></th>
 										<th id="totalPrecioRDD" class="text-right"></th>
-									</tr>
-									<tr>
-										<th colspan="2" class="text-right">Utilidad Bruta(%)</th>
-										<th colspan="4" id="utilidad" class="text-right"></th>
-									</tr>
-									<tr class="hidden">
-										<th colspan="2" class="text-right">Subtotal Mxn</th>
-										<th id="stMxpPrecioPDD" class="text-right"></th>
-										<th></th>
-										<th id="stMxpPrecioRAD" class="text-right"></th>
-										<th id="stMxpPrecioRDD" class="text-right"></th>
+										<th id="utilidad" class="text-right"></th>
 									</tr>
 									<tr>
 										<th colspan="13" id="faltantes"></th>
@@ -360,12 +360,6 @@
 					<div class="input-group input-group-sm">
 						<span class="input-group-addon">Replica</span>
 						<input type="text" class="form-control text-right" id="replica" value="1">
-					</div>
-				</div>
-				<div class="col-xs-7 col-sm-4 col-md-3 col-lg-3 hidden">
-					<div class="input-group input-group-sm">
-						<span class="input-group-addon" >Descuento %</span>
-						<input type="text" class="form-control text-right" id="std" value="0">
 					</div>
 				</div>
 			</div>
@@ -569,6 +563,60 @@
 			</div>
 		</div>
 
+		<!-- Modal con los combos de los selects de las partidas armada -->
+		<div id="modalCombos" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-xs-12 combo" id="divTubos">
+								<div class="form-group">
+									<label for="selectTubos">Tubos</label>
+									<select multiple title="Tubos" class="selectpicker form-control"  data-size="10" name="selectTubos" id="selectTubos" data-group="TUB" ></select>
+								</div>
+							</div>
+							<div class="col-xs-12 combo" id="divRieles">
+								<div class="form-group">
+									<label for="selectRieles">Rieles</label>
+									<select multiple title="Rieles" class="selectpicker form-control"  data-size="10" name="selectRieles" id="selectRieles" data-group="RIE" ></select>
+								</div>
+							</div>
+							<div class="col-xs-12 combo" id="divGuias">
+								<div class="form-group">
+									<label for="selectGuias">Guias</label>
+									<select multiple title="Guias" class="selectpicker form-control"  data-size="10" name="selectGuias" id="selectGuias" data-group="GUI" ></select>
+								</div>
+							</div>
+							<div class="col-xs-12 combo" id="divSuperficies">
+								<div class="form-group">
+									<label for="selectSuperficies">Superficies</label>
+									<select multiple title="Superficies" class="selectpicker form-control"  data-size="10" name="selectSuperficies" id="selectSuperficies" data-group="SUP" ></select>
+								</div>
+							</div>
+							<div class="col-xs-12 combo" id="divTornilleria">
+								<div class="form-group">
+									<label for="selectTornilleria">Tornilleria</label>
+									<select multiple title="Tornilleria" class="selectpicker form-control"  data-size="10" name="selectTornilleria" id="selectTornilleria" data-group="TOR" ></select>
+								</div>
+							</div>
+							<div class="col-xs-12 combo" id="divOtros">
+								<div class="form-group">
+									<label for="selectOtros">Otros</label>
+									<select multiple title="Otros" class="selectpicker form-control"  data-size="10" name="selectOtros" id="selectOtros" data-group="OTR" ></select>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-12 text-right">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+								<button type="button" class="btn btn-success" id="selecionarCombo">Seleccionar</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Modal para bloquear la vista mientras se realizan peticiones ajax al servidor -->
 		<div id="modalAlert" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-sm">
@@ -597,8 +645,9 @@
 		<script src="<?php echo base_url('resources/bootstrap-table/locale/bootstrap-table-es-MX.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-table-editable.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.js')?>"></script>
-		<script src="<?php echo base_url('/public/js/custom.js')?>"></script>
-		<script src="<?php echo base_url('/public/js/cotizador.js')?>"></script>
-		<script src="<?php echo base_url('/public/js/clientes.js')?>"></script>
+		<script src="<?php echo base_url('resources/bootstrap-select.min.js')?>"></script>
+		<script src="<?php echo base_url('public/js/custom.js')?>"></script>
+		<script src="<?php echo base_url('public/js/cotizador.js')?>"></script>
+		<script src="<?php echo base_url('public/js/clientes.js')?>"></script>
 	</body>
 </html>
