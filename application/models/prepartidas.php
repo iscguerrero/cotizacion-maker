@@ -1,7 +1,7 @@
 <?php
 if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Prepartidas_cotizacion_bulk extends CI_Model{
+class prepartidas extends CI_Model{
 
 	# Constructor del modelo
 	function construct(){
@@ -9,7 +9,7 @@ class Prepartidas_cotizacion_bulk extends CI_Model{
 	}
 
 	# Metodo para crear un nuevo registro en el catalogo de usuarios
-	public function altaPrePartida($data) {
-		return $this->db->insert('prepartidas_cotizacion_bulk', $data);
+	public function alta($data) {
+		return $this->db->insert('prepartidas', $data);
 	}
 }

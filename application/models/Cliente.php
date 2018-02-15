@@ -1,6 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-class Cliente extends CI_Model{
+class cliente extends CI_Model{
 	public function __construct(){
 		parent::__construct();
 	}
@@ -68,6 +68,11 @@ class Cliente extends CI_Model{
 	public function ObtenerContacto($searchTerm, $idempresa) {
 		$query = $this->db->query("SELECT intidcontacto, strnombre as value, stremail, strtelefono1, intidtipocontacto, strcampo1 from [cbctecnologia_trilogiq].[contactos] where intidempresa = $idempresa and strnombre like '%$searchTerm%'");
 		return $query->result();
+	}
+
+	public function ObtenerContactoID($id, $idempresa) {
+		$query = $this->db->query("SELECT intidcontacto, strnombre as value, stremail, strtelefono1, intidtipocontacto, strcampo1 from [cbctecnologia_trilogiq].[contactos] where intidempresa = $idempresa and intidcontacto = $id");
+		return $query->row();
 	}
 
 	public function AltaContacto($data) {

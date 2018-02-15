@@ -1,10 +1,10 @@
-$(document).ready(function () { 
-	$("#btnCliente").click(function () {
-		$('#modalCliente').modal('show');
-	});
-	$("#btnContacto").click(function () {
-		$('#modalContacto').modal('show');
-	});
+$(document).ready(function () {
+	// Cargamos los combos de los formularios
+	cargarEstatus();
+	cargarEstados();
+	cargarMunicipios($('#inEstado').val());
+	ObtenerTipoContacto();
+
 	// Configuracion del autocomplete del cliente
 	$('#inEmpresa').autocomplete({
 		source: "Clientes/ObtenerClienteEdit",
@@ -39,11 +39,6 @@ $(document).ready(function () {
 			setearContacto(ui.item);
 		}
 	});
-	// Cargamos los combos de los formularios
-	cargarEstatus();
-	cargarEstados();
-	cargarMunicipios($('#inEstado').val());
-	ObtenerTipoContacto();
 	// Cargamos los municipios segun el estado seleccionado
 	$('#inEstado').change(function () {
 		cargarMunicipios($('#inEstado').val());
@@ -94,7 +89,7 @@ function setearContactos(cliente) {
 		type: 'POST',
 		url: 'Clientes/ObtenerContactos',
 		dataType: 'json',
-		data: {idempresa: cliente.id},
+		data: { idempresa: cliente.id },
 		async: false,
 		success: function (response) {
 			if (response.length > 0) {
@@ -116,11 +111,11 @@ function setearContactoCliente(contacto) {
 		data: { contacto: contacto },
 		async: false,
 		success: function (response) {
-		//	if (response.length > 0) {
-				$('#innTelefono').val(response.strtelefono1);
-				$('#innCorreo').val(response.stremail);
-				$('#innArea').val(response.strcampo1);
-	//		}
+			//	if (response.length > 0) {
+			$('#innTelefono').val(response.strtelefono1);
+			$('#innCorreo').val(response.stremail);
+			$('#innArea').val(response.strcampo1);
+			//		}
 		}
 	});
 }
@@ -204,7 +199,7 @@ function guardarContacto() {
 		type: 'POST',
 		url: 'Clientes/GuardarContacto',
 		dataType: 'json',
-		async: true,
+		async: false,
 		data: str,
 		beforeSend: function () {
 			$('#msjAlert').html('GUARDANDO DATOS, ESPERA POR FAVOR...');
@@ -213,6 +208,11 @@ function guardarContacto() {
 		success: function (response) {
 			$('#msjAlert').html(response.msj);
 			if (response.bandera == true) {
+				if ($('#icIdEmpresa').val() == $('#ID').text()) {
+					var contactoSeleccionado = $('#contacto').val();
+					xsetearContacto($('#icIdEmpresa').val());
+					$('#contacto').val(contactoSeleccionado);
+				}
 				$('#modalContacto').modal('hide');
 			}
 		}

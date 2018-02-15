@@ -5,27 +5,29 @@ class Condiciones extends Base_Controller {
 
 	public function __construct() {
 		parent::__construct();
-		# Conexion a la base de datos para interactuar con las cotizaciones
 			$this->load->database('mysql');
 	}
 
 	# Retornar la vista del abc de los terminos y condiciones de venta
 	public function index() {
-		$this->load->view('terminos');
+		if($this->session->userdata('tipo_usuario') == 'diseñadores')
+			$this->load->view('terminos');
+		else
+			show_404();
 	}
 
 	# Metodo para obtener las condiciones de pago
 	public function ObtenerCondiciones() {
 		if(!$this->input->is_ajax_request()) show_404();
 		$this->load->model('terminosycondiciones');
-		exit(json_encode($this->terminosycondiciones->obtenerRegistros()));
+		exit(json_encode($this->terminosycondiciones->obtener()));
 	}
 
 	# Metodo para obtener los tipos de condiciones
 	public function ObtenerTipos() {
 		if(!$this->input->is_ajax_request()) show_404();
 		$this->load->model('terminosycondiciones');
-		exit(json_encode($this->terminosycondiciones->obtenerTipos()));
+		exit(json_encode($this->terminosycondiciones->tipos()));
 	}
 
 	# Metodo para guardar las condiciones de pago

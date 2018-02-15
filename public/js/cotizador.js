@@ -5,12 +5,10 @@ $(document).ready(function () {
 	var opened;
 	var selectedRow = {};
 	$('#tipo').change(function () {
-		$('#nombre').prop('readonly', $(this).val() != '' ? false : true);
+		$('#nombreEmpresa').prop('readonly', $(this).val() != '' ? false : true);
 	});
-	/*************** CONFIGURACION GENERAL DEL COMPORTAMIENTO DE LA VISTA ***************/
 	// Configuracion del tooltip en la vista
-	$('[data-toggle="tooltip"]').tooltip();
-
+	$('[data-tool="tooltip"]').tooltip();
 	// Configuracion basica del datetimepicker
 	$('.simple-dp').datetimepicker({
 		locale: 'es',
@@ -18,31 +16,156 @@ $(document).ready(function () {
 		ignoreReadonly: true,
 		allowInputToggle: true
 	});
-
-	// Recargar la vista para crear una nueva cotizacion
-	$('#nuevaCotizacion').click(function () {
-		location.reload();
-	});
-
 	// Configuracion del modal de mensajes del sistema
 	modalAlert = $('#modalAlert').modal({
 		backdrop: 'static',
 		keyboard: false,
 		show: false
 	});
-
-	// Abrir el modal con el historico de cotizaciones
-	$('#abrirCotizacion').click(function () {
-		$('#modalCotizaciones').modal('show');
+	// Modal para agregar un producto especial
+	$('#modalProducto').on('hidden.bs.modal', function (e) {
+		$('#inputPieza, #inputProducto, #inputPrecio, #inputPiezas').val('');
+		$('#inputPrecio').prop('readonly', true);
+	});
+	// Configuracion del pie de pagina de la tabla de previsualizacion de la cotizacion
+	$('#descArmada').editable({
+		type: 'text',
+		emptytext: 'Descripción de cotización armada',
+		mode: 'popup',
+		showbuttons: false,
+	});
+	$('#gestorDeCuenta').editable({
+		type: 'text',
+		defaultValue: '',
+		emptytext: 'Representante de ventas',
+		mode: 'popup',
+		showbuttons: false,
+		onblur: 'submit',
+		classes: 'table-condensed'
+	});
+	$('#terminosVenta').editable({
+		type: 'textarea',
+		defaultValue: '',
+		emptytext: 'Términos y condiciones de venta',
+		mode: 'popup',
+		showbuttons: true,
+		onblur: 'submit'
+	});
+	$('#observaciones').editable({
+		type: 'textarea',
+		defaultValue: '',
+		emptytext: 'Observaciones',
+		mode: 'popup',
+		showbuttons: true,
+		onblur: 'submit'
+	});
+	$('#impuestos').editable({
+		type: 'text',
+		mode: 'popup',
+		showbuttons: false,
+		onblur: 'submit'
+	}).on('hidden', function (e, reason) {
+		actualizarTotales();
+	});
+	$('#descuento').editable({
+		type: 'text',
+		mode: 'popup',
+		showbuttons: false,
+		onblur: 'submit'
+	}).on('hidden', function (e, reason) {
+		actualizarTotales();
 	});
 
+	$('#btnImprimir').click(function (e) {
+		e.preventDefault();
+		window.open('Cotizador/ImprimirCotizacion/' + $('#folio').val());
+	});
+	/*************** CONFIGURACION GENERAL DEL COMPORTAMIENTO DE LA VISTA ***************/
 	// Configuracion del autocomplete del cliente
-	$('#nombre').autocomplete({
+	$('#nombreEmpresa').autocomplete({
 		source: "Clientes/ObtenerCliente",
 		minLength: 3,
 		select: function (evt, ui) {
 			setearCliente(ui.item);
 			$('#tipo').prop('disabled', true);
+			if ($('#tipo').val() == 'B') {
+				$('#tablaCotizacion').bootstrapTable('hideColumn', 'aparece_en_armada');
+			} else {
+				$('#tablaCotizacion').bootstrapTable('showColumn', 'aparece_en_armada');
+			}
+		}
+	});
+
+	// Configuracion del dropzone para cargar el excel de la cotizacion
+	Dropzone.autoDiscover = false;
+	$('#excelArea').dropzone({
+		url: 'Productos/RecibirExcel',
+		maxFilesize: 2,
+		paramName: 'cotizacion',
+		maxFiles: 1,
+		acceptedFiles: '.xls, .xlsx',
+		addRemoveLinks: true,
+		capture: false,
+		dictDefaultMessage: 'Arrastra y suelta la nueva cotización, en formato xlsx(excel), aquí',
+		dictFallbackMessage: 'Tu navegador no soporta la función de arrastra y suelta archivo, inténtalo nuevamente después de actualizarlo',
+		dictFileTooBig: 'El archivo seleccionado tiene un tamaño mayor al permitido (2Mb)',
+		dictInvalidFileType: 'Solamente se permiten cargar arhivos en formato xlsx(Excel)',
+		dictResponseError: 'Se presento un error al recibir la cotizacion en el servidor',
+		dictCancelUpload: 'Cancelar',
+		dictCancelUploadConfirmation: '¿Estás seguro de querer cancelar la carga del archivo?',
+		dictRemoveFile: 'Remover archivo',
+		dictMaxFilesExceeded: 'Solo se permite cargar un archivo a la vez',
+		init: function () {
+			var self = this;
+			self.on('sending', function (file, xhr, formData) {
+				formData.append("tipo", $('#tipo').val());
+				formData.append("id_cliente", $('#ID').text());
+				formData.append("nombre_cliente", $('#nombre').val());
+				formData.append("nombre_empresa", $('#nombreEmpresa').val());
+				formData.append("rfc", $('#RFC').val());
+				formData.append("direccion", $('#direccion').val());
+				formData.append("colonia", $('#colonia').val());
+				formData.append("municipio", $('#municipio').val());
+				formData.append("estado", $('#estado').val());
+				formData.append("codigo_postal", $('#CP').val());
+				formData.append("nombre_contacto", $('#contacto').val());
+				formData.append("telefono", $('#telefono').val());
+				formData.append("correo", $('#correo').val());
+				formData.append("area", $('#area').val());
+				formData.append("representante_ventas", $('#gestorDeCuenta').editable('getValue', true));
+				formData.append("terminos_y_condiciones", $('#terminosVenta').editable('getValue', true));
+				formData.append("observaciones", $('#observaciones').editable('getValue', true));
+				formData.append("tc", $('#tc').val());
+				formData.append("replica", $('#replica').val());
+				formData.append("std", $('#std').val());
+				formData.append("impuestos", $('#impuestos').editable('getValue', true));
+				formData.append("descuento", $('#descuento').editable('getValue', true));
+				modalAlert.modal('show');
+				$('#msjAlert').html('Cargando archivo, espera un momento por favor...');
+			});
+			self.on("success", function (file, response) {
+				response = JSON.parse(response);
+				console.log(response);
+				if (response.bandera == false) {
+					$('#msjAlert').html(response.msj);
+					modalAlert.modal('show');
+				} else {
+					$('#pre_folio').val(response.pre_folio);
+					$('#descArmada').editable('setValue', response.desc_armada, false);
+					$('#tablaCotizacion').bootstrapTable('load', response.data);
+					actualizarTotales();
+					mergeCells();
+					if (response.faltantes.length > 0) {
+						$('#faltantes').html("<strong>Los siguientes códigos de producto no se encuentran definidos en el catálogo de productos: </strong><strong style='color: red'>" + response.faltantes.join(', ') + "</strong>");
+					} else {
+						$('#faltantes').html("");
+					}
+					modalAlert.modal('hide');
+					$('#rowCargar').hide();
+				}
+				self.removeFile(file);
+				$('#btnGuardar').removeClass('hidden');
+			});
 		}
 	});
 
@@ -62,164 +185,28 @@ $(document).ready(function () {
 
 	// Agregar el producto especial seleccionada a la tabla de cotizacion
 	$('#confirmarParte').click(function () {
-		descuento = 0;
-		precioPiezaAD = $('#inputPrecio').val();
-		precioPiezaDD = precioPiezaAD - (precioPiezaAD * descuento / 100);
-		piezas = $('#inputPiezas').val();
-		replicas = piezas * $('#replica').val();
-		arrayProducto = $('#inputProducto').val().split(' - ');
 		if ($('#inputPiezas').val() != '') {
-			var row = {
-				no_partida: 0,
-				folio: '',
-				ult_costo: $('#ult_costo').val(),
-				cve_art: $('#inputPieza').val(),
-				descripcion: arrayProducto[1],
-				precioPiezaAD: precioPiezaAD,
-				precioPiezaDD: precioPiezaDD,
-				piezas: piezas,
-				descuento: descuento,
-				precioParteDD: precioPiezaDD * piezas,
-				replicas: replicas,
-				precioReplicaAD: precioPiezaAD * replicas,
-				precioReplicaDD: precioPiezaDD * replicas,
-				ult_costo: 0,
-				utilidad: 0
-			};
+			arrayProducto = $('#inputProducto').val().split(' - ');
+			row = crearPartida($('#inputPieza').val(), arrayProducto[1], $('#ult_costo').val(), $('#inputPrecio').val(), $('#inputPiezas').val(), '');
 			$('#tablaCotizacion').bootstrapTable('append', row);
-			data = $('#tablaCotizacion').bootstrapTable('getData');
-			actualizarNumeroPartidas(data);
+			actualizarNumeroPartidas();
 			actualizarTotales();
 			$('#modalProducto').modal('hide');
 		} else {
-			$('#msjAlert').html('DEBES PROPORCIONAR LA CANTIDAD DE PIEZAS')
+			$('#msjAlert').html('Debes proporcionar la cantidad de piezas del item')
 			modalAlert.modal('show');
-		}
-	});
-
-	// Configuracion del dropzone para cargar el excel de la cotizacion
-	Dropzone.autoDiscover = false;
-	$('#excelArea').dropzone({
-		// URL a donde se envia el archivo en los controladores
-		url: 'Productos/RecibirExcel',
-		// Configuracion de las propiedades del archivo que se pueden cargar al servidor
-		maxFilesize: 2,
-		paramName: 'cotizacion',
-		maxFiles: 1,
-		acceptedFiles: '.xls, .xlsx',
-		addRemoveLinks: true,
-		capture: false,
-		// Configuracion de los mensajes del dropzone
-		dictDefaultMessage: 'Arrastra y suelta la nueva cotización, en formato xlsx(excel), aquí',
-		dictFallbackMessage: 'Tu navegador no soporta la función de arrastra y suelta archivo, inténtalo nuevamente después de actualizarlo',
-		dictFileTooBig: 'El archivo seleccionado tiene un tamaño mayor al permitido (2Mb)',
-		dictInvalidFileType: 'Solamente se permiten cargar arhivos en formato xlsx(Excel)',
-		dictResponseError: 'Se presento un error al recibir la cotizacion en el servidor',
-		dictCancelUpload: 'Cancelar',
-		dictCancelUploadConfirmation: '¿Estás seguro de querer cancelar la carga del archivo?',
-		dictRemoveFile: 'Remover archivo',
-		dictMaxFilesExceeded: 'Solo se permite cargar un archivo a la vez',
-		// Manipulacion de los momentos del enviado de archivos
-		init: function () {
-			var self = this;
-			self.on('sending', function (file, xhr, formData) {
-				formData.append("tipo", $('#tipo').val());
-				formData.append("id_cliente", $('#ID').val());
-				formData.append("nombre_cliente", $('#nombre').val());
-				formData.append("nombre_empresa", $('#nombreEmpresa').val());
-				formData.append("rfc", $('#RFC').val());
-				formData.append("direccion", $('#direccion').val());
-				formData.append("colonia", $('#colonia').val());
-				formData.append("municipio", $('#municipio').val());
-				formData.append("estado", $('#estado').val());
-				formData.append("codigo_postal", $('#CP').val());
-				formData.append("nombre_contacto", $('#contacto').val());
-				formData.append("telefono", $('#telefono').val());
-				formData.append("correo", $('#correo').val());
-				formData.append("representante_ventas", $('#gestorDeCuenta').html());
-				formData.append("terminos_y_condiciones", $('#terminosVenta').html());
-				formData.append("observaciones", $('#observaciones').html());
-				formData.append("tc", $('#tc').val());
-				formData.append("replica", $('#replica').val());
-				formData.append("std", $('#std').val());
-				formData.append("impuestos", $('#impuestos').html());
-				formData.append("descuento", $('#descuento').html());
-				modalAlert.modal('show');
-				$('#msjAlert').html('ESPERA UN MOMENTO POR FAVOR, CARGANDO ARCHIVO...');
-			});
-			self.on("success", function (file, response) {
-				response = JSON.parse(response);
-				console.log(response);
-				if (response.bandera == false) {
-					$('#msjAlert').html(response.msj);
-					modalAlert.modal('show');
-				} else {
-					replica = $('#replica').val();
-					tc = $('#tc').val();
-					$('#tablaCotizacion').bootstrapTable('load', response.data);
-					actualizarTotales();
-					$('#pre_folio').val(response.pre_folio);
-					$('#folio').val('');
-					if (response.faltantes.length > 0) {
-						$('#faltantes').html("<strong>Los siguientes códigos de producto no se encuentran definidos en el catálogo de productos: </strong><strong style='color: red'>" + response.faltantes.join(', ') + "</strong>");
-					} else {
-						$('#faltantes').html("");
-					}
-					modalAlert.modal('hide');
-					$('#rowCargar').hide();
-				}
-				self.removeFile(file);
-			});
 		}
 	});
 
 	// Configuramos la accion del cuadro de texto de replica
 	$('#replica').change(function () {
-		replica = $(this);
-		if (replica.val() != '') {
-			modalAlert.modal('show');
-			setTimeout(function () {
-				resetReplica(replica.val());
-				modalAlert.modal('hide');
-			}, 1);
-		}
-	});
-
-	// Configuramos la accion del cuadro de texto del descuento
-	$('#std').change(function () {
-		std = $(this);
-		if (std.val() != '') {
-			modalAlert.modal('show');
-			setTimeout(function () {
-				resetDescuento(std.val());
-				modalAlert.modal('hide');
-			}, 1);
-		}
-	});
-
-	// Configuracion del accion del cuadro de texto de tipo de cambio
-	$('#tc').change(function () {
 		if ($(this).val() != '') {
 			modalAlert.modal('show');
 			setTimeout(function () {
-				actualizarTotales();
+				resetReplica();
 				modalAlert.modal('hide');
 			}, 1);
 		}
-	});
-
-	// Abrir el modal para agregar un producto especial
-	$('#agregarParte').click(function (e) {
-		e.preventDefault();
-		$('#modalProducto').modal('show');
-	});
-
-	// Modal para agregar un producto especial
-	$('#modalProducto').on('hidden.bs.modal', function (e) {
-		$('#inputPieza').val('');
-		$('#inputProducto').val('');
-		$('#inputPrecio').val('').prop('readonly', true);
-		$('#inputPiezas').val('');
 	});
 
 	// Configuracion de la tabla de pre visualizacion de la cotizacion
@@ -229,17 +216,24 @@ $(document).ready(function () {
 		toolbar: '#toolbar',
 		uniqueId: 'no',
 		columns: [[
-			{ title: 'Información de las Piezas', halign: 'center', valign: 'middle', colspan: 6 },
+			{ title: 'Información de las Piezas', halign: 'center', valign: 'middle', colspan: 5 },
 			{ title: 'Información de las Partes', halign: 'center', valign: 'middle', colspan: 3 },
-			{ title: 'Información de las Replicas', halign: 'center', valign: 'middle', colspan: 6 }
+			{ title: 'Información de las Replicas', halign: 'center', valign: 'middle', colspan: 9 },
 		], [
 			{ radio: true, align: 'center' },
 			{
 				field: 'no_partida', title: 'Item', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
-					return parseInt(value);
+					return parseFloat(value);
 				}
 			},
-			{ field: 'cve_art', title: 'Código', align: 'center', halign: 'center', valign: 'middle' },
+			{
+				field: 'cve_art', title: 'Código', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
+					if (value == 'TUB' || value == 'RIE' || value == 'GUI' || value == 'SUP' || value == 'TOR' || value == 'OTR')
+						return '<strong>' + value + '</strong>'
+					else
+						return value
+				}
+			},
 			{
 				field: 'descripcion', title: 'Descripcion', valign: 'middle', formatter: function (value, row, index) {
 					if (row.partida_armado == 'S' && (row.cve_art == 'TUB' || row.cve_art == 'RIE' || row.cve_art == 'GUI' || row.cve_art == 'SUP' || row.cve_art == 'TOR' || row.cve_art == 'OTR')) {
@@ -268,17 +262,28 @@ $(document).ready(function () {
 						}
 						value = prefijo + value + "<strong>) <span><i class='fa fa-external-link'></i></span></strong>";
 					}
+					if (row.clasificador != '' && row.no_partida % 1 > 0) {
+						value = "<i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + value + "</i>";
+					}
 					return value
 				}
 			},
 			{
-				field: 'precioPiezaAD', title: 'Precio AD', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
+				field: 'precioPiezaAD', title: 'Precio', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
 					return formato_numero(value, 2, '.', ',')
-				}
-			},
-			{
-				field: 'precioPiezaDD', title: 'Precio DD', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
-					return formato_numero(value, 2, '.', ',')
+				}, editable: {
+					type: 'text',
+					mode: 'popup',
+					showbuttons: false,
+					success: function (response, newValue) {
+						data = $('#tablaCotizacion').bootstrapTable('getData');
+						index = $(this).closest('tr').attr('data-index');
+						row = data[index];
+						row['precioPiezaAD'] = newValue;
+						actualizarFila(index, row);
+						mergeCells();
+						actualizarTotales();
+					}
 				}
 			},
 			{
@@ -293,6 +298,7 @@ $(document).ready(function () {
 						row['piezas'] = newValue;
 						row['replicas'] = newValue * $('#replica').val();
 						actualizarFila(index, row);
+						mergeCells();
 						actualizarTotales();
 					}
 				}
@@ -310,6 +316,7 @@ $(document).ready(function () {
 						row = data[index];
 						row['descuento'] = newValue;
 						actualizarFila(index, row);
+						mergeCells();
 						actualizarTotales();
 					}
 				}
@@ -330,6 +337,7 @@ $(document).ready(function () {
 						row = data[index];
 						row['replicas'] = row['piezas'] * newValue;
 						actualizarFila(index, row);
+						mergeCells();
 						actualizarTotales();
 					}
 				}
@@ -345,12 +353,34 @@ $(document).ready(function () {
 				}
 			},
 			{
-				field: 'utilidad', title: 'Utilidad', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
+				field: 'utilidad', title: 'Utilidad %', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
 					return formato_numero(value, 2, '.', ',')
 				}
 			},
 			{ field: 'ult_costo', title: 'Costo', visible: false },
-			{ field: 'folio', title: 'folio', visible: false }
+			{ field: 'folio', title: 'folio', visible: false },
+			{ field: 'clasificador', title: 'clasificador', visible: false },
+			{ field: 'partida_armado', title: 'armado', visible: false },
+			{
+				field: 'aparece_en_armada', title: 'Armada', align: 'center', halign: 'center', valign: 'middle', editable: {
+					type: 'select',
+					mode: 'popup',
+					value: 'No',
+					showbuttons: false,
+					source: [
+						{ value: 'No', text: 'No' },
+						{ value: 'Si', text: 'Si' }
+					],
+					success: function (response, newValue) {
+						data = $('#tablaCotizacion').bootstrapTable('getData');
+						index = $(this).closest('tr').attr('data-index');
+						row = data[index];
+						row['aparece_en_armada'] = newValue;
+						$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+						mergeCells();
+					}
+				}
+			},
 		]],
 		onClickRow: function (row, $element, field) {
 			if (field == 'descripcion' && row.partida_armado == 'S' && (row.cve_art == 'TUB' || row.cve_art == 'RIE' || row.cve_art == 'GUI' || row.cve_art == 'SUP' || row.cve_art == 'TOR' || row.cve_art == 'OTR')) {
@@ -392,39 +422,80 @@ $(document).ready(function () {
 
 	// Actualizar el contenido de los combos de las partidas de la cotizacion armada
 	$('#selecionarCombo').click(function (e) {
-		agrupador = opened.attr('data-group');
+		clasificador = opened.attr('data-group');
 		valores = opened.val();
-		if (valores != null && valores.length > 0) {
-			$.ajax({
-				async: true,
-				type: 'POST',
-				cache: false,
-				data: { agrupador: agrupador, valores: valores },
-				url: 'Productos/Seleccion',
-				dataType: 'json',
-				success: function (json) {
-					auxDescripcion = '';
-					auxCosto = 0;
-					auxPrecio = 0;
-					$.each(json, function (index, item) {
-						auxDescripcion = auxDescripcion + item.DESCR + ' <strong>&&</strong> ';
-						auxCosto = auxCosto + item.ULT_COSTO;
-						auxPrecio = auxPrecio + item.precioPiezaAD;
-					});
-					selectedRow.descripcion = auxDescripcion.substr(0, auxDescripcion.length - 21);;
-					selectedRow.ult_costo = auxCosto;
-					selectedRow.precioPiezaAD = auxPrecio;
-					actualizarFila(selectedIndex, selectedRow);
-					$('#modalCombos').modal('hide');
-				}
-			});
-		} else {
+		// En caso de que no se haya seleccionado ningún elemento del combo
+		if (valores == null) {
+			$('#msjAlert').html('Debes seleccionar al menos un item del combo o seleccionar "Ninguno" si los items de la categoría no aplican para esta cotización');
+			modalAlert.modal('show');
+			return false;
+		}
+		// En caso de que se seleccione "Ninguno" al mismo tiempo que se selecciona algún elemento de la categoría
+		flag = false;
+		$.each(valores, function (index, item) {
+			if (item == '') {
+				flag = true;
+				return false;
+			}
+		});
+		if (valores.length > 1 && flag == true) {
+			$('#msjAlert').html('No puedes seleccionar "Ninguno" a la vez que seleccionas items de la categoría');
+			modalAlert.modal('show');
+			return false;
+		}
+		// En caso de que se seleccione "Ninguno" en el combo
+		if (valores.length == 1 && valores[0] == '') {
+			$('#tablaCotizacion').bootstrapTable('remove', { field: 'clasificador', values: [clasificador] });
 			selectedRow.descripcion = 'Ninguno';
 			selectedRow.ult_costo = 0;
 			selectedRow.precioPiezaAD = 0;
+			selectedRow.clasificador = '';
 			actualizarFila(selectedIndex, selectedRow);
+			actualizarNumeroPartidas();
+			mergeCells();
+			actualizarTotales();
 			$('#modalCombos').modal('hide');
+			return false;
 		}
+		// En caso de que se seleccione uno o más items de la categoria
+		$.ajax({
+			async: true,
+			type: 'POST',
+			cache: false,
+			data: { clasificador: clasificador, valores: valores },
+			url: 'Productos/Seleccion',
+			dataType: 'json',
+			beforeSend: function () {
+				$('#msjAlert').html('ESPERA POR FAVOR...');
+				modalAlert.modal('show');
+			},
+			success: function (json) {
+				var data = $('#tablaCotizacion').bootstrapTable('getData');
+				$.each(data, function (index, item) {
+					if (item.clasificador == clasificador) {
+						folios.push(item.folio);
+					}
+				});
+				$('#tablaCotizacion').bootstrapTable('remove', { field: 'clasificador', values: [clasificador] });
+				selectedRow.descripcion = valores.length + ' Items utilizados';
+				selectedRow.ult_costo = 0;
+				selectedRow.precioPiezaAD = 0;
+				selectedRow.clasificador = '';
+				actualizarFila(selectedIndex, selectedRow);
+				i = 1; nextIndex = 0;
+				$.each(json, function (index, item) {
+					nextIndex = parseInt(selectedIndex) + i;
+					row = crearPartida(item.CVE_ART, item.DESCR, item.ULT_COSTO, item.precioPiezaAD, 0, clasificador)
+					$('#tablaCotizacion').bootstrapTable('insertRow', { index: nextIndex, row: row });
+					i = i + 1;
+				});
+				actualizarNumeroPartidas();
+				mergeCells();
+				actualizarTotales();
+				$('#modalCombos').modal('hide');
+				modalAlert.modal('hide');
+			}
+		});
 
 	});
 
@@ -432,61 +503,21 @@ $(document).ready(function () {
 	$('#removerFila').click(function () {
 		filasSeleccionadas = $('#tablaCotizacion').bootstrapTable('getSelections');
 		if (filasSeleccionadas.length > 0) {
-			if (filasSeleccionadas[0]['folio'] != null && filasSeleccionadas[0]['folio'] != '') {
-				folios.push(filasSeleccionadas[0]['folio']);
+			if (filasSeleccionadas[0]['cve_art'] == 'TUB' || filasSeleccionadas[0]['cve_art'] == 'RIE' || filasSeleccionadas[0]['cve_art'] == 'GUI' || filasSeleccionadas[0]['cve_art'] == 'SUP' || filasSeleccionadas[0]['cve_art'] == 'TOR' || filasSeleccionadas[0]['cve_art'] == 'OTR' || filasSeleccionadas[0]['cve_art'] == 'ZPROYECTOS02' || filasSeleccionadas[0]['cve_art'] == 'ZPROYECTOS01' || filasSeleccionadas[0]['cve_art'] == 'ZPROYECTOS04') {
+				$('#msjAlert').html('La partida seleccionada es requerida en la creación de una cotización armada, no puedes borrarla');
+				modalAlert.modal('show');
+			} else if (filasSeleccionadas[0]['clasificador'] == 'TUB' || filasSeleccionadas[0]['clasificador'] == 'RIE' || filasSeleccionadas[0]['clasificador'] == 'GUI' || filasSeleccionadas[0]['clasificador'] == 'SUP' || filasSeleccionadas[0]['clasificador'] == 'TOR' || filasSeleccionadas[0]['clasificador'] == 'OTR') {
+				$('#msjAlert').html('Para agregar o borrar items categorizados utiliza el combo de selección correspondiente');
+				modalAlert.modal('show');
+			} else {
+				if (filasSeleccionadas[0]['folio'] != null && filasSeleccionadas[0]['folio'] != '') {
+					folios.push(filasSeleccionadas[0]['folio']);
+				}
+				$('#tablaCotizacion').bootstrapTable('remove', { field: 'no_partida', values: [filasSeleccionadas[0]['no_partida']] });
+				actualizarNumeroPartidas();
+				actualizarTotales();
 			}
-			$('#tablaCotizacion').bootstrapTable('remove', { field: 'no_partida', values: [filasSeleccionadas[0]['no_partida']] });
-			data = $('#tablaCotizacion').bootstrapTable('getData');
-			actualizarNumeroPartidas(data);
-			actualizarTotales();
 		}
-	});
-
-	// Configuracion del pie de pagina de la tabla de previsualizacion de la cotizacion
-	$('#gestorDeCuenta').editable({
-		type: 'text',
-		defaultValue: '',
-		emptytext: 'Representante de Ventas',
-		mode: 'popup',
-		showbuttons: false,
-		onblur: 'submit',
-		classes: 'table-condensed'
-	});
-
-	$('#terminosVenta').editable({
-		type: 'textarea',
-		defaultValue: '',
-		emptytext: 'Términos y Condiciones de Venta',
-		mode: 'popup',
-		showbuttons: true,
-		onblur: 'submit'
-	});
-
-	$('#observaciones').editable({
-		type: 'textarea',
-		defaultValue: '',
-		emptytext: 'Observaciones',
-		mode: 'popup',
-		showbuttons: true,
-		onblur: 'submit'
-	});
-
-	$('#impuestos').editable({
-		type: 'text',
-		mode: 'popup',
-		showbuttons: false,
-		onblur: 'submit'
-	}).on('hidden', function (e, reason) {
-		actualizarTotales();
-	});
-
-	$('#descuento').editable({
-		type: 'text',
-		mode: 'popup',
-		showbuttons: false,
-		onblur: 'submit'
-	}).on('hidden', function (e, reason) {
-		actualizarTotales();
 	});
 
 	// Configuracion de la tabla de cotizaciones
@@ -494,16 +525,20 @@ $(document).ready(function () {
 		data: [],
 		pagination: true,
 		sidePagination: 'client',
-		pageList: [10, 25, 50, 100, 200],
-		locale: 'es-MX',
+		pageList: [5, 10],
+		pageSize: 5,
 		clickToSelect: true,
 		toolbar: '#toolbarCotizaciones',
-		toolbarAlign: 'right',
 		classes: 'table-condensed table-hover table-bordered',
 		columns: [
-			{ field: 'folio', title: 'Cotizacion', align: 'center', halign: 'center', valign: 'middle' },
+			{ checkbox: true },
+			{
+				field: 'folio', title: 'Folio', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
+					return value * 1
+				}
+			},
 			{ field: 'nombre_cliente', title: 'Cliente' },
-			{ field: 'fecha', title: 'Fecha', align: 'center', halign: 'center', valign: 'middle' },
+			{ field: 'ffecha', title: 'Fecha', align: 'center', halign: 'center', valign: 'middle' },
 			{
 				field: 'totalPrecioRDD', title: 'Importe', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
 					return formato_numero(value, 2, '.', ',')
@@ -541,6 +576,7 @@ $(document).ready(function () {
 					return str
 				}
 			},
+			{ field: 'id_cliente', visible: false }
 		],
 		onClickRow: function (row, $element, field) {
 			window.folio = row.folio;
@@ -553,70 +589,8 @@ $(document).ready(function () {
 	});
 
 	// Cerrar la cotizacion seleccionada
-	$('#tablaCotizaciones tbody').on('click', 'button.cerrar', function (e) {
-		e.preventDefault();
-		cerrarCotizacion();
-	});
-
-	// Guardamos los cambios hechos sobre la cotizacion
-	$('#btnGuardar').click(function (e) {
-		e.preventDefault();
-		pre_folio = $('#pre_folio').val();
-		folio = $('#folio').val();
-		if (pre_folio == '' && folio == '') {
-			$('#msjAlert').html('NADA POR GUARDAR O NO SE HA DEFINIDO EL FOLIO DE LA COTIZACION');
-			modalAlert.modal('show');
-			return true
-		}
-		guardarCotizacion();
-	});
-
-	// Obtener el listado de cotizaciones
-	$('#filtrarCotizaciones').click(function (e) {
-		e.preventDefault();
-		filtrarCotizaciones();
-	});
-
-	// Imprimir la cotizacion en formato bulk
-	$('#btnImprimir').click(function (e) {
-		e.preventDefault();
-		if ($('#folio').val() == '') {
-			$('#msjAlert').html('ABRE O CREA UNA NUEVA COTIZACION QUE IMPRIMIR');
-			modalAlert.modal('show');
-			return true;
-		}
-		if ($('#tipo').is(':checked')) {
-			window.open('Cotizador/ImprimirCotizacion/' + $('#folio').val() + '/armado');
-		} else {
-			window.open('Cotizador/ImprimirCotizacion/' + $('#folio').val() + '/bulk');
-		}
-	});
-
-	// Autorizar una cotizacion
-	$('#btnAutorizar').click(function (e) {
-		e.preventDefault();
-		if ($('#folio').val() == '') {
-			$('#msjAlert').html('ABRE O CREA UNA NUEVA COTIZACION QUE IMPRIMIR');
-			modalAlert.modal('show');
-			return true;
-		}
-		cambiarEstado('B');
-	});
-
-	// Rechazar una cotizacion
-	$('#btnRechazar').click(function (e) {
-		e.preventDefault();
-		if ($('#folio').val() == '') {
-			$('#msjAlert').html('ABRE O CREA UNA NUEVA COTIZACION QUE IMPRIMIR');
-			modalAlert.modal('show');
-			return true;
-		}
-		cambiarEstado('C');
-	});
-
-	// Guardar la partida armado de la cotizacion
-	$('#confirmarPartida').click(function () {
-		guardarArmado($('#taArmado').val());
+	$('#tablaCotizaciones tbody').on('click', 'button.cerrar', function () {
+		cerrarCotizacion(window.folio);
 	});
 
 	// Configuracion del dropzone para cargar el excel de la cotizacion
@@ -670,6 +644,13 @@ $(document).ready(function () {
 		removerImagen(folio);
 	});
 
+	// Cargar los datos del contacto de la empresa
+	$('#contacto').change(function () {
+		$.getJSON("Clientes/ObtenerContactoID", { idempresa: $('#ID').text(), term: $('#contacto').val() }).done(function (json) {
+			xxsetearContacto(json);
+		});
+	});
+
 });
 
 // Funcion para dar formato a un numero
@@ -690,49 +671,26 @@ function formato_numero(numero, decimales, separador_decimal, separador_miles) {
 // Funcion para setear el formulario con la informacion del cliente
 var setearCliente = function (response) {
 	$('#nombreEmpresa').val(response.value);
-	$('#ID').val(response.ID);
+	$('#ID').text(response.ID);
 	$('#RFC').val(response.RFC);
 	$('#direccion').val(response.DOMICILIO);
 	$('#colonia').val(response.COLONIA);
 	$('#municipio').val(response.MUNICIPIO);
 	$('#estado').val(response.ESTADO);
 	$('#CP').val(response.CP);
-	$('#contacto').val(response.REPRESENTANTE);
 	$('#telefono').val(response.TELEFONO);
 	$('#correo').val(response.CORREO);
-}
-
-// Funcion para obtener el maximo descuento permitido por gerencia
-var obtenerMaximoDescuento = function () {
-	var maximoDescuento;
-	$.ajax({
-		type: 'POST',
-		url: 'Descuentos/ObtenerDescuentoMaximo',
-		dataType: 'json',
-		async: false,
-		success: function (response) {
-			maximoDescuento = response.descuento;
-		}
-	});
-	return maximoDescuento;
+	xsetearContacto(response.ID);
 }
 
 // Funcion para reestablecer la replica de la tabla de cotizacion
-var resetReplica = function (replica) {
+var resetReplica = function () {
 	data = $('#tablaCotizacion').bootstrapTable('getData');
 	$.each(data, function (index, row) {
-		row['replicas'] = row['piezas'] * replica;
-		$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
-	});
-	actualizarTabla();
-}
-
-// Funcion para reestablecer el descuento de la tabla de cotizacion
-var resetDescuento = function (descuento) {
-	data = $('#tablaCotizacion').bootstrapTable('getData');
-	$.each(data, function (index, row) {
-		row['descuento'] = descuento;
-		$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+		if (row.cve_art != 'TUB' || row.cve_art != 'RIE' || row.cve_art != 'GUI' || row.cve_art != 'SUP' || row.cve_art != 'TOR' || row.cve_art != 'OTR') {
+			row['replicas'] = row['piezas'] * $('#replica').val();
+			$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+		}
 	});
 	actualizarTabla();
 }
@@ -754,38 +712,82 @@ var obtenerTipoCambio = function () {
 }
 
 // Actualizacion del numero de la partida
-var actualizarNumeroPartidas = function (data) {
+var actualizarNumeroPartidas = function () {
+	data = $('#tablaCotizacion').bootstrapTable('getData');
+	i = iTub = iRie = iGui = iSup = iTor = iOtr = 1;
 	$.each(data, function (index, row) {
-		row['no_partida'] = index + 1;
-		$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+		switch (row.clasificador) {
+			case '':
+				row['no_partida'] = i;
+				$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+				i = i + 1;
+				break;
+			case 'TUB':
+				row['no_partida'] = '1.' + iTub;
+				$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+				iTub = iTub + 1;
+				break;
+			case 'RIE':
+				row['no_partida'] = '2.' + iRie;
+				$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+				iRie = iRie + 1;
+				break;
+			case 'GUI':
+				row['no_partida'] = '3.' + iGui;
+				$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+				iGui = iGui + 1;
+				break;
+			case 'SUP':
+				row['no_partida'] = '4.' + iSup;
+				$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+				iSup = iSup + 1;
+				break;
+			case 'TOR':
+				row['no_partida'] = '5.' + iTor;
+				$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+				iTot = iTor + 1;
+				break;
+			case 'OTR':
+				row['no_partida'] = '6.' + iOtr;
+				$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+				iOtr = iOtr + 1;
+				break;
+			default:
+				break;
+		}
 	});
+	mergeCells();
 }
 
 // Funcion para actualizar el campo de replica y los campos calculados
 var actualizarTabla = function () {
 	data = $('#tablaCotizacion').bootstrapTable('getData');
 	$.each(data, function (index, row) {
-		actualizarFila(index, row);
+		if (row.cve_art != 'TUB' || row.cve_art != 'RIE' || row.cve_art != 'GUI' || row.cve_art != 'SUP' || row.cve_art != 'TOR' || row.cve_art != 'OTR') {
+			actualizarFila(index, row);
+		}
 	});
+	mergeCells();
 	actualizarTotales();
 }
 
 // Funcion para actualizar los campos calculados de la fila
 var actualizarFila = function (index, row) {
-	row['precioPiezaDD'] = row['precioPiezaAD'] - (row['precioPiezaAD'] * row['descuento'] / 100);
-	row['precioParteDD'] = row['piezas'] * row['precioPiezaDD'];
-	row['precioReplicaAD'] = row['replicas'] * row['precioPiezaAD'];
-	row['precioReplicaDD'] = row['replicas'] * row['precioPiezaDD'];
-	row['utilidad'] = row['precioReplicaDD'] - (row['ult_costo'] * row['replicas'])
-	$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+	if (row.cve_art != 'TUB' || row.cve_art != 'RIE' || row.cve_art != 'GUI' || row.cve_art != 'SUP' || row.cve_art != 'TOR' || row.cve_art != 'OTR') {
+		var precioPiezaDD = row['precioPiezaAD'] - (row['precioPiezaAD'] * row['descuento'] / 100);
+		row['precioParteDD'] = row['piezas'] * precioPiezaDD;
+		row['precioReplicaAD'] = row['replicas'] * row['precioPiezaAD'];
+		row['precioReplicaDD'] = row['replicas'] * precioPiezaDD;
+		row['utilidad'] = 100 * (row['precioReplicaDD'] - row['ult_costo'] * row['replicas']) / row['precioReplicaDD'];
+		$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
+	}
 }
 
 // Funcion para calcular los totales de la cotizacion
 var actualizarTotales = function () {
-	tc = $('#tc').val();
 	replica = $('#replica').val();
-	impuestos = parseInt($('#impuestos').html());
-	descuento = parseInt($('#descuento').html());
+	impuestos = parseInt($('#impuestos').editable('getValue', true));
+	descuento = parseInt($('#descuento').editable('getValue', true));
 	data = $('#tablaCotizacion').bootstrapTable('getData');
 
 	stUsdPrecioPDD = 0;
@@ -795,10 +797,12 @@ var actualizarTotales = function () {
 	utilidad = 0;
 
 	$.each(data, function (index, row) {
-		stUsdPrecioPDD = stUsdPrecioPDD + parseFloat(row['precioParteDD']);
-		stUsdPrecioRAD = stUsdPrecioRAD + parseFloat(row['precioReplicaAD']);
-		stUsdPrecioRDD = stUsdPrecioRDD + parseFloat(row['precioReplicaDD']);
-		costo_total = costo_total + (parseFloat(row['ult_costo']) * parseFloat(row['replicas']));
+		if (row.cve_art != 'TUB' || row.cve_art != 'RIE' || row.cve_art != 'GUI' || row.cve_art != 'SUP' || row.cve_art != 'TOR' || row.cve_art != 'OTR') {
+			stUsdPrecioPDD = stUsdPrecioPDD + parseFloat(row['precioParteDD']);
+			stUsdPrecioRAD = stUsdPrecioRAD + parseFloat(row['precioReplicaAD']);
+			stUsdPrecioRDD = stUsdPrecioRDD + parseFloat(row['precioReplicaDD']);
+			costo_total = costo_total + (parseFloat(row['ult_costo']) * parseInt(row['replicas']));
+		}
 	});
 
 	descuentoPrecioPDD = stUsdPrecioPDD * descuento / 100;
@@ -817,23 +821,20 @@ var actualizarTotales = function () {
 	totalPrecioRAD = stPrecioRAD + ivaPrecioRAD;
 	totalPrecioRDD = stPrecioRDD + ivaPrecioRDD;
 
-	utilidad = (totalPrecioRDD * 100 / costo_total) - 100;
-
+	utilidad = 100 * (totalPrecioRDD - costo_total) / totalPrecioRDD;
 
 	if ((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
 		if (window.estatus == 'B') {
-			$('#liImprimir').show();
-			$('#rowMsj').addClass('hidden');
+			$('#btnImprimir').removeClass('hidden');
+			$('#alerta').addClass('hidden');
 		} else {
-			$('#liImprimir').hide();
-			$('#rowMsj').removeClass('hidden');
+			$('#btnImprimir').addClass('hidden');
+			$('#alerta').removeClass('hidden');
 		}
 	} else {
-		$('#liImprimir').show();
-		$('#rowMsj').addClass('hidden');
+		$('#btnImprimir').removeClass('hidden');
+		$('#alerta').addClass('hidden');
 	}
-
-
 
 	// Se actualizan los valores de los controles de los totales
 	$('#stUsdPrecioPDD').html(formato_numero(stUsdPrecioPDD, 2, '.', ','));
@@ -874,6 +875,65 @@ var nuevaCotizacion = function () {
 	$(".selectpicker").selectpicker();
 }
 
+// Funcion para guardar los cambios sobre la cotizacion
+var guardarCotizacion = function () {
+	pre_folio = $('#pre_folio').val();
+	folio = $('#folio').val();
+	cliente = $('#formCliente').serializeArray();
+	cliente.push({ name: 'id_cliente', value: $('#ID').text() });
+	partidas = $('#tablaCotizacion').bootstrapTable('getData');
+	encabezado = {
+		tc: $('#tc').val(),
+		replica: $('#replica').val(),
+		descArmada: $('#descArmada').editable('getValue', true),
+		representante: $('#gestorDeCuenta').editable('getValue', true),
+		terminos: $('#terminosVenta').editable('getValue', true),
+		observaciones: $('#observaciones').editable('getValue', true),
+		stUsdPrecioPDD: $('#stUsdPrecioPDD').html(),
+		stUsdPrecioRAD: $('#stUsdPrecioRAD').html(),
+		stUsdPrecioRDD: $('#stUsdPrecioRDD').html(),
+		descuentoPrecioPDD: $('#descuentoPrecioPDD').html(),
+		descuentoPrecioRAD: $('#descuentoPrecioRAD').html(),
+		descuentoPrecioRDD: $('#descuentoPrecioRDD').html(),
+		stPrecioPDD: $('#stPrecioPDD').html(),
+		stPrecioRAD: $('#stPrecioRAD').html(),
+		stPrecioRDD: $('#stPrecioRDD').html(),
+		ivaPrecioPDD: $('#ivaPrecioPDD').html(),
+		ivaPrecioRAD: $('#ivaPrecioRAD').html(),
+		ivaPrecioRDD: $('#ivaPrecioRDD').html(),
+		totalPrecioPDD: $('#totalPrecioPDD').html(),
+		totalPrecioRAD: $('#totalPrecioRAD').html(),
+		totalPrecioRDD: $('#totalPrecioRDD').html(),
+		utilidad: $('#utilidad').html(),
+		tasa_impuesto: $('#impuestos').editable('getValue', true),
+		descuentost: $('#descuento').editable('getValue', true),
+		tipo: $('#tipo').val(),
+		area: $('#area').val()
+	};
+	$.ajax({
+		async: true,
+		type: 'POST',
+		cache: false,
+		data: { pre_folio: pre_folio, folio: folio, cliente: cliente, encabezado: encabezado, partidas: partidas, folios: folios },
+		url: 'Cotizador/GuardarCotizacion',
+		dataType: 'json',
+		beforeSend: function () {
+			$('#msjAlert').html('GUARDANDO COTIZACION, ESPERA POR FAVOR...');
+			modalAlert.modal('show');
+		},
+		success: function (json) {
+			console.log(json);
+			$('#msjAlert').html(json.msj);
+			if (json.bandera == true) {
+				$('#folio').val(json.folio);
+				cargarCotizacion(json.folio);
+				folios.length = 0;
+				modalAlert.modal('hide');
+			}
+		}
+	});
+}
+
 // Funcion para cargar una cotizacion guardada con anterioriodad
 var cargarCotizacion = function (folio) {
 	$.ajax({
@@ -891,135 +951,64 @@ var cargarCotizacion = function (folio) {
 			$('#msjAlert').html(json.msj);
 			if (json.bandera == true) {
 				en = json.encabezado;
-				// Se carga el encabezado
 				$('#folio').val(parseInt(en.folio));
 				$('#pre_folio').val(parseInt(en.folio_preencabezado));
 				$('#nombre').val(en.nombre_cliente);
 				$('#nombreEmpresa').val(en.nombre_empresa);
-				$('#ID').val(en.id_cliente);
+				$('#ID').text(en.id_cliente);
 				$('#RFC').val(en.rfc);
 				$('#direccion').val(en.direccion);
 				$('#colonia').val(en.colonia);
 				$('#municipio').val(en.municipio);
 				$('#estado').val(en.estado);
 				$('#CP').val(en.codigo_postal);
-				$('#contacto').val(en.nombre_contacto);
 				$('#telefono').val(en.telefono);
 				$('#correo').val(en.correo);
 				$('#tc').val(en.tipo_cambios);
 				$('#replica').val(en.replicas);
-				$('#std').val(parseFloat(en.descuento_sobre_pieza, 2));
-				$('#gestorDeCuenta').html(en.representante_ventas);
-				$('#terminosVenta').html(en.terminos_y_condiciones);
-				$('#observaciones').html(en.observaciones);
-				$('#descuento').html(parseFloat(en.descuentost, 2));
-				$('#impuestos').html(parseFloat(en.tasa_impuesto, 2));
-				$('#tipo').val(en.tipo_impresion == 'A' ? 1 : 0 );
+				$('#descArmada').editable('setValue', en.descripcion_armado, false);
+				$('#gestorDeCuenta').editable('setValue', en.representante_ventas, false);
+				$('#terminosVenta').editable('setValue', en.terminos_y_condiciones, false);
+				$('#observaciones').editable('setValue', en.observaciones, false);
+				$('#descuento').editable('setValue', parseFloat(en.descuentost, 2), false);
+				$('#impuestos').editable('setValue', parseFloat(en.tasa_impuesto, 2), false);
+				$('#tipo').val(en.tipo_impresion);
+				$('#area').val(en.area);
+				xsetearContacto(en.id_cliente);
+				$('#contacto').val(en.nombre_contacto);
+				if (en.tipo_impresion == 'B') {
+					$('#tablaCotizacion').bootstrapTable('hideColumn', 'aparece_en_armada');
+				} else {
+					$('#tablaCotizacion').bootstrapTable('showColumn', 'aparece_en_armada');
+				}
 				setearPartidas();
 				recargarGaleria();
 				modalAlert.modal('hide');
 				$('#modalCotizaciones').modal('hide');
 				$('#rowCargar').hide();
-				string = '';
+				$('#tipo').prop('disabled', true);
 				window.estatus = en.estatus;
 				if (en.estatus == 'A') {
-					$('#liGuardar').show();
-					$('#liAutorizar').show();
-					$('#liRechazar').show();
-					$('#rowCargaImg').show();
-					$('#rowGaleria').show();
+					$('#btnGuardar, #btnAutorizar, #btnRechazar, #btnImprimir, #rowCargaImg, #rowGaleria').removeClass('hidden');
 					string = "<span class='label label-default'>Abierta</span>";
 				}
 				if (en.estatus == 'B') {
-					$('#liGuardar').hide();
-					$('#liAutorizar').hide();
-					$('#liRechazar').show();
-					$('#rowCargaImg').hide();
-					$('#rowGaleria').hide();
+					$('#btnGuardar, #btnAutorizar, #rowCargaImg, #rowGaleria').addClass('hidden');
+					$('#btnRechazar, #btnImprimir').removeClass('hidden');
 					string = "<span class='label label-primary'>Autorizada</span>";
 				}
 				if (en.estatus == 'C') {
-					$('#liGuardar').hide();
-					$('#liAutorizar').hide();
-					$('#liRechazar').hide();
-					$('#rowCargaImg').hide();
-					$('#rowGaleria').hide();
+					$('#btnGuardar, #btnAutorizar, #btnRechazar, #rowCargaImg, #rowGaleria').addClass('hidden');
+					$('#btnImprimir').removeClass('hidden');
 					string = "<span class='label label-danger'>Rechazada</span>";
 				}
 				if (en.estatus == 'D') {
-					$('#liGuardar').hide();
-					$('#liAutorizar').hide();
-					$('#liRechazar').hide();
-					$('#rowCargaImg').hide();
-					$('#rowGaleria').hide();
+					$('#btnGuardar, #btnAutorizar, #btnRechazar, #rowCargaImg, #rowGaleria').addClass('hidden');
+					$('#btnImprimir').removeClass('hidden');
 					string = "<span class='label label-success'>Cerrada</span>"
 				}
-				$('#liEstatus').html(string);
+				$('#fontEstatus').html(string);
 			}
-		}
-	});
-}
-
-// Funcion para guardar los cambios sobre la cotizacion
-var guardarCotizacion = function () {
-	pre_folio = $('#pre_folio').val();
-	folio = $('#folio').val();
-	cliente = $('#formCliente').serializeArray();
-	partidas = $('#tablaCotizacion').bootstrapTable('getData');
-	encabezado = {
-		tc: $('#tc').val(),
-		replica: $('#replica').val(),
-		representante: $('#gestorDeCuenta').text(),
-		terminos: $('#terminosVenta').text(),
-		observaciones: $('#observaciones').text(),
-		stUsdPrecioPDD: $('#stUsdPrecioPDD').html(),
-		stUsdPrecioRAD: $('#stUsdPrecioRAD').html(),
-		stUsdPrecioRDD: $('#stUsdPrecioRDD').html(),
-		descuentoPrecioPDD: $('#descuentoPrecioPDD').html(),
-		descuentoPrecioRAD: $('#descuentoPrecioRAD').html(),
-		descuentoPrecioRDD: $('#descuentoPrecioRDD').html(),
-		stPrecioPDD: $('#stPrecioPDD').html(),
-		stPrecioRAD: $('#stPrecioRAD').html(),
-		stPrecioRDD: $('#stPrecioRDD').html(),
-		ivaPrecioPDD: $('#ivaPrecioPDD').html(),
-		ivaPrecioRAD: $('#ivaPrecioRAD').html(),
-		ivaPrecioRDD: $('#ivaPrecioRDD').html(),
-		totalPrecioPDD: $('#totalPrecioPDD').html(),
-		totalPrecioRAD: $('#totalPrecioRAD').html(),
-		totalPrecioRDD: $('#totalPrecioRDD').html(),
-		utilidad: $('#utilidad').html(),
-		tasa_impuesto: $('#impuestos').html(),
-		descuentost: $('#descuento').html(),
-		tipo: $('#tipo').val()
-	};
-	combos = {
-		tub: $('#selectTubos').val(),
-		rie: $('#selectRieles').val(),
-		gui: $('#selectGuias').val(),
-		sup: $('#selectSuperficies').val(),
-		tor: $('#selectTornilleria').val(),
-		otr: $('#selectOtros').val()
-	};
-	$.ajax({
-		async: true,
-		type: 'POST',
-		cache: false,
-		data: { pre_folio: pre_folio, folio: folio, cliente: cliente, encabezado: encabezado, partidas: partidas, folios: folios, combos: combos },
-		url: 'Cotizador/GuardarCotizacion',
-		dataType: 'json',
-		beforeSend: function () {
-			$('#msjAlert').html('GUARDANDO COTIZACION, ESPERA POR FAVOR...');
-			modalAlert.modal('show');
-		},
-		success: function (json) {
-			$('#msjAlert').html(json.msj);
-			if (json.bandera == true) {
-				$('#folio').val(json.folio);
-				cargarCotizacion(json.folio);
-				folios.length = 0;
-				modalAlert.modal('hide');
-			}
-			console.log(json);
 		}
 	});
 }
@@ -1036,102 +1025,32 @@ var setearPartidas = function () {
 		dataType: 'json',
 		success: function (json) {
 			$('#tablaCotizacion').bootstrapTable('load', json.partidas);
-			// Actualizamos los valores seleccionados de los combos
-			options = [];
-			$.each(json.tubos, function (index, item) {
-				options.push(item.cve_art)
-			});
-			$('#selectTubos').selectpicker('val', options);
-
-			options.lenght = 0;
-			$.each(json.rieles, function (index, item) {
-				options.push(item.cve_art)
-			});
-			$('#selectRieles').selectpicker('val', options);
-
-			options.lenght = 0;
-			$.each(json.guias, function (index, item) {
-				options.push(item.cve_art)
-			});
-			$('#selectGuias').selectpicker('val', options);
-
-			options.lenght = 0;
-			$.each(json.superficies, function (index, item) {
-				options.push(item.cve_art)
-			});
-			$('#selectSuperficies').selectpicker('val', options);
-
-			options.lenght = 0;
-			$.each(json.tornillos, function (index, item) {
-				options.push(item.cve_art)
-			});
-			$('#selectTornilleria').selectpicker('val', options);
-
-			options.lenght = 0;
-			$.each(json.otros, function (index, item) {
-				options.push(item.cve_art)
-			});
-			$('#selectOtros').selectpicker('val', options);
-			// Actualizamos los totales
+			mergeCells();
 			actualizarTotales();
+			$('#selectTubos').selectpicker('val', json.tubos);
+			$('#selectRieles').selectpicker('val', json.rieles);
+			$('#selectGuias').selectpicker('val', json.guias);
+			$('#selectSuperficies').selectpicker('val', json.superficies);
+			$('#selectTornilleria').selectpicker('val', json.tornilleria);
+			$('#selectOtros').selectpicker('val', json.otros);
 		}
 	});
-}
-
-// Funcion para obtener las partidas armadas de la cotizacion
-var partidasArmado = function () {
-	var data = [];
-	$.ajax({
-		async: false,
-		type: 'POST',
-		cache: false,
-		data: { folio: $('#folio').val() },
-		url: 'Cotizador/ObtenerPartidasArmado',
-		dataType: 'json',
-		success: function (json) {
-			data = json;
-		}
-	});
-	return data;
-}
-
-// Funcion para guardar la partida de armado
-var guardarArmado = function (armado) {
-	$.ajax({
-		async: false,
-		type: 'POST',
-		cache: false,
-		data: { folio: $('#folio').val(), armado: armado },
-		url: 'Cotizador/GuardarPartidaArmado',
-		dataType: 'json',
-		success: function (json) {
-			if (json.bandera == true) {
-				$('#modalArmado').modal('hide');
-				window.open('Cotizador/ImprimirCotizacion/' + $('#folio').val() + '/armado');
-			} else {
-				$('#msjAlert').html('Se presento un error al guardar la partida de armado');
-			}
-		}
-	});
-	return data;
 }
 
 // Funcion para recargar la galeria de imagenes de la cotizacion
 var recargarGaleria = function () {
 	$.ajax({
-		async: false,
+		async: true,
 		type: 'POST',
 		cache: false,
 		data: { folio: $('#folio').val(), pre_folio: $('#pre_folio').val() },
 		url: 'Cotizador/ObtenerImagenes',
 		dataType: 'json',
 		success: function (json) {
-			if (json.bandera == true) {
-				$('#galeria').empty();
-				$.each(json.imgs, function (index, img) {
-					$('#galeria').append(pintarImagen(img));
-				});
-			}
+			$('#galeria').empty();
+			$.each(json, function (index, img) {
+				$('#galeria').append(pintarImagen(img));
+			});
 		}
 	});
 }
@@ -1144,7 +1063,7 @@ var pintarImagen = function (img) {
 		"		<div class='image view view-first'>" +
 		"			<img style='width: 100%; display: block;' src='" + img.url + "' 'alt='image' />" +
 		"			<div class='mask'>" +
-		"				<p>Clic x para quitar</p>" +
+		"				<p>Clic 'x' para quitar</p>" +
 		"				<div class='tools tools-bottom'>" +
 		"					<a href='#' class='quitarimagen' id='" + img.folio + "'><i class='fa fa-times'></i></a>" +
 		"				</div>" +
@@ -1160,7 +1079,7 @@ var pintarImagen = function (img) {
 // Funcion para remover una imagen de la cotizacion
 var removerImagen = function (folio) {
 	$.ajax({
-		async: false,
+		async: true,
 		type: 'POST',
 		cache: false,
 		data: { folio: folio },
@@ -1195,12 +1114,12 @@ var cambiarEstado = function (estado) {
 }
 
 // Funcion para cerrar una cotizacion
-var cerrarCotizacion = function () {
+var cerrarCotizacion = function (folio) {
 	$.ajax({
 		async: true,
 		type: 'POST',
 		cache: false,
-		data: { folio: window.folio },
+		data: { folio: folio },
 		url: 'Cotizador/CerrarCotizacion',
 		dataType: 'json',
 		success: function (json) {
@@ -1242,9 +1161,124 @@ var llenarCombo = function ($element, clasificador) {
 		url: 'Productos/Combo',
 		dataType: 'json',
 		success: function (json) {
+			$element.append("<optgroup><option value=''>Ninguno</option></optgroup><optgroup>");
 			$.each(json, function (index, item) {
 				$element.append("<option value='" + item.CVE_ART + "'>" + item.CVE_ART + ' - ' + item.DESCR + "</option>");
 			});
+			$element.append("</optgroup>");
 		}
 	});
+}
+
+// Funcion para agrupar las celdas de las partidas de armada
+mergeCells = function () {
+	data = $('#tablaCotizacion').bootstrapTable('getData');
+	$.each(data, function (index, row) {
+		if (row.cve_art == 'TUB' || row.cve_art == 'RIE' || row.cve_art == 'GUI' || row.cve_art == 'SUP' || row.cve_art == 'TOR' || row.cve_art == 'OTR') {
+			$('#tablaCotizacion').bootstrapTable('mergeCells', {
+				index: index,
+				field: 'descripcion',
+				colspan: 10,
+				rowspan: 1
+			});
+		}
+	});
+}
+
+// Funcion para crear una nueva partida
+crearPartida = function (cve_art, descripcion, costo, precio, piezas, clasificador) {
+	return {
+		no_partida: 0,
+		folio: '',
+		ult_costo: costo,
+		cve_art: cve_art,
+		descripcion: descripcion,
+		precioPiezaAD: precio,
+		piezas: piezas,
+		descuento: 0,
+		precioParteDD: precio * piezas,
+		replicas: piezas * $('#replica').val(),
+		precioReplicaAD: precio * piezas * $('#replica').val(),
+		precioReplicaDD: precio * piezas * $('#replica').val(),
+		ult_costo: 0,
+		utilidad: 0,
+		clasificador: clasificador,
+		partida_armado: 'N',
+		aparece_en_armada: 'No'
+	};
+}
+
+// Funcion para setear la lista de contactos de la empresa seleccionada
+function xsetearContacto(cliente) {
+	$.ajax({
+		type: 'POST',
+		url: 'Clientes/ObtenerContactos',
+		dataType: 'json',
+		data: { idempresa: cliente },
+		async: false,
+		success: function (response) {
+			if (response.length > 0) {
+				$('#contacto').empty().append("<option value=''>Selecciona...</option>");
+				$.each(response, function (index, item) {
+					$('#contacto').append("<option value=" + item.intidcontacto + ">" + item.strnombre + "</option>");
+				});
+			}
+		}
+	});
+}
+
+// Funcion para setear los datos de contacto del cliente
+function xxsetearContacto(data) {
+	$('#contacto').val(data.intidcontacto);
+	$('#telefono').val(data.strtelefono1);
+	$('#correo').val(data.stremail);
+	$('#area').val(data.strcampo1);
+}
+
+// Funcion para imprimir un conjunto de cotizaciones
+function imprimirCotizaciones() {
+	var cotizaciones = $('#tablaCotizaciones').bootstrapTable('getSelections');
+	impresiones = ids_cliente = [];
+	canceladas = false;
+	$.each(cotizaciones, function (index, item) {
+		impresiones.push(item.folio);
+		ids_cliente = item.id_cliente;
+		if (item.estatus == 'C') canceladas = true;
+	});
+	ids_cliente = eliminateDuplicados(ids_cliente);
+	if (impresiones.length == 0) {
+		$('#msjAlert').html('Selecciona las cotizaciones a imprimir');
+		modalAlert.modal('show');
+		return false;
+	}
+	if (canceladas == true) {
+		$('#msjAlert').html('No puedes agregar una cotizacion rechazada a una impresión grupal');
+		modalAlert.modal('show');
+		return false;
+	}
+	if (ids_cliente.length > 1) {
+		$('#msjAlert').html('Las impresiones grupales solo se pueden realizar si pertenecen al mismo cliente');
+		modalAlert.modal('show');
+		return false;
+	}
+
+	$.cookie('impresiones', impresiones);
+	window.open("Cotizador/ImprimirCotizaciones");
+
+
+}
+
+function eliminateDuplicados(arr) {
+	var i,
+		len = arr.length,
+		out = [],
+		obj = {};
+
+	for (i = 0; i < len; i++) {
+		obj[arr[i]] = 0;
+	}
+	for (i in obj) {
+		out.push(i);
+	}
+	return out;
 }

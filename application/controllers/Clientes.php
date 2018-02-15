@@ -12,8 +12,8 @@ class Clientes extends Base_Controller {
 		# Guardamos el termino de busqueda en una variable local
 		$nombre = $this->input->get('term');
 		# Cargamos el modelo para obtener los datos del cliente
-			$this->load->model('Cliente');
-			$clientes = $this->Cliente->ObtenerCliente($nombre);
+			$this->load->model('cliente');
+			$clientes = $this->cliente->ObtenerCliente($nombre);
 		exit(json_encode($clientes));
 	}
 	# Metodo usado para obtener los datos del autocomplete del cliente de modal
@@ -105,6 +105,19 @@ class Clientes extends Base_Controller {
 			$response = $this->Cliente->ObtenerContacto($nombre, $idempresa);
 		exit(json_encode($response));
 	}
+
+	# Metodo usado para obtener los datos del autocomplete del contacto
+	public function ObtenerContactoID(){
+		if(!$this->input->is_ajax_request()) show_404();
+		# Guardamos el termino de busqueda en una variable local
+		$nombre = $this->input->get('term');
+		$idempresa = $this->input->get('idempresa');
+		# Cargamos el modelo para obtener los datos del contacto
+			$this->load->model('Cliente');
+			$response = $this->Cliente->ObtenerContactoID($nombre, $idempresa);
+		exit(json_encode($response));
+	}
+
 	# Metodo para guardar la informacion del contacto
 	public function GuardarContacto() {
 		if(!$this->input->is_ajax_request()) show_404();
@@ -148,7 +161,6 @@ class Clientes extends Base_Controller {
 		$response = $this->Cliente->ObtenerContactos($this->input->post('idempresa'));
 		exit(json_encode($response));
 	}
-	# Metodo para obtener un contacto con su id
 	# Metodo usado para obtener los datos del autocomplete del contacto
 	public function ObtenerContactoByID(){
 		if(!$this->input->is_ajax_request()) show_404();

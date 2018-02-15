@@ -9,20 +9,20 @@ class terminosycondiciones extends CI_Model{
 	}
 
 	# Retorna los registros de la tabla
-	public function obtenerRegistros($estatus = '', $clase = '') {
-		$this->db->from('terminosycondiciones');
-		$this->db->order_by('tipo', 'asc');
+	public function obtener($estatus = '', $clase = '') {
+		$this->db->from('terminosycondiciones')
+		->order_by('tipo', 'asc');
 		if($estatus != '') $this->db->where('estatus !=', 'X');
 		if($clase != '') $this->db->where('clase =', $clase);
 		$query = $this->db->get();
 		return $query->result();
 	}
 
-	public function obtenerTipos() {
-		$this->db->select('tipo');
-		$this->db->from('terminosycondiciones');
-		$this->db->group_by('tipo'); 
-		$this->db->order_by('tipo', 'asc');
+	public function tipos() {
+		$this->db->select('tipo')
+		->from('terminosycondiciones')
+		->group_by('tipo')
+		->order_by('tipo', 'asc');
 		$query = $this->db->get();
 		return $query->result();
 	}

@@ -17,6 +17,13 @@
 		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.css')?>">
 		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap-select.min.css')?>">
 		<link rel="stylesheet" href="<?php echo base_url('public/css/custom.css')?>">
+		<style>
+			.form-inline .form-control {
+				display: inline-block;
+				width: auto;
+				vertical-align: middle;
+			}
+		</style>
 	</head>
 	<body style="padding-right: 0 !important">
 		<div class="container-fluid" style="max-width: 1200px">
@@ -25,36 +32,43 @@
 			<div class="row">
 				<div class="col-xs-12 form-inline">
 					<div class="btn-group" role="group">
-						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo cliente o prospecto" id="btnCliente"><i class="fa fa-users hidden-lg"></i> <font class="visible-lg">Clientes</font></button>
+						<button type="button" data-tool="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo cliente o prospecto" data-toggle="modal" data-target="#modalCliente"><i class="fa fa-users hidden-lg"></i> <font class="visible-lg">Clientes</font></button>
 
-						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo contacto" id="btnContacto"><i class="fa fa-phone hidden-lg"></i> <font class="visible-lg">Contactos</font></button>
+						<button type="button" data-tool="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo contacto" data-toggle="modal" data-target="#modalContacto"><i class="fa fa-phone hidden-lg"></i> <font class="visible-lg">Contactos</font></button>
 					</div>
-					<input type="text" class="form-control text-center" name="pre_folio" id="pre_folio" value="" readonly placeholder="Pre-folio">
-					<input type="text" class="form-control text-center" name="folio" id="folio" value="" readonly placeholder="Folio">
-					<font id="liEstatus"></font>
+					<input type="text" class="form-control text-center" name="pre_folio" id="pre_folio" value="" readonly placeholder="Pre-folio" style="max-width: 150px">
+					<input type="text" class="form-control text-center" name="folio" id="folio" value="" readonly placeholder="Folio" style="max-width: 150px">
+					<font id="fontEstatus"></font>
 					<div class="btn-group pull-right" role="group">
-						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="nuevaCotizacion" title="Crear nueva cotización"><i class="fa fa-file-o hidden-lg"></i> <font class="visible-lg">Nueva</font></button>
+						<?php
+							if($tipo_usuario == 'diseñadores') { ?>
+								<a href="<?php echo base_url('Condiciones') ?>" target="_blank" role="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Modulo de términos y condiciones"><i class="fa fa-list-alt hidden-lg"></i> <font class="visible-lg">T y C</font></a> <?php
+							}
+						?>
 
-						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" id="abrirCotizacion" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o hidden-lg"></i> <font class="visible-lg">Abrir</font></button>
+						<a href="<?php echo base_url() ?>" role="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Crear nueva cotización"><i class="fa fa-file-o hidden-lg"></i> <font class="visible-lg">Nueva</font></a>
 
-						<button type="button" id="btnImprimir" data-toggle="tooltip" data-placement="bottom" class="btn btn-info" title="Imprimir cotización (Guarda cambios antes de imprimir)"><i class="fa fa-file-pdf-o hidden-lg"></i> <font class="visible-lg">Imprimir</font>
+						<button type="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" data-toggle="modal" data-target="#modalCotizaciones" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o hidden-lg"></i> <font class="visible-lg">Abrir</font></button>
 
-						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o hidden-lg"></i> <font class="visible-lg">Guardar</font></button>
+						<button type="button" id="btnImprimir" data-tool="tooltip" data-placement="bottom" class="btn btn-info hidden" title="Imprimir cotización (Guarda cambios antes de imprimir)" id="btnImprimir"><i class="fa fa-file-pdf-o hidden-lg"></i> <font class="visible-lg">Imprimir</font>
 
-						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-success" title="Autorizar la impresión de la cotización" id="btnAutorizar"><i class="fa fa-unlock hidden-lg"></i> <font class="visible-lg">Autorizar</font></button>
+						<button type="button" onclick="guardarCotizacion()" data-tool="tooltip" data-placement="bottom" class="btn btn-primary hidden" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o hidden-lg"></i> <font class="visible-lg">Guardar</font></button>
 
-						<button type="button" data-toggle="tooltip" data-placement="bottom" class="btn btn-danger" title="Rechazar uso de la cotización" id="btnRechazar"><i class="fa fa-close hidden-lg"></i> <font class="visible-lg">Rechazar</font></button>
+						<button type="button" onclick="cambiarEstado('B')" data-tool="tooltip" data-placement="bottom" class="btn btn-success hidden" title="Autorizar la impresión de la cotización" id="btnAutorizar"><i class="fa fa-unlock hidden-lg"></i> <font class="visible-lg">Autorizar</font></button>
+
+						<button type="button" onclick="cambiarEstado('C')" data-tool="tooltip" data-placement="bottom" class="btn btn-danger hidden" title="Rechazar uso de la cotización" id="btnRechazar"><i class="fa fa-close hidden-lg"></i> <font class="visible-lg">Rechazar</font></button>
 					</div>
 				</div>
 			</div>
+			<hr style="margin-top: 2px; margin-bottom: 5px; border: 0;" />
 
 			<!-- Mensaje de alerta sobre el descuento sobre la cotizacion -->
-			<div class="row hidden" id="rowMsj">
-				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-					<strong style="color: red">Cotizaciones con descuentos mayores a 15% deben ser aprobados para su impresión</strong>
+			<div class="row hidden" id="alerta">
+				<div class="col-xs-12">
+					<div class="alert alert-danger" role="alert">Cotizaciones con descuentos mayores a 15% deben ser aprobados para su impresión</div>
 				</div>
 			</div>
-			<hr style="margin-top: 2px; margin-bottom: 10px; border: 0;" />
+			<hr style="margin-top: 2px; margin-bottom: 1px; border: 0;" />
 
 			<!-- Panel para mostrar los datos del cliente -->
 			<div class="row">
@@ -62,7 +76,7 @@
 					<div class="x_panel">
 						<form method="POST" action="#" id="formCliente">
 							<div class="x_title">
-								<h2>Detalles del cliente</h2>
+								<h2>Información del cliente</h2>
 								<ul class="nav navbar-right panel_toolbox">
 									<li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
 								</ul>
@@ -70,7 +84,7 @@
 							</div>
 							<div class="x_content">
 								<div class="row">
-									<div class="col-xs-3">
+									<div class="col-xs-4 col-sm-3 col-md-3 col-lg-3">
 										<label for="tipo">Tipo Cotizacion</label>
 										<select class="form-control" name="tipo" id="tipo" autofocus >
 											<?php
@@ -80,77 +94,71 @@
 											?>
 										</select>
 									</div>
-									<div class="col-xs-9">
-										<label for="nombre">Nombre</label>
-										<input type="text" class="form-control autocomplete" name="nombre" id="nombre" placeholder="Por nombre (Al seleccionar el cliente no se podrá cambiar el tipo de cotización)" readonly>
-									</div>
-								</div>
-								<hr>
-								<div class="row">
-									<div class="col-xs-12 col-sm-9 col-md-6">
-										<div class="form-group">
-											<label for="nombreEmpresa">Nombre empresa</label>
-											<input type="text" class="form-control" name="nombreEmpresa" id="nombreEmpresa" readonly>
+									<div class="col-xs-8 col-sm-9 col-md-6 col-lg-6">
+										<label for="nombreEmpresa">Nombre</label>
+										<div class="input-group">
+											<span class="input-group-btn"><button type="button" class="btn btn-default" id="ID">ID Cliente</button></span>
+											<input type="text" class="form-control" name="nombreEmpresa" id="nombreEmpresa" placeholder="Al seleccionar el cliente no se podrá cambiar el tipo de cotización" readonly >
 										</div>
 									</div>
-									<div class="col-xs-12 col-sm-3 col-md-3">
-										<div class="form-group">
-											<label for="ID">ID</label>
-											<input type="text" class="form-control" name="ID" id="ID" readonly>
-										</div>
-									</div>
-									<div class="col-xs-12 col-sm-4 col-md-3">
+									<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
 										<div class="form-group">
 											<label for="RFC">RFC</label>
 											<input type="text" class="form-control" name="RFC" id="RFC" readonly>
 										</div>
 									</div>
-									<div class="col-xs-12 col-sm-8 col-md-6">
-										<div class="form-group">
-											<label for="direccion">Dirección</label>
-											<input type="text" class="form-control" name="direccion" id="direccion" readonly>
-										</div>
-									</div>
-									<div class="col-xs-12 col-sm-4 col-md-3">
-										<div class="form-group">
-											<label for="colonia">Colonia</label>
-											<input type="text" class="form-control" name="colonia" id="colonia" readonly>
-										</div>
-									</div>
-									<div class="col-xs-12 col-sm-4 col-md-3">
-										<div class="form-group">
-											<label for="municipio">Municipio</label>
-											<input type="text" class="form-control" name="municipio" id="municipio" readonly>
-										</div>
-									</div>
-									<div class="col-xs-12 col-sm-4">
+									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-4">
 										<div class="form-group">
 											<label for="estado">Estado</label>
 											<input type="text" class="form-control" name="estado" id="estado" readonly>
 										</div>
 									</div>
-									<div class="col-xs-12 col-sm-3">
+									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-4">
+										<div class="form-group">
+											<label for="municipio">Municipio</label>
+											<input type="text" class="form-control" name="municipio" id="municipio" readonly>
+										</div>
+									</div>
+									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-4">
+										<div class="form-group">
+											<label for="colonia">Colonia</label>
+											<input type="text" class="form-control" name="colonia" id="colonia" readonly>
+										</div>
+									</div>
+									<div class="col-xs-3 col-sm-3 col-md-2 col-lg-2">
 										<div class="form-group">
 											<label for="CP">C P</label>
 											<input type="text" class="form-control" name="CP" id="CP" readonly>
 										</div>
 									</div>
-									<div class="col-xs-12 col-sm-5">
+									<div class="col-xs-9 col-sm-9 col-md-10 col-lg-10">
 										<div class="form-group">
-											<label for="contacto">Contacto</label>
-											<input type="text" class="form-control" name="contacto" id="contacto" readonly>
+											<label for="direccion">Dirección</label>
+											<input type="text" class="form-control" name="direccion" id="direccion" readonly>
 										</div>
 									</div>
-									<div class="col-xs-12 col-sm-4">
+									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-4">
+										<div class="form-group">
+											<label for="contacto">Contacto</label>
+											<select class="form-control" name="contacto" id="contacto"></select>
+										</div>
+									</div>
+									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-2">
 										<div class="form-group">
 											<label for="telefono">Teléfono</label>
 											<input type="text" class="form-control" name="telefono" id="telefono" readonly>
 										</div>
 									</div>
-									<div class="col-xs-12 col-sm-8">
+									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-4">
 										<div class="form-group">
 											<label for="correo">Correo</label>
 											<input type="text" class="form-control" name="correo" id="correo" readonly>
+										</div>
+									</div>
+									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-2">
+										<div class="form-group">
+											<label for="area">Área</label>
+											<input type="text" class="form-control" name="area" id="area" readonly>
 										</div>
 									</div>
 								</div>
@@ -192,10 +200,10 @@
 							<div class="clearfix"></div>
 						</div>
 						<div class="x_content">
-							<table id="tablaCotizacion" class="jambo_table bulk_action table-bordered">
+							<table id="tablaCotizacion" class="jambo_table bulk_action">
 								<tfoot>
 									<tr>
-										<th colspan="6"><label id="gestorDeCuenta"></label></th>
+										<th colspan="5"><a id="descArmada"></a></th>
 										<th class="text-right">SubTotal</th>
 										<th></th>
 										<th id="stUsdPrecioPDD" class="text-right"></th>
@@ -205,7 +213,7 @@
 										<th></th>
 									</tr>
 									<tr>
-										<th colspan="6" rowspan="2"><label id="observaciones"></label></th>
+										<th colspan="5"><a id="gestorDeCuenta"></a></th>
 										<th class="text-right">Descuento</th>
 										<th class="text-right"><label id="descuento">0</label></th>
 										<th id="descuentoPrecioPDD" class="text-right"></th>
@@ -215,6 +223,7 @@
 										<th></th>
 									</tr>
 									<tr>
+										<th colspan="5" rowspan="2"><a id="observaciones"></a></th>
 										<th class="text-right">SubTotal DD</th>
 										<th></th>
 										<th id="stPrecioPDD" class="text-right"></th>
@@ -224,7 +233,6 @@
 										<th></th>
 									</tr>
 									<tr>
-										<th colspan="6" rowspan="2"><label id="terminosVenta"></label></th>
 										<th class="text-right">Impuestos</th>
 										<th class="text-right"><label id="impuestos">16</label></th>
 										<th id="ivaPrecioPDD" class="text-right"></th>
@@ -234,6 +242,7 @@
 										<th></th>
 									</tr>
 									<tr>
+										<th colspan="5" rowspan="2"><a id="terminosVenta"></a></th>
 										<th class="text-right">Total</th>
 										<th></th>
 										<th id="totalPrecioPDD" class="text-right"></th>
@@ -243,7 +252,7 @@
 										<th id="utilidad" class="text-right"></th>
 									</tr>
 									<tr>
-										<th colspan="13" id="faltantes"></th>
+										<th colspan="7" id="faltantes"></th>
 									</tr>
 								</tfoot>
 							</table>
@@ -253,7 +262,7 @@
 			</div>
 
 			<!-- Panel para cargar las imagenes que se anexaran a la cotizacion -->
-			<div class="row" id="rowCargaImg">
+			<div class="row hidden" id="rowCargaImg">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel">
 						<div class="x_title">
@@ -272,7 +281,7 @@
 			</div>
 
 			<!-- Panel de la galeria de las imagenes de la cotizacion -->
-			<div class="row" id="rowGaleria">
+			<div class="row hidden" id="rowGaleria">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel">
 						<div class="x_title">
@@ -343,59 +352,64 @@
 
 		<!-- Toolbar para la tabla de previsualizacion de la vista -->
 		<div id="toolbar">
-			<div class="row form-inline">
-				<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
-					<button type="button" class="btn btn-success btn-block btn-sm" data-toggle="tooltip" data-placement="bottom" id="agregarParte" title="Agregar un producto especial"><i class="fa fa-plus-square"></i> <font class="hidden-xs">Agregar</font></button>
+			<div class="row">
+				<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
+					<button type="button" class="btn btn-success btn-block btn-sm" data-tool="tooltip" data-placement="bottom" data-toggle="modal" data-target="#modalProducto" title="Agregar un producto especial"><i class="fa fa-plus-square"></i> <font class="hidden-xs">Agregar</font></button>
 				</div>
-				<div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
-					<button type="button" class="btn btn-warning btn-block  btn-sm" data-toggle="tooltip" data-placement="bottom" id="removerFila" title="Quitar el producto seleccionado de la cotización"><i class="fa fa-eraser"></i> <font class="hidden-xs">Quitar</font></button>
+				<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
+					<button type="button" class="btn btn-warning btn-block btn-sm" data-tool="tooltip" data-placement="bottom" id="removerFila" title="Quitar el producto seleccionado de la cotización"><i class="fa fa-eraser"></i> <font class="hidden-xs">Quitar</font></button>
 				</div>
-				<div class="col-xs-6 col-sm-3 col-md-2 col-lg-3">
-					<div class="input-group input-group-sm">
-						<span class="input-group-addon">T.C.</span>
-						<input type="text" class="form-control text-right  btn-sm" name="tc" id="tc" data-toggle="tooltip" data-placement="bottom">
+				<div class="col-xs-4 col-sm-3 col-md-2 col-lg-3">
+					<div class="form-group">
+						<input type="text" class="form-control text-right btn-sm" name="tc" id="tc" data-tool="tooltip" data-placement="bottom" placeholder="Tipo de cambio">
 					</div>
 				</div>
-				<div class="col-xs-5 col-sm-3 col-md-2 col-lg-3">
-					<div class="input-group input-group-sm">
-						<span class="input-group-addon">Replica</span>
-						<input type="text" class="form-control text-right" id="replica" value="1">
+				<div class="col-xs-4 col-sm-3 col-md-2 col-lg-3">
+					<div class="form-group">
+						<input type="text" class="form-control text-right" id="replica" value="1" placeholder="Replicas">
 					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Toolbar para la tabla de historico de cotizaciones -->
-		<div class="row" id="toolbarCotizaciones">
-			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
-				<div class="input-group input-group-sm">
-					<span class="input-group-addon"><i class="fa fa-calendar"></i> <font class="hidden-xs hidden-sm">Desde</font></span>
-					<input type="text" class="form-control text-center simple-dp" name="inputfi" id="inputfi" readonly placeholder="Desde">
+		<div id="toolbarCotizaciones">
+			<div class="row">
+				<div class="col-xs-6 col-sm-4 col-md-3 col-lg-3">
+					<div class="input-group">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+						<input type="text" class="form-control text-center simple-dp" name="inputfi" id="inputfi" readonly placeholder="Desde">
+					</div>
 				</div>
-			</div>
-			<div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
-				<div class="input-group input-group-sm">
-					<span class="input-group-addon"><i class="fa fa-calendar"></i> <font class="hidden-xs hidden-sm">Hasta</font></span>
-					<input type="text" class="form-control text-center simple-dp" name="inputff" id="inputff"  readonly placeholder="Hasta">
+				<div class="col-xs-6 col-sm-4 col-md-3 col-lg-3">
+					<div class="input-group">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+						<input type="text" class="form-control text-center simple-dp" name="inputff" id="inputff" readonly placeholder="Hasta">
+					</div>
 				</div>
-			</div>
-			<div class="col-xs-6 col-sm-3 col-md-2 col-lg-2">
-				<select class="form-control input-sm" name="estatusCot" id="estatusCot">
-					<option value="">Estatus...</option>
-					<option value="A">Abiertas</option>
-					<option value="B">Autorizadas</option>
-					<option value="C">Rechazadas</option>
-					<option value="D">Cerradas</option>
-				</select>
-			</div>
-			<div class="col-xs-6 col-sm-1 col-md-1 col-lg-2">
-				<button type="button" class="btn btn-warning btn-sm btn-block" id="filtrarCotizaciones" title="Buscar Cotizaciones acorde a los parametros proporcionados" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-filter"></i> <font class="hidden-sm hidden-md">Buscar</font></button>
+				<div class="col-xs-6 col-sm-4 col-md-2 col-lg-2">
+					<div class="form-group">
+						<select class="form-control" name="estatusCot" id="estatusCot">
+							<option value="">Estatus...</option>
+							<option value="A">Abiertas</option>
+							<option value="B">Autorizadas</option>
+							<option value="C">Rechazadas</option>
+							<option value="D">Cerradas</option>
+						</select>
+					</div>
+				</div>
+				<div class="col-xs-3 col-sm-3 col-md-2 col-lg-2">
+					<button type="button" class="btn btn-primary btn-block" title="Buscar Cotizaciones acorde a los parametros proporcionados" data-tool="tooltip" data-placement="bottom" onclick="filtrarCotizaciones()"><i class="fa fa-filter"></i> Buscar</button>
+				</div>
+				<div class="col-xs-3 col-sm-3 col-md-2 col-lg-2">
+					<button type="button" class="btn btn-primary btn-block" title="Fusionar cotizaciones e imprimir" data-tool="tooltip" data-placement="bottom" onclick="imprimirCotizaciones()"><i class="fa fa-file-pdf-o"></i> Imprimir</button>
+				</div>
 			</div>
 		</div>
 
 		<!-- Modal para dar de alta un cliente -->
 		<div id="modalCliente" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-			<div class="modal-dialog">
+			<div class="modal-dialog modal-lg">
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -404,61 +418,65 @@
 					<div class="modal-body">
 						<form method="POST" action="#" id="formCrudCliente" class="form-horizontal form-label-left input_mask">
 							<div class="row">
-								<div class="col-xs-6">
-									<label for="inEmpresa">Empresa</label>
+								<div class="col-xs-12 col-sm-8">
+									<label for="inEmpresa">Nombre</label>
 									<div class="input-group">
 										<span class="input-group-btn"><button type="button" class="btn btn-default" id="btnId">ID Cliente</button></span>
 										<input type="text" class="form-control" name="inEmpresa" id="inEmpresa" placeholder="Nombre Empresa">
 									</div>
+								</div>
+								<div class="col-xs-6 col-sm-4">
+									<div class="form-group">
+										<label for="inRFC">RFC</label>
+										<input type="text" class="form-control" name="inRFC" id="inRFC">
+									</div>
+								</div>
+								<div class="col-xs-6 col-sm-4">
+									<div class="form-group">
+										<label for="inEstatus">Estatus</label>
+										<select name="inEstatus" id="inEstatus" class="form-control"></select>
+									</div>
+								</div>
+								<div class="col-xs-6 col-sm-4">
 									<div class="form-group">
 										<label for="inEstado">Estado</label>
 										<select name="inEstado" id="inEstado" class="form-control"></select>
 									</div>
-									<div class="form-group">
-										<label for="inColonia">Colonia</label>
-										<input type="text" class="form-control" name="inColonia" id="inColonia">
-									</div>
-									<div class="form-group">
-										<label for="inDirección">Dirección</label>
-										<textarea class="form-control" name="inDireccion" id="inDireccion" rows="2"></textarea>
-									</div>
 								</div>
-								<div class="col-xs-6">
-									<div class="row">
-										<div class="col-xs-6">
-											<div class="form-group">
-												<label for="inRFC">RFC</label>
-												<input type="text" class="form-control" name="inRFC" id="inRFC">
-											</div>
-										</div>
-										<div class="col-xs-6">
-											<div class="form-group">
-												<label for="inEstatus">Estatus</label>
-												<select name="inEstatus" id="inEstatus" class="form-control"></select>
-											</div>
-										</div>
-									</div>
+								<div class="col-xs-6 col-sm-4">
 									<div class="form-group">
 										<label for="inMunicipio">Municipio</label>
 										<select name="inMunicipio" id="inMunicipio" class="form-control"></select>
 									</div>
-									<div class="row">
-										<div class="col-xs-6">
-											<div class="form-group">
-												<label for="inCP">Código Postal</label>
-												<input type="text" class="form-control" name="inCP" id="inCP">
-											</div>
-										</div>
-										<div class="col-xs-6">
-											<div class="form-group">
-												<label for="inTelefono">Teléfono</label>
-												<input type="text" class="form-control" name="inTelefono" id="inTelefono">
-											</div>
-										</div>
+								</div>
+								<div class="col-xs-9 col-sm-4">
+									<div class="form-group">
+										<label for="inColonia">Colonia</label>
+										<input type="text" class="form-control" name="inColonia" id="inColonia">
 									</div>
+								</div>
+								<div class="col-xs-3 col-sm-4">
+									<div class="form-group">
+										<label for="inCP">Código Postal</label>
+										<input type="text" class="form-control" name="inCP" id="inCP">
+									</div>
+								</div>
+								<div class="col-xs-4 col-sm-4">
+									<div class="form-group">
+										<label for="inTelefono">Teléfono</label>
+										<input type="text" class="form-control" name="inTelefono" id="inTelefono">
+									</div>
+								</div>
+								<div class="col-xs-8 col-sm-4">
 									<div class="form-group">
 										<label for="inCorreo">Correo</label>
 										<input type="text" class="form-control" name="inCorreo" id="inCorreo">
+									</div>
+								</div>
+								<div class="col-xs-12 col-sm-8">
+									<div class="form-group">
+										<label for="inDirección">Dirección</label>
+										<textarea class="form-control" name="inDireccion" id="inDireccion" rows="1"></textarea>
 									</div>
 								</div>
 							</div>
@@ -469,27 +487,26 @@
 								</div>
 							</div>
 						</form>
-						<hr>
 						<div class="row">
-							<div class="col-xs-6">
+							<div class="col-xs-8 col-sm-4 col-md-4">
 								<div class="form-group">
 									<label for="innContacto">Contacto</label>
 									<select class="form-control" name="innContacto" id="innContacto"></select>
 								</div>
 							</div>
-							<div class="col-xs-6">
+							<div class="col-xs-4 col-sm-4 col-md-2">
 								<div class="form-group">
 									<label for="innTelefono">Teléfono</label>
 									<input type="text" class="form-control" name="innTelefono" id="innTelefono" readonly>
 								</div>
 							</div>
-							<div class="col-xs-6">
+							<div class="col-xs-8 col-sm-4 col-md-4">
 								<div class="form-group">
 									<label for="innCorreo">Correo</label>
 									<input type="text" class="form-control" name="innCorreo" id="innCorreo" readonly>
 								</div>
 							</div>
-							<div class="col-xs-6">
+							<div class="col-xs-4 col-sm-4 col-md-2">
 								<div class="form-group">
 									<label for="innArea">Área</label>
 									<input type="text" class="form-control" name="innArea" id="innArea" readonly>
@@ -571,38 +588,38 @@
 						<div class="row">
 							<div class="col-xs-12 combo" id="divTubos">
 								<div class="form-group">
-									<label for="selectTubos">Tubos</label>
-									<select multiple title="Tubos" class="selectpicker form-control"  data-size="10" name="selectTubos" id="selectTubos" data-group="TUB" ></select>
+									<label for="selectTubos">Tubos (Selecciona "Ninguno" si la categoría no aplica)</label>
+									<select multiple title="Vacío" class="selectpicker form-control" data-size="10" name="selectTubos" id="selectTubos" data-group="TUB" ></select>
 								</div>
 							</div>
 							<div class="col-xs-12 combo" id="divRieles">
 								<div class="form-group">
-									<label for="selectRieles">Rieles</label>
-									<select multiple title="Rieles" class="selectpicker form-control"  data-size="10" name="selectRieles" id="selectRieles" data-group="RIE" ></select>
+									<label for="selectRieles">Rieles (Selecciona "Ninguno" si la categoría no aplica)</label>
+									<select multiple title="Vacío" class="selectpicker form-control" data-size="10" name="selectRieles" id="selectRieles" data-group="RIE" ></select>
 								</div>
 							</div>
 							<div class="col-xs-12 combo" id="divGuias">
 								<div class="form-group">
-									<label for="selectGuias">Guias</label>
-									<select multiple title="Guias" class="selectpicker form-control"  data-size="10" name="selectGuias" id="selectGuias" data-group="GUI" ></select>
+									<label for="selectGuias">Guias (Selecciona "Ninguno" si la categoría no aplica)</label>
+									<select multiple title="Vacío" class="selectpicker form-control" data-size="10" name="selectGuias" id="selectGuias" data-group="GUI" ></select>
 								</div>
 							</div>
 							<div class="col-xs-12 combo" id="divSuperficies">
 								<div class="form-group">
-									<label for="selectSuperficies">Superficies</label>
-									<select multiple title="Superficies" class="selectpicker form-control"  data-size="10" name="selectSuperficies" id="selectSuperficies" data-group="SUP" ></select>
+									<label for="selectSuperficies">Superficies (Selecciona "Ninguno" si la categoría no aplica)</label>
+									<select multiple title="Vacío" class="selectpicker form-control" data-size="10" name="selectSuperficies" id="selectSuperficies" data-group="SUP" ></select>
 								</div>
 							</div>
 							<div class="col-xs-12 combo" id="divTornilleria">
 								<div class="form-group">
-									<label for="selectTornilleria">Tornilleria</label>
-									<select multiple title="Tornilleria" class="selectpicker form-control"  data-size="10" name="selectTornilleria" id="selectTornilleria" data-group="TOR" ></select>
+									<label for="selectTornilleria">Tornilleria (Selecciona "Ninguno" si la categoría no aplica)</label>
+									<select multiple title="Vacío" class="selectpicker form-control" data-size="10" name="selectTornilleria" id="selectTornilleria" data-group="TOR" ></select>
 								</div>
 							</div>
 							<div class="col-xs-12 combo" id="divOtros">
 								<div class="form-group">
-									<label for="selectOtros">Otros</label>
-									<select multiple title="Otros" class="selectpicker form-control"  data-size="10" name="selectOtros" id="selectOtros" data-group="OTR" ></select>
+									<label for="selectOtros">Otros (Selecciona "Ninguno" si la categoría no aplica)</label>
+									<select multiple title="Vacío" class="selectpicker form-control" data-size="10" name="selectOtros" id="selectOtros" data-group="OTR" ></select>
 								</div>
 							</div>
 						</div>
@@ -646,6 +663,7 @@
 		<script src="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-table-editable.min.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap-table/extensions/editable/bootstrap-editable.js')?>"></script>
 		<script src="<?php echo base_url('resources/bootstrap-select.min.js')?>"></script>
+		<script src="<?php echo base_url('resources/jquery.cookie.js')?>"></script>
 		<script src="<?php echo base_url('public/js/custom.js')?>"></script>
 		<script src="<?php echo base_url('public/js/cotizador.js')?>"></script>
 		<script src="<?php echo base_url('public/js/clientes.js')?>"></script>
