@@ -1,8 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
 class Cotizador extends Base_Controller {
-
 	public function __construct(){
 		parent::__construct();
 		# Conexion a la base de datos para interactuar con las cotizaciones
@@ -73,7 +71,7 @@ class Cotizador extends Base_Controller {
 		}
 
 		# Comprobamos que el nombre del cliente haya sido proporcionado
-		if($cliente[11]['value'] == null || $cliente[11]['value'] == '')
+		if($cliente[12]['value'] == null || $cliente[12]['value'] == '')
 			die(json_encode(array('bandera'=>false, 'msj'=>'Es necesario proporcionar la información del cliente antes de iniciar una nueva cotizacion')));
 
 		# Cargamos los modelos necesarios para guardar la cotizacion
@@ -91,11 +89,12 @@ class Cotizador extends Base_Controller {
 			'colonia' => $cliente[4]['value'],
 			'codigo_postal' => $cliente[5]['value'],
 			'direccion' => $cliente[6]['value'],
-			'nombre_contacto' => $cliente[7]['value'],
-			'telefono' => $cliente[8]['value'],
-			'correo' => $cliente[9]['value'],
-			'area' => $cliente[10]['value'],
-			'id_cliente' => $cliente[11]['value'],
+			'tq' => $cliente[7]['value'],
+			'nombre_contacto' => $cliente[8]['value'],
+			'telefono' => $cliente[9]['value'],
+			'correo' => $cliente[10]['value'],
+			'area' => $cliente[11]['value'],
+			'id_cliente' => $cliente[12]['value'],
 			'descuentoPrecioPDD' => str_replace(',', '', $encabezado['descuentoPrecioPDD']),
 			'descuentoPrecioRAD' => str_replace(',', '', $encabezado['descuentoPrecioRAD']),
 			'descuentoPrecioRDD' => str_replace(',', '', $encabezado['descuentoPrecioRDD']),
@@ -401,7 +400,7 @@ class Cotizador extends Base_Controller {
 
 		# Leyendas del formato / encabezado
 			$pdf->SetFont('Courier', 'B', 14);
-			$pdf->setXY(15, 20); $pdf->Cell(0, 5, utf8_decode('COTIZACIÓN'), 0, 1, 'C', false);
+			$pdf->setXY(15, 20); $pdf->Cell(0, 5, utf8_decode('COTIZACIÓN TQ'.$encabezado->tq), 0, 1, 'C', false);
 			$pdf->SetFont('Courier', 'B', 12);
 			$pdf->SetTextColor(255, 0, 0);
 			if( $encabezado->estatus == 'C' ) $pdf->Cell(0, 5, utf8_decode('Cotización rechazada, prohibido su uso'), 0, 0, 'C', false);
@@ -550,32 +549,110 @@ class Cotizador extends Base_Controller {
 
 	# Funcion para imprimir un conjunto de cotizaciones
 	public function ImprimirCotizaciones(){
+		# Cargamos el helper para las cookies y el modelo del encabezado de las cotizaciones
 		$this->load->helper('cookie');
-		$folios = get_cookie('impresiones');
 		$this->load->model('encabezado');
-		$encabezados = array();
-		foreach ($folios as $folio) {
-			array_push($encabezados, $this->encabezado->obtener($folio));
-		}
-
-		print_r($folios);
-		exit();
-
-/*
+		$folios = explode(',', get_cookie('impresiones'));
+		# Comenzamos el diseño del reporte
 		$this->load->library('Pdf');
 		$pdf = new Pdf('P', 'mm', 'Letter');
-
 		$pdf->SetMargins(15, 15 , 15);
 		$pdf->SetAutoPageBreak(false, 15); 
 		$pdf->AliasNbPages();
 		$pdf->SetFillColor(192, 192, 192);
 		$pdf->SetDrawColor(192, 192, 192);
+		# Obtenemos la informacion necesaria para la impresion de las cotizaciones
+		$encabezados = array();
+		foreach ($folios as $folio) {
+			array_push($encabezados, $this->encabezado->obtener($folio));
+		}
+		$te = count($folios) - 1;
+		# Comenzamos a dibujar el modelo de la cotizacion
+			$pdf->AddPage();
+		# Cuadro superior izquierda
+			$pdf->RoundedRect(15, 30, 120, 5, 1, 'DF', '12');
+			$pdf->RoundedRect(15, 35, 120, 25, 1, 'D', '');
+		# Cuadro superior derecho
+			$pdf->RoundedRect(140, 30, 70, 5, 1, 'DF', '12');
+			$pdf->RoundedRect(140, 35, 70, 5, 1, 'D', '');
+		# Leyendas del formato / encabezado
+			$pdf->SetFont('Courier', 'B', 14);
+			$pdf->setXY(15, 20); $pdf->Cell(0, 5, utf8_decode('FORMATO DE COTIZACIÓN MULTIPLE'), 0, 1, 'C', false);
+			$pdf->SetFont('Courier', 'B', 12);
+			$pdf->setXY(15, 30); $pdf->Cell(120, 5, utf8_decode('Información del cliente'), 0, 1, 'L', false);
+			$pdf->setXY(140, 30); $pdf->Cell(70, 5, utf8_decode('Fecha de Impresión'), 0, 1, 'R', false);
+			$pdf->SetFont('Courier', '', 10);
+			$pdf->setXY(140, 35); $pdf->Cell(70, 5, utf8_decode(date('d-m-Y')), 0, 1, 'R', false);
+		# Se descarga la informacion de la cotizacion
+			$pdf->SetFont('Courier', '', 10);
+			$pdf->setXY(15, 35); $pdf->Cell(120, 5, utf8_decode($encabezados[0]->nombre_cliente), 0, 1, 'L', false);
+			$pdf->Cell(120, 5, utf8_decode('ID: ' . $encabezados[0]->id_cliente . ', RFC: ' . $encabezados[0]->rfc), 0, 1, 'L', false);
+			$pdf->Cell(120, 5, utf8_decode('Contacto: ' . $encabezados[0]->nombre_contacto), 0, 1, 'L', false);
+			$pdf->Cell(120, 5, utf8_decode('Telelefono: '.$encabezados[0]->telefono), 0, 1, 'L', false);
+			$pdf->Cell(120, 5, utf8_decode('Correo: '. $encabezados[0]->correo), 0, 1, 'L', false);
+		# Cuadro inferior donde ira el contenido de la cotizacion
+			$pdf->RoundedRect(15, 65, 195, 5, 1, 'DF', '12');
+			$pdf->RoundedRect(15, 70, 195, 135, 1, 'D', '34');
+		# Pintamos las partidas de la orden de compra
+			$pdf->Line(30, 70, 30, 205);
+			$pdf->Line(100, 70, 100, 205);
+			$pdf->Line(118, 70, 118, 205);
+			$pdf->Line(136, 70, 136, 205);
+			$pdf->Line(154, 70, 154, 205);
+			$pdf->Line(172, 70, 172, 205);
+			$pdf->Line(190, 70, 190, 205);
+		# Leyendas del formato / partidas
+			$pdf->SetFont('Courier', 'B', 9);
+			$pdf->setXY(15, 65);
+			$pdf->Cell(15, 5, utf8_decode('Folio'), 0, 0, 'C', false);
+			$pdf->Cell(70, 5, utf8_decode('Descripción'), 0, 0, 'L', false);
+			$pdf->Cell(18, 5, 'T C', 0, 0, 'R', false);
+			$pdf->Cell(18, 5, 'Fecha', 0, 0, 'R', false);
+			$pdf->Cell(18, 5, 'Precio', 0, 0, 'R', false);
+			$pdf->Cell(18, 5, 'Descuento', 0, 0, 'R', false);
+			$pdf->Cell(18, 5, 'Impuesto', 0, 0, 'R', false);
+			$pdf->Cell(20, 5, 'Total', 0, 0, 'R', false);
+		# Impresion del contenido de las partidas
+			$pdf->SetFont('Courier', '', 9);
+			$pdf->SetWidths(array(15, 70, 18, 18, 18, 18, 18, 20));
+			$pdf->SetAligns(array('C', 'L', 'R', 'R', 'R', 'R', 'R', 'R'));
+			$pdf->setXY(15, 70);
+			foreach ($encabezados as $encabezado) {
+				$pdf->Row(array(($encabezado->folio)*1, utf8_decode('TQ' . $encabezado->tq . ' ' . $encabezado->descripcion_armado), number_format($encabezado->tipo_cambios, 4), $encabezado->ffecha, $encabezado->totalPrecioRAD, number_format($encabezado->descuentost, 1) . ' %', number_format($encabezado->tasa_impuesto, 2), number_format($encabezado->totalPrecioRDD, 2)));
+			}
 
-		# Instanciamos los modelos necesarios para obtener la información de la cotizacion
-		$this->load->model('encabezado');
+
+		# Leyendas del pie de página
+			$pdf->SetFont('Courier', 'B', 9);
+			$pdf->setXY(155, 205); $pdf->Cell(22, 7, 'Subtotal', 0, 0, 'L', false);
+			$pdf->setXY(155, 212); $pdf->Cell(22, 7, 'Descuento', 0, 0, 'L', false);
+			$pdf->setXY(155, 219); $pdf->Cell(22, 7, 'Impuesto', 0, 0, 'L', false);
+			$pdf->setXY(155, 226); $pdf->Cell(22, 7, 'Total', 0, 0, 'L', false);
 
 
-		$pdf->Output();*/
+
+			/*
+
+			# Totales de la cotizacion
+			$pdf->SetFont('Courier', 'B', 9);
+			$pdf->setXY(155, 205); $pdf->Cell(55, 7, number_format($encabezado->stUsdPrecioRDD, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 212); $pdf->Cell(55, 7, number_format($encabezado->descuentost, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 219); $pdf->Cell(55, 7, number_format($encabezado->tasa_impuesto, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 226); $pdf->Cell(55, 7, number_format($encabezado->totalPrecioRDD, 2), 1, 0, 'R', false);
+
+		# Se descarga la informacion de las partidas de la cotizacion
+
+			if(count($partidas) > 0) {
+				$this->nuevaPagina($pdf, $encabezado, $partidas);
+			}*/
+
+					# Firmas de pie de página
+			/*$pdf->Line(20, 240, 80, 240);
+			$pdf->Line(90, 240, 150, 240);*/
+		# Cuadro totales
+			$pdf->RoundedRect(155, 205, 55, 35, 1, 'D', '');
+
+		$pdf->Output();
 	}
 
 }

@@ -150,6 +150,7 @@ class Productos extends Base_Controller {
 				'terminos_y_condiciones' => $this->input->post('terminos_y_condiciones'),
 				'observaciones' => $this->input->post('observaciones'),
 				'tipo_impresion' => $this->input->post('tipo'),
+				'tq' => $this->input->post('tq'),
 				'estatus' => 'A',
 				'tipo_cambios' => $this->input->post('tc'),
 				'replicas' => $replica,

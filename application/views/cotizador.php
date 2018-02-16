@@ -131,10 +131,16 @@
 											<input type="text" class="form-control" name="CP" id="CP" readonly>
 										</div>
 									</div>
-									<div class="col-xs-9 col-sm-9 col-md-10 col-lg-10">
+									<div class="col-xs-7 col-sm-7 col-md-8 col-lg-8">
 										<div class="form-group">
 											<label for="direccion">Dirección</label>
 											<input type="text" class="form-control" name="direccion" id="direccion" readonly>
+										</div>
+									</div>
+									<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
+										<div class="form-group">
+											<label for="tq">TQ</label>
+											<select class="form-control" name="tq" id="tq"></select>
 										</div>
 									</div>
 									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-4">
@@ -160,6 +166,14 @@
 											<label for="area">Área</label>
 											<input type="text" class="form-control" name="area" id="area" readonly>
 										</div>
+									</div>
+									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-2">
+<div class="checkbox disabled">
+  <label>
+    <input type="checkbox" value="" disabled>
+    Crear TQ al guardar
+  </label>
+</div>
 									</div>
 								</div>
 							</div>
@@ -210,7 +224,7 @@
 										<th></th>
 										<th id="stUsdPrecioRAD" class="text-right"></th>
 										<th id="stUsdPrecioRDD" class="text-right"></th>
-										<th></th>
+										<th id="utilidadST" class="text-right"></th>
 									</tr>
 									<tr>
 										<th colspan="5"><a id="gestorDeCuenta"></a></th>
@@ -230,7 +244,7 @@
 										<th></th>
 										<th id="stPrecioRAD" class="text-right"></th>
 										<th id="stPrecioRDD" class="text-right"></th>
-										<th></th>
+										<th id="utilidadSTDD" class="text-right"></th>
 									</tr>
 									<tr>
 										<th class="text-right">Impuestos</th>
@@ -375,21 +389,19 @@
 		<!-- Toolbar para la tabla de historico de cotizaciones -->
 		<div id="toolbarCotizaciones">
 			<div class="row">
-				<div class="col-xs-6 col-sm-4 col-md-3 col-lg-3">
-					<div class="input-group">
-						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-						<input type="text" class="form-control text-center simple-dp" name="inputfi" id="inputfi" readonly placeholder="Desde">
-					</div>
-				</div>
-				<div class="col-xs-6 col-sm-4 col-md-3 col-lg-3">
-					<div class="input-group">
-						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-						<input type="text" class="form-control text-center simple-dp" name="inputff" id="inputff" readonly placeholder="Hasta">
-					</div>
-				</div>
-				<div class="col-xs-6 col-sm-4 col-md-2 col-lg-2">
+				<div class="col-xs-6 col-sm-3 col-md-3 col-lg-3">
 					<div class="form-group">
-						<select class="form-control" name="estatusCot" id="estatusCot">
+						<input type="text" class="form-control input-sm text-center simple-dp" name="inputfi" id="inputfi" readonly placeholder="Desde">
+					</div>
+				</div>
+				<div class="col-xs-6 col-sm-3 col-md-3 col-lg-3">
+					<div class="form-group">
+						<input type="text" class="form-control input-sm text-center simple-dp" name="inputff" id="inputff" readonly placeholder="Hasta">
+					</div>
+				</div>
+				<div class="col-xs-6 col-sm-3 col-md-2 col-lg-2">
+					<div class="form-group">
+						<select class="form-control input-sm" name="estatusCot" id="estatusCot">
 							<option value="">Estatus...</option>
 							<option value="A">Abiertas</option>
 							<option value="B">Autorizadas</option>
@@ -398,11 +410,11 @@
 						</select>
 					</div>
 				</div>
-				<div class="col-xs-3 col-sm-3 col-md-2 col-lg-2">
-					<button type="button" class="btn btn-primary btn-block" title="Buscar Cotizaciones acorde a los parametros proporcionados" data-tool="tooltip" data-placement="bottom" onclick="filtrarCotizaciones()"><i class="fa fa-filter"></i> Buscar</button>
+				<div class="col-xs-3 col-sm-1 col-md-2 col-lg-1">
+					<button type="button" class="btn btn-primary btn-sm btn-block" title="Buscar Cotizaciones acorde a los parametros proporcionados" data-tool="tooltip" data-placement="bottom" onclick="filtrarCotizaciones()"><i class="fa fa-filter"></i></button>
 				</div>
-				<div class="col-xs-3 col-sm-3 col-md-2 col-lg-2">
-					<button type="button" class="btn btn-primary btn-block" title="Fusionar cotizaciones e imprimir" data-tool="tooltip" data-placement="bottom" onclick="imprimirCotizaciones()"><i class="fa fa-file-pdf-o"></i> Imprimir</button>
+				<div class="col-xs-3 col-sm-1 col-md-2 col-lg-1">
+					<button type="button" class="btn btn-primary btn-sm btn-block" title="Fusionar cotizaciones e imprimir" data-tool="tooltip" data-placement="bottom" onclick="imprimirCotizaciones()"><i class="fa fa-file-pdf-o"></i></button>
 				</div>
 			</div>
 		</div>

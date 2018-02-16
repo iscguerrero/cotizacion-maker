@@ -99,4 +99,9 @@ class cliente extends CI_Model{
 		return $query->row();
 	}
 
+	public function ObtenerTQs($idempresa) {
+		$query = $this->db->query("SELECT TOP 1000 [intidcotizacion], [datfecharegistro] FROM [cbctecnologia_trilogiq].[cbctecnologia_trilogiq].[cotizaciones] where [intidcliente] = '$idempresa' and [datfecharegistro] > '2018-01-16 00:00:00.510'  order by datfecharegistro DESC");
+		return $query->result();
+	}
+
 }

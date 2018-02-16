@@ -169,5 +169,12 @@ class Clientes extends Base_Controller {
 			$response = $this->Cliente->ObtenerContactoByID($this->input->post('contacto'));
 		exit(json_encode($response));
 	}
+	# Metodo para obtener la lista de contactos de una empresa
+	public function ObtenerTQs() {
+		if(!$this->input->is_ajax_request()) show_404();
+		$this->load->model('Cliente');
+		$response = $this->Cliente->ObtenerTQs($this->input->post('idempresa'));
+		exit(json_encode($response));
+	}
 
 }

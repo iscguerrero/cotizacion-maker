@@ -30,7 +30,7 @@ class encabezado extends CI_Model{
 
 	# Funcion para obtener la lista de cotizaciones en el periodo seleccionado
 	public function listar($fi, $ff, $estatus) {
-		$this->db->select("folio, id_cliente, nombre_cliente, DATE_FORMAT(created_at, '%d-%m-%Y') AS ffecha, totalPrecioRDD, estatus")
+		$this->db->select("folio, tq, id_cliente, nombre_cliente, DATE_FORMAT(created_at, '%d-%m-%Y') AS ffecha, totalPrecioRDD, estatus")
 		->from('encabezado')
 		->where('created_at >', $fi)
 		->where('created_at <', $ff.' 23:59:59');

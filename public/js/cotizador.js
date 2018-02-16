@@ -138,6 +138,7 @@ $(document).ready(function () {
 				formData.append("tc", $('#tc').val());
 				formData.append("replica", $('#replica').val());
 				formData.append("std", $('#std').val());
+				formData.append("tq", $('#tq').val());
 				formData.append("impuestos", $('#impuestos').editable('getValue', true));
 				formData.append("descuento", $('#descuento').editable('getValue', true));
 				modalAlert.modal('show');
@@ -485,7 +486,7 @@ $(document).ready(function () {
 				i = 1; nextIndex = 0;
 				$.each(json, function (index, item) {
 					nextIndex = parseInt(selectedIndex) + i;
-					row = crearPartida(item.CVE_ART, item.DESCR, item.ULT_COSTO, item.precioPiezaAD, 0, clasificador)
+					row = crearPartida(item.CVE_ART, item.DESCR, item.ULT_COSTO, item.precioPiezaAD, 1, clasificador)
 					$('#tablaCotizacion').bootstrapTable('insertRow', { index: nextIndex, row: row });
 					i = i + 1;
 				});
@@ -530,11 +531,17 @@ $(document).ready(function () {
 		clickToSelect: true,
 		toolbar: '#toolbarCotizaciones',
 		classes: 'table-condensed table-hover table-bordered',
+		search: true,
 		columns: [
 			{ checkbox: true },
 			{
 				field: 'folio', title: 'Folio', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
 					return value * 1
+				}
+			},
+			{
+				field: 'tq', title: 'TQ', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
+					return 'TQ' + value
 				}
 			},
 			{ field: 'nombre_cliente', title: 'Cliente' },
@@ -681,6 +688,7 @@ var setearCliente = function (response) {
 	$('#telefono').val(response.TELEFONO);
 	$('#correo').val(response.CORREO);
 	xsetearContacto(response.ID);
+	setearTQ(response.ID);
 }
 
 // Funcion para reestablecer la replica de la tabla de cotizacion
@@ -823,6 +831,11 @@ var actualizarTotales = function () {
 
 	utilidad = 100 * (totalPrecioRDD - costo_total) / totalPrecioRDD;
 
+	utilidadST = 100 * (stUsdPrecioRDD - costo_total) / stUsdPrecioRDD;
+	utilidadSTDD = 100 * (stPrecioRDD - costo_total) / stPrecioRDD;
+	$('#utilidadST').html(formato_numero(utilidadST, 2, '.', ','));
+	$('#utilidadSTDD').html(formato_numero(utilidadSTDD, 2, '.', ','));
+
 	if ((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
 		if (window.estatus == 'B') {
 			$('#btnImprimir').removeClass('hidden');
@@ -908,7 +921,7 @@ var guardarCotizacion = function () {
 		tasa_impuesto: $('#impuestos').editable('getValue', true),
 		descuentost: $('#descuento').editable('getValue', true),
 		tipo: $('#tipo').val(),
-		area: $('#area').val()
+		area: $('#area').val(),
 	};
 	$.ajax({
 		async: true,
@@ -975,7 +988,9 @@ var cargarCotizacion = function (folio) {
 				$('#tipo').val(en.tipo_impresion);
 				$('#area').val(en.area);
 				xsetearContacto(en.id_cliente);
+				setearTQ(en.id_cliente);
 				$('#contacto').val(en.nombre_contacto);
+				$('#tq').val(en.tq);
 				if (en.tipo_impresion == 'B') {
 					$('#tablaCotizacion').bootstrapTable('hideColumn', 'aparece_en_armada');
 				} else {
@@ -1256,16 +1271,14 @@ function imprimirCotizaciones() {
 		modalAlert.modal('show');
 		return false;
 	}
-	if (ids_cliente.length > 1) {
+	/*if (ids_cliente.length > 1) {
 		$('#msjAlert').html('Las impresiones grupales solo se pueden realizar si pertenecen al mismo cliente');
 		modalAlert.modal('show');
 		return false;
-	}
-
+	}*/
 	$.cookie('impresiones', impresiones);
 	window.open("Cotizador/ImprimirCotizaciones");
-
-
+	ids_cliente.length = 0;
 }
 
 function eliminateDuplicados(arr) {
@@ -1273,7 +1286,6 @@ function eliminateDuplicados(arr) {
 		len = arr.length,
 		out = [],
 		obj = {};
-
 	for (i = 0; i < len; i++) {
 		obj[arr[i]] = 0;
 	}
@@ -1281,4 +1293,23 @@ function eliminateDuplicados(arr) {
 		out.push(i);
 	}
 	return out;
+}
+
+// Funcion para obtener los ultimos tq del cliente
+function setearTQ(cliente) {
+	$('#tq').empty().append("<option value=''>Selecciona...</option>");
+	$.ajax({
+		type: 'POST',
+		url: 'Clientes/ObtenerTQs',
+		dataType: 'json',
+		data: { idempresa: cliente },
+		async: false,
+		success: function (response) {
+			if (response.length > 0) {
+				$.each(response, function (index, item) {
+					$('#tq').append("<option value=" + item.intidcotizacion + ">TQ" + item.intidcotizacion + '-' + item.datfecharegistro + "</option>");
+				});
+			}
+		}
+	});
 }
