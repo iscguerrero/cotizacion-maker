@@ -541,7 +541,7 @@ $(document).ready(function () {
 			},
 			{
 				field: 'tq', title: 'TQ', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
-					return 'TQ' + value
+					return value == null ? '' : 'TQ' + value
 				}
 			},
 			{ field: 'nombre_cliente', title: 'Cliente' },
@@ -892,8 +892,25 @@ var nuevaCotizacion = function () {
 var guardarCotizacion = function () {
 	pre_folio = $('#pre_folio').val();
 	folio = $('#folio').val();
-	cliente = $('#formCliente').serializeArray();
-	cliente.push({ name: 'id_cliente', value: $('#ID').text() });
+	cliente = [
+		{ name: 'tipo', value: $('#tipo').val() }, // 0
+		{ name: 'ID', value: $('#ID').html() }, // 1
+		{ name: 'nombreEmpresa', value: $('#nombreEmpresa').val() }, // 2
+		{ name: 'RFC', value: $('#RFC').val() }, // 3
+		{ name: 'estado', value: $('#estado').val() }, // 4
+		{ name: 'municipio', value: $('#municipio').val() }, // 5
+		{ name: 'colonia', value: $('#colonia').val() }, // 6
+		{ name: 'CP', value: $('#CP').val() }, // 7
+		{ name: 'direccion', value: $('#direccion').val() }, // 8
+		{ name: 'tq', value: $('#tq').val() }, // 9
+		{ name: 'contacto', value: $('#contacto').val() }, // 10
+		{ name: 'telefono', value: $('#telefono').val() }, // 11
+		{ name: 'correo', value: $('#correo').val() }, // 12
+		{ name: 'area', value: $('#area').val() }, // 13
+		{ name: 'nuevoTQ', value: $('#nuevoTQ').val() } // 14
+	];
+	/*cliente = $('#formCliente').serializeArray();
+	cliente.push({ name: 'id_cliente', value: $('#ID').text() });*/
 	partidas = $('#tablaCotizacion').bootstrapTable('getData');
 	encabezado = {
 		tc: $('#tc').val(),
@@ -1253,11 +1270,11 @@ function xxsetearContacto(data) {
 // Funcion para imprimir un conjunto de cotizaciones
 function imprimirCotizaciones() {
 	var cotizaciones = $('#tablaCotizaciones').bootstrapTable('getSelections');
-	impresiones = ids_cliente = [];
+	var impresiones = [], ids_cliente = [];
 	canceladas = false;
 	$.each(cotizaciones, function (index, item) {
 		impresiones.push(item.folio);
-		ids_cliente = item.id_cliente;
+		ids_cliente.push(item.id_cliente);
 		if (item.estatus == 'C') canceladas = true;
 	});
 	ids_cliente = eliminateDuplicados(ids_cliente);
@@ -1271,14 +1288,15 @@ function imprimirCotizaciones() {
 		modalAlert.modal('show');
 		return false;
 	}
-	/*if (ids_cliente.length > 1) {
+	if (ids_cliente.length > 1) {
 		$('#msjAlert').html('Las impresiones grupales solo se pueden realizar si pertenecen al mismo cliente');
 		modalAlert.modal('show');
 		return false;
-	}*/
+	}
 	$.cookie('impresiones', impresiones);
 	window.open("Cotizador/ImprimirCotizaciones");
 	ids_cliente.length = 0;
+	impresiones.length = 0;
 }
 
 function eliminateDuplicados(arr) {

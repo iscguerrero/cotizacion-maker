@@ -24,7 +24,7 @@ class Cotizador extends Base_Controller {
 	# Este método se encarga de consumir un web service para obtener el tipo de cambio del dia
 	public function ObtenerTC() {
 		if(!$this->input->is_ajax_request()) show_404();
-		$resultado='';
+		/*$resultado='';
 		$fecha_tc='';
 		$tc = '';
 		$client = new SoapClient(null, array(
@@ -45,8 +45,9 @@ class Cotizador extends Base_Controller {
 				$fecha_tc = $item->getAttribute('TIME_PERIOD'); 
 				$tc = $item->getAttribute('OBS_VALUE'); 
 			}
-		}
-		exit(json_encode(array('flag'=>true, 'tc'=>$tc, 'fecha_tc'=>$fecha_tc)));
+		}*/
+		#exit(json_encode(array('flag'=>true, 'tc'=>$tc, 'fecha_tc'=>$fecha_tc)));
+		exit(json_encode(array('flag'=>true, 'tc'=>0, 'fecha_tc'=>'0000-00-00')));
 	}
 
 	# Metodo para guardar los cambios en la cotizacion
@@ -71,7 +72,7 @@ class Cotizador extends Base_Controller {
 		}
 
 		# Comprobamos que el nombre del cliente haya sido proporcionado
-		if($cliente[12]['value'] == null || $cliente[12]['value'] == '')
+		if($cliente[1]['value'] == null || $cliente[1]['value'] == '')
 			die(json_encode(array('bandera'=>false, 'msj'=>'Es necesario proporcionar la información del cliente antes de iniciar una nueva cotizacion')));
 
 		# Cargamos los modelos necesarios para guardar la cotizacion
@@ -81,20 +82,20 @@ class Cotizador extends Base_Controller {
 		# Obtenemos los datos del cliente
 		$data = array(
 			'folio_preencabezado' => $prefolio,
-			'nombre_cliente' => $cliente[0]['value'],
-			'nombre_empresa' => $cliente[0]['value'],
-			'rfc' => $cliente[1]['value'],
-			'estado' => $cliente[2]['value'],
-			'municipio' => $cliente[3]['value'],
-			'colonia' => $cliente[4]['value'],
-			'codigo_postal' => $cliente[5]['value'],
-			'direccion' => $cliente[6]['value'],
-			'tq' => $cliente[7]['value'],
-			'nombre_contacto' => $cliente[8]['value'],
-			'telefono' => $cliente[9]['value'],
-			'correo' => $cliente[10]['value'],
-			'area' => $cliente[11]['value'],
-			'id_cliente' => $cliente[12]['value'],
+			'id_cliente' => $cliente[1]['value'],
+			'nombre_cliente' => $cliente[2]['value'],
+			'nombre_empresa' => $cliente[2]['value'],
+			'rfc' => $cliente[3]['value'],
+			'estado' => $cliente[4]['value'],
+			'municipio' => $cliente[5]['value'],
+			'colonia' => $cliente[6]['value'],
+			'codigo_postal' => $cliente[7]['value'],
+			'direccion' => $cliente[8]['value'],
+			'tq' => $cliente[9]['value'],
+			'nombre_contacto' => $cliente[10]['value'],
+			'telefono' => $cliente[11]['value'],
+			'correo' => $cliente[12]['value'],
+			'area' => $cliente[13]['value'],
 			'descuentoPrecioPDD' => str_replace(',', '', $encabezado['descuentoPrecioPDD']),
 			'descuentoPrecioRAD' => str_replace(',', '', $encabezado['descuentoPrecioRAD']),
 			'descuentoPrecioRDD' => str_replace(',', '', $encabezado['descuentoPrecioRDD']),
@@ -552,6 +553,7 @@ class Cotizador extends Base_Controller {
 		# Cargamos el helper para las cookies y el modelo del encabezado de las cotizaciones
 		$this->load->helper('cookie');
 		$this->load->model('encabezado');
+		if(null == get_cookie('impresiones')) exit('No se definio el conjunto de cotizaciones a imprimir');
 		$folios = explode(',', get_cookie('impresiones'));
 		# Comenzamos el diseño del reporte
 		$this->load->library('Pdf');
@@ -609,16 +611,21 @@ class Cotizador extends Base_Controller {
 			$pdf->Cell(18, 5, 'T C', 0, 0, 'R', false);
 			$pdf->Cell(18, 5, 'Fecha', 0, 0, 'R', false);
 			$pdf->Cell(18, 5, 'Precio', 0, 0, 'R', false);
-			$pdf->Cell(18, 5, 'Descuento', 0, 0, 'R', false);
-			$pdf->Cell(18, 5, 'Impuesto', 0, 0, 'R', false);
+			$pdf->Cell(18, 5, 'Desc.', 0, 0, 'R', false);
+			$pdf->Cell(18, 5, 'Imp', 0, 0, 'R', false);
 			$pdf->Cell(20, 5, 'Total', 0, 0, 'R', false);
 		# Impresion del contenido de las partidas
 			$pdf->SetFont('Courier', '', 9);
 			$pdf->SetWidths(array(15, 70, 18, 18, 18, 18, 18, 20));
 			$pdf->SetAligns(array('C', 'L', 'R', 'R', 'R', 'R', 'R', 'R'));
 			$pdf->setXY(15, 70);
+			$tstUsdPrecioRDD = $tdescuentoPrecioRDD = $tivaPrecioRDD = $ttotalPrecioRDD = 0;
 			foreach ($encabezados as $encabezado) {
-				$pdf->Row(array(($encabezado->folio)*1, utf8_decode('TQ' . $encabezado->tq . ' ' . $encabezado->descripcion_armado), number_format($encabezado->tipo_cambios, 4), $encabezado->ffecha, $encabezado->totalPrecioRAD, number_format($encabezado->descuentost, 1) . ' %', number_format($encabezado->tasa_impuesto, 2), number_format($encabezado->totalPrecioRDD, 2)));
+				$pdf->Row(array(($encabezado->folio)*1, utf8_decode('TQ' . $encabezado->tq . ' ' . $encabezado->descripcion_armado), number_format($encabezado->tipo_cambios, 4), $encabezado->ffecha, $encabezado->stUsdPrecioRDD, number_format($encabezado->descuentost, 1), number_format($encabezado->tasa_impuesto, 2), number_format($encabezado->totalPrecioRDD, 2)));
+				$tstUsdPrecioRDD += $encabezado->stUsdPrecioRDD;
+				$tdescuentoPrecioRDD += $encabezado->descuentoPrecioRDD;
+				$tivaPrecioRDD += $encabezado->ivaPrecioRDD;
+				$ttotalPrecioRDD += $encabezado->totalPrecioRDD;
 			}
 
 
@@ -628,17 +635,15 @@ class Cotizador extends Base_Controller {
 			$pdf->setXY(155, 212); $pdf->Cell(22, 7, 'Descuento', 0, 0, 'L', false);
 			$pdf->setXY(155, 219); $pdf->Cell(22, 7, 'Impuesto', 0, 0, 'L', false);
 			$pdf->setXY(155, 226); $pdf->Cell(22, 7, 'Total', 0, 0, 'L', false);
-
+			# Totales de la cotizacion
+			$pdf->SetFont('Courier', 'B', 9);
+			$pdf->setXY(155, 205); $pdf->Cell(55, 7, number_format($tstUsdPrecioRDD, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 212); $pdf->Cell(55, 7, number_format($tdescuentoPrecioRDD, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 219); $pdf->Cell(55, 7, number_format($tivaPrecioRDD, 2), 1, 0, 'R', false);
+			$pdf->setXY(155, 226); $pdf->Cell(55, 7, number_format($ttotalPrecioRDD, 2), 1, 0, 'R', false);
 
 
 			/*
-
-			# Totales de la cotizacion
-			$pdf->SetFont('Courier', 'B', 9);
-			$pdf->setXY(155, 205); $pdf->Cell(55, 7, number_format($encabezado->stUsdPrecioRDD, 2), 1, 0, 'R', false);
-			$pdf->setXY(155, 212); $pdf->Cell(55, 7, number_format($encabezado->descuentost, 2), 1, 0, 'R', false);
-			$pdf->setXY(155, 219); $pdf->Cell(55, 7, number_format($encabezado->tasa_impuesto, 2), 1, 0, 'R', false);
-			$pdf->setXY(155, 226); $pdf->Cell(55, 7, number_format($encabezado->totalPrecioRDD, 2), 1, 0, 'R', false);
 
 		# Se descarga la informacion de las partidas de la cotizacion
 

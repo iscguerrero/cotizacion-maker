@@ -168,12 +168,12 @@
 										</div>
 									</div>
 									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-2">
-<div class="checkbox disabled">
-  <label>
-    <input type="checkbox" value="" disabled>
-    Crear TQ al guardar
-  </label>
-</div>
+										<div class="checkbox disabled">
+											<label>
+												<input type="checkbox" value="1" name="nuevoTQ" id="nuevoTQ" disabled>
+												Crear TQ al guardar
+											</label>
+										</div>
 									</div>
 								</div>
 							</div>
