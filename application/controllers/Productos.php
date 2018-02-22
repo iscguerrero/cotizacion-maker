@@ -21,7 +21,7 @@ class Productos extends Base_Controller {
 		# Obtenemos el precio de cada uno de los productos devueltos
 		foreach ($productos as $producto) {
 			# Obtenemos y seteamos el precio del producto
-			$precio = $this->precio_x_prod03->obtener($producto->CVE_ART, 2);
+			$precio = $this->precio_x_prod03->obtener($producto->CVE_ART, 1);
 			$producto->PRECIO = isset($precio) ? $precio->PRECIO : 0;
 			$producto->value = $producto->DESCR;
 		}
@@ -131,7 +131,8 @@ class Productos extends Base_Controller {
 			$this->load->model('prepartidas');
 
 		# Formamos el data para insertar el preencabezado de la precotizacion
-			$folio = $this->preencabezado->folio()->folio + 1;
+			#$folio = $this->preencabezado->folio()->folio + 1;
+			$folio = count($this->preencabezado->folio()) == 0 ? 1 : $this->preencabezado->folio()->folio + 1;
 			$data = array(
 				'folio' => $folio,
 				'id_cliente' => $this->input->post('id_cliente'),
@@ -244,7 +245,7 @@ class Productos extends Base_Controller {
 		$this->load->model('precio_x_prod03');
 		$productos = $this->inve03->xvalores($clasificador, $valores);
 		foreach($productos as $producto) {
-			$precio = $this->precio_x_prod03->obtener($producto->CVE_ART, 2);
+			$precio = $this->precio_x_prod03->obtener($producto->CVE_ART, 1);
 			$producto->precioPiezaAD = count($precio) > 0 ? $precio->PRECIO : 0;
 		}
 		# Obtenemos los productos que pertenezcan al clasificador seleccionado

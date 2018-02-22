@@ -377,7 +377,9 @@ class Cotizador extends Base_Controller {
 			$pdf->RoundedRect(175, 35, 35, 5, 1, 'D', '');
 
 			$pdf->RoundedRect(115, 40, 95, 5, 1, 'DF', '');
-			$pdf->RoundedRect(115, 45, 95, 5, 1, 'D', '34');
+			$pdf->RoundedRect(115, 45, 95, 5, 1, 'D', '');
+			$pdf->RoundedRect(115, 50, 95, 5, 1, 'DF', '');
+			$pdf->RoundedRect(115, 55, 95, 5, 1, 'D', '34');
 
 
 		# Cuadro inferior donde ira el contenido de la cotizacion
@@ -411,7 +413,8 @@ class Cotizador extends Base_Controller {
 			$pdf->setXY(115, 30); $pdf->Cell(25, 5, 'T. C.', 0, 0, 'C', false);
 			$pdf->setXY(140, 30); $pdf->Cell(35, 5, 'Folio', 0, 0, 'C', false);
 			$pdf->setXY(175, 30); $pdf->Cell(35, 5, 'Fecha', 0, 0, 'C', false);
-			$pdf->setXY(115, 40); $pdf->Cell(95, 5, utf8_decode('Representante de Ventas'), 0, 0, 'L', false);
+			$pdf->setXY(115, 40); $pdf->Cell(95, 5, utf8_decode('Folio TQ'), 0, 0, 'L', false);
+			$pdf->setXY(115, 50); $pdf->Cell(95, 5, utf8_decode('Representante de Ventas'), 0, 0, 'L', false);
 
 		# Leyendas del formato / partidas
 			$pdf->SetFont('Courier', 'B', 10);
@@ -442,8 +445,8 @@ class Cotizador extends Base_Controller {
 			$pdf->setXY(115, 35); $pdf->Cell(25, 5, utf8_decode($encabezado->tipo_cambios), 0, 0, 'C', false);
 			$pdf->Cell(35, 5, str_pad($encabezado->folio, '0', STR_PAD_LEFT), 0, 0, 'C', false);
 			$pdf->Cell(35, 5, utf8_decode($encabezado->ffecha), 0, 1, 'C', false);
-			$pdf->Ln(6);
-			$pdf->setX(115); $pdf->MultiCell(95, 3, utf8_decode($encabezado->representante_ventas == 'Representante de ventas' ? '' : utf8_decode($encabezado->representante_ventas)), 0, 'J', false);
+			$pdf->setXY(115, 46); $pdf->MultiCell(95, 3, utf8_decode('TQ'.$encabezado->tq), 0, 'J', false);
+			$pdf->setXY(115, 56); $pdf->MultiCell(95, 3, utf8_decode($encabezado->representante_ventas == 'Representante de ventas' ? '' : utf8_decode($encabezado->representante_ventas)), 0, 'J', false);
 
 			$pdf->setXY(20, 235); $pdf->Cell(60, 5, $encabezado->representante_ventas == 'Representante de ventas' ? '' : utf8_decode($encabezado->representante_ventas), 0, 0, 'C', false);
 			$pdf->setXY(20, 240); $pdf->Cell(60, 5, 'Representante de ventas', 0, 0, 'C', false);

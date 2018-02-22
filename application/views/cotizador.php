@@ -337,7 +337,7 @@
 							</div>
 							<div class="form-group">
 								<label for="inputPiezas">Piezas</label>
-								<input type="text" class="form-control text-right" name="inputPiezas" id="inputPiezas" required>
+								<input type="text" class="form-control text-right" name="inputPiezas" id="inputPiezas" value="1" required>
 							</div>
 						</div>
 						<div class="modal-footer">
