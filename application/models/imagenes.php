@@ -21,11 +21,10 @@ class imagenes extends CI_Model{
 	}
 
 	# Metodo para obtener las partidas de la cotizacion
-	public function listar($folio, $pre_folio) {
+	public function listar($folio) {
 		$this->db->select("folio, nombre_original, nombre_unico")
 		->from('imagenes')
-		->where('folio_preencabezado != ', '')
-		->where('folio_preencabezado', $pre_folio)
+		->where('folio_encabezado', $folio)
 		->where('estatus', 'A');
 		$query = $this->db->get();
 		return $query->result();

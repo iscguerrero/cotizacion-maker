@@ -23,7 +23,7 @@ hot = new Handsontable($container, {
 		}, {
 			data: 'tipo',
 			editor: 'select',
-			selectOptions: cargarTipos()
+			selectOptions: ['Armado', 'Prototipo', 'Tiempo de Armado', 'Tiemp de Entrega', 'Descuentos', 'Fletes', 'Pago', 'Crédito', 'Garantía']
 		}, {
 			data: 'redaccion'
 		}, {

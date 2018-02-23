@@ -9,6 +9,11 @@ class cliente extends CI_Model{
 		return $query->result();
 	}
 
+	public function ObtenerClientexID($ID){
+		$query = $this->db->query("SELECT em.intidempresa AS ID, em.strrfc AS RFC, em.strnombrefiscal, em.strdomiciliolinea1 AS DOMICILIO, em.strdomiciliolinea2 AS COLONIA, em.strcp AS CP, mu.strnombre MUNICIPIO, es.strnombre AS ESTADO, em.strtelefono1 TELEFONO, em.stremail1 AS CORREO, em.strrepresentantelegal AS REPRESENTANTE FROM [cbctecnologia_trilogiq].[cbctecnologia_trilogiq].[empresas] AS em INNER JOIN [cbctecnologia_trilogiq].[cbctecnologia_trilogiq].[municipios] AS mu ON em.intidmunicipio = mu.lonidmunicipio INNER JOIN [cbctecnologia_trilogiq].[cbctecnologia_trilogiq].[estados] AS es ON em.intidestado = es.lonidestado WHERE em.intidempresa = $ID");
+		return $query->result();
+	}
+
 	public function ObtenerClienteEdit($searchTerm) {
 		$query = $this->db->query("SELECT em.intidempresa AS id, em.strnombrefiscal AS value, em.intestatusempresa estatus, isnull(em.strrfc, '') rfc, isnull(em.strtelefono1, '') telefono, isnull(em.stremail1, '') mail, isnull(em.intidestado, 0) estado, isnull(em.intidmunicipio, 0) as municipio, isnull(em.strdomiciliolinea2, '') as colonia, isnull(em.strcp, '') as cp, isnull(em.strdomiciliolinea1, '') as direccion FROM [cbctecnologia_trilogiq].[cbctecnologia_trilogiq].[empresas] em WHERE em.strnombrefiscal LIKE '%$searchTerm%' OR em.intidempresa like '%$searchTerm%'");
 		return $query->result();

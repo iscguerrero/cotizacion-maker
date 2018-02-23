@@ -228,7 +228,7 @@ class Cotizador extends Base_Controller {
 	public function ObtenerImagenes() {
 		if(!$this->input->is_ajax_request()) show_404();
 		$this->load->model('imagenes');
-		$imagenes = $this->imagenes->listar($this->input->post('folio'), $this->input->post('pre_folio'));
+		$imagenes = $this->imagenes->listar($this->input->post('folio'));
 		foreach ($imagenes as $imagen)
 			$imagen->url = base_url('uploads/' . $imagen->nombre_unico);
 		exit(json_encode($imagenes));
@@ -534,7 +534,7 @@ class Cotizador extends Base_Controller {
 					$pdf->SetFont('Courier', '', 9);
 		foreach($observaciones as $observacion) {
 			$pdf->MultiCell(0, 4, '	- ' . utf8_decode($observacion->redaccion), 0, 'J', false);
-			$tipo = $termino->tipo;
+			$tipo = $observacion->tipo;
 		}
 
 		$pdf->Ln();

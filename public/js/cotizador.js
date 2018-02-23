@@ -24,8 +24,9 @@ $(document).ready(function () {
 	});
 	// Modal para agregar un producto especial
 	$('#modalProducto').on('hidden.bs.modal', function (e) {
-		$('#inputPieza, #inputProducto, #inputPrecio, #inputPiezas').val('');
+		$('#inputPieza, #inputProducto, #inputPrecio').val('');
 		$('#inputPrecio').prop('readonly', true);
+		$('#inputPiezas').val('1');
 	});
 	// Configuracion del pie de pagina de la tabla de previsualizacion de la cotizacion
 	$('#descArmada').editable({
@@ -94,6 +95,35 @@ $(document).ready(function () {
 				$('#tablaCotizacion').bootstrapTable('showColumn', 'aparece_en_armada');
 			}
 		}
+	});
+
+	// Actualizacion de los datos del cliente
+	$('#btnActualizarCliente').click(function () {
+		$.ajax({
+			async: true,
+			type: 'POST',
+			cache: false,
+			data: { ID: $('#ID').html() },
+			url: 'Clientes/ObtenerClientexID',
+			dataType: 'json',
+			beforeSend: function () {
+				$('#msjAlert').html('ACTUALIZANDO, ESPERA POR FAVOR...');
+				modalAlert.modal('show');
+			},
+			success: function (json) {
+				xc = json[0];
+				$('#nombreEmpresa').val(xc.strnombrefiscal);
+				$('#RFC').val(xc.RFC);
+				$('#direccion').val(xc.DOMICILIO);
+				$('#colonia').val(xc.COLONIA);
+				$('#municipio').val(xc.MUNICIPIO);
+				$('#estado').val(xc.ESTADO);
+				$('#CP').val(xc.CP);
+				$('#telefono').val(xc.TELEFONO);
+				$('#correo').val(xc.CORREO);
+				modalAlert.modal('hide');
+			}
+		});
 	});
 
 	// Configuracion del dropzone para cargar el excel de la cotizacion
@@ -193,6 +223,10 @@ $(document).ready(function () {
 			actualizarNumeroPartidas();
 			actualizarTotales();
 			$('#modalProducto').modal('hide');
+			totalData = $('#tablaCotizacion').bootstrapTable('getData');
+			if (totalData.length == 1) {
+				$('#btnGuardar').removeClass('hidden');
+			}
 		} else {
 			$('#msjAlert').html('Debes proporcionar la cantidad de piezas del item')
 			modalAlert.modal('show');
@@ -355,7 +389,7 @@ $(document).ready(function () {
 			},
 			{
 				field: 'utilidad', title: 'Utilidad %', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
-					return formato_numero(value, 2, '.', ',')
+					return formato_numero(value, 2, '.', ',') + '%';
 				}
 			},
 			{ field: 'ult_costo', title: 'Costo', visible: false },
@@ -833,8 +867,8 @@ var actualizarTotales = function () {
 
 	utilidadST = 100 * (stUsdPrecioRDD - costo_total) / stUsdPrecioRDD;
 	utilidadSTDD = 100 * (stPrecioRDD - costo_total) / stPrecioRDD;
-	$('#utilidadST').html(formato_numero(utilidadST, 2, '.', ','));
-	$('#utilidadSTDD').html(formato_numero(utilidadSTDD, 2, '.', ','));
+	$('#utilidadST').html(formato_numero(utilidadST, 2, '.', ',')+'%');
+	$('#utilidadSTDD').html(formato_numero(utilidadSTDD, 2, '.', ',')+'%');
 
 	if ((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
 		if (window.estatus == 'B') {

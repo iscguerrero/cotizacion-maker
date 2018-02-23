@@ -187,6 +187,7 @@ function guardarCliente() {
 			$('#msjAlert').html(response.msj);
 			if (response.bandera == true) {
 				$('#modalCliente').modal('hide');
+				modalAlert.modal('hide');
 			}
 		}
 	});
@@ -214,6 +215,7 @@ function guardarContacto() {
 					$('#contacto').val(contactoSeleccionado);
 				}
 				$('#modalContacto').modal('hide');
+				modalAlert.modal('hide');
 			}
 		}
 	});

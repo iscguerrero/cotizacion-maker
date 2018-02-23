@@ -175,6 +175,9 @@
 											</label>
 										</div>
 									</div>
+									<div class="col-xs-6 col-sm-6 col-md-4 col-lg-2">
+										<button type="button" class="btn btn-warning" id="btnActualizarCliente" data-tool="tooltip" data-placement="bottom" title="Actualizar los datos del cliente en esta cotización"><i class="fa fa-refresh"></i> Actualizar datos</button>
+									</div>
 								</div>
 							</div>
 						</form>
@@ -263,7 +266,7 @@
 										<th></th>
 										<th id="totalPrecioRAD" class="text-right"></th>
 										<th id="totalPrecioRDD" class="text-right"></th>
-										<th id="utilidad" class="text-right"></th>
+										<th class="text-right"><font id="utilidad"></font>%</th>
 									</tr>
 									<tr>
 										<th colspan="7" id="faltantes"></th>

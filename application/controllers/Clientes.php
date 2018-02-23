@@ -16,6 +16,18 @@ class Clientes extends Base_Controller {
 			$clientes = $this->cliente->ObtenerCliente($nombre);
 		exit(json_encode($clientes));
 	}
+
+	# Metodo usado para obtener los datos cliente con el ID
+	public function ObtenerClientexID(){
+		if(!$this->input->is_ajax_request()) show_404();
+		# Guardamos el termino de busqueda en una variable local
+		$ID = $this->input->post('ID');
+		# Cargamos el modelo para obtener los datos del cliente
+			$this->load->model('cliente');
+			$clientes = $this->cliente->ObtenerClientexID($ID);
+		exit(json_encode($clientes));
+	}
+
 	# Metodo usado para obtener los datos del autocomplete del cliente de modal
 	public function ObtenerClienteEdit(){
 		if(!$this->input->is_ajax_request()) show_404();
