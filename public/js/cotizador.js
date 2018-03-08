@@ -30,10 +30,15 @@ $(document).ready(function () {
 	});
 	// Configuracion del pie de pagina de la tabla de previsualizacion de la cotizacion
 	$('#descArmada').editable({
-		type: 'text',
+		type: 'textarea',
 		emptytext: 'Descripción de cotización armada',
 		mode: 'popup',
-		showbuttons: false,
+		showbuttons: true,
+	}).on("shown", function (e, editable) {
+		$this = $(this);
+		if (arguments.length == 2) {
+			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
+		}
 	});
 	$('#gestorDeCuenta').editable({
 		type: 'text',
@@ -43,6 +48,11 @@ $(document).ready(function () {
 		showbuttons: false,
 		onblur: 'submit',
 		classes: 'table-condensed'
+	}).on("shown", function (e, editable) {
+		$this = $(this);
+		if (arguments.length == 2) {
+			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
+		}
 	});
 	$('#terminosVenta').editable({
 		type: 'textarea',
@@ -51,6 +61,11 @@ $(document).ready(function () {
 		mode: 'popup',
 		showbuttons: true,
 		onblur: 'submit'
+	}).on("shown", function (e, editable) {
+		$this = $(this);
+		if (arguments.length == 2) {
+			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
+		}
 	});
 	$('#observaciones').editable({
 		type: 'textarea',
@@ -59,6 +74,11 @@ $(document).ready(function () {
 		mode: 'popup',
 		showbuttons: true,
 		onblur: 'submit'
+	}).on("shown", function (e, editable) {
+		$this = $(this);
+		if (arguments.length == 2) {
+			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
+		}
 	});
 	$('#impuestos').editable({
 		type: 'text',
@@ -67,6 +87,11 @@ $(document).ready(function () {
 		onblur: 'submit'
 	}).on('hidden', function (e, reason) {
 		actualizarTotales();
+	}).on("shown", function (e, editable) {
+		$this = $(this);
+		if (arguments.length == 2) {
+			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
+		}
 	});
 	$('#descuento').editable({
 		type: 'text',
@@ -75,6 +100,11 @@ $(document).ready(function () {
 		onblur: 'submit'
 	}).on('hidden', function (e, reason) {
 		actualizarTotales();
+	}).on("shown", function (e, editable) {
+		$this = $(this);
+		if (arguments.length == 2) {
+			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
+		}
 	});
 
 	$('#btnImprimir').click(function (e) {
@@ -452,6 +482,10 @@ $(document).ready(function () {
 				}
 				$('#modalCombos').modal('show');
 			}
+		}, onEditableShown(editable, field, row, $el) {
+			setTimeout(function () {
+				$el.input.$input.select();
+			}, 0);
 		}
 	});
 
@@ -739,18 +773,21 @@ var resetReplica = function () {
 
 // Funcion para obtener el tipo de cambio del web service de banxico
 var obtenerTipoCambio = function () {
-	var tc = 0;
+	//var tc = 0;
 	$.ajax({
 		type: 'POST',
 		url: 'Cotizador/ObtenerTC',
 		dataType: 'json',
-		async: false,
+		async: true,
+		beforeSend: function () {
+			$('.loadingPage').show();
+		},
 		success: function (response) {
-			tc = response.tc;
-			fecha_tc = response.fecha_tc;
+			//tc = response.tc;
+			//fecha_tc = response.fecha_tc;
 		}
 	});
-	return [tc, fecha_tc];
+	//return [tc, fecha_tc];
 }
 
 // Actualizacion del numero de la partida
@@ -867,20 +904,33 @@ var actualizarTotales = function () {
 
 	utilidadST = 100 * (stUsdPrecioRDD - costo_total) / stUsdPrecioRDD;
 	utilidadSTDD = 100 * (stPrecioRDD - costo_total) / stPrecioRDD;
-	$('#utilidadST').html(formato_numero(utilidadST, 2, '.', ',')+'%');
-	$('#utilidadSTDD').html(formato_numero(utilidadSTDD, 2, '.', ',')+'%');
+	$('#utilidadST').html(formato_numero(utilidadST, 2, '.', ',') + '%');
+	$('#utilidadSTDD').html(formato_numero(utilidadSTDD, 2, '.', ',') + '%');
 
 	if ((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
 		if (window.estatus == 'B') {
 			$('#btnImprimir').removeClass('hidden');
-			$('#alerta').addClass('hidden');
+			$('#alerta, #btnAutorizarE1').addClass('hidden');
 		} else {
 			$('#btnImprimir').addClass('hidden');
-			$('#alerta').removeClass('hidden');
+			$('#alerta, #btnAutorizarE1').removeClass('hidden');
 		}
 	} else {
 		$('#btnImprimir').removeClass('hidden');
-		$('#alerta').addClass('hidden');
+		$('#alerta, #btnAutorizarE1').addClass('hidden');
+	}
+
+	if (utilidad < 15) {
+		if (window.estatus == 'B') {
+			$('#btnImprimir').removeClass('hidden');
+			$('#alerta_, #btnAutorizarE2').addClass('hidden');
+		} else {
+			$('#btnImprimir').addClass('hidden');
+			$('#alerta_, #btnAutorizarE2').removeClass('hidden');
+		}
+	} else {
+		$('#btnImprimir').removeClass('hidden');
+		$('#alerta_, #btnAutorizarE2').addClass('hidden');
 	}
 
 	// Se actualizan los valores de los controles de los totales
@@ -911,7 +961,7 @@ var actualizarTotales = function () {
 var nuevaCotizacion = function () {
 	// Cargamos el tipo de cambio de la cotizacion
 	var tc_info = obtenerTipoCambio();
-	$('#tc').val(tc_info[0]).attr('title', 'Fuente Banxico, fecha ' + tc_info[1]);
+	//$('#tc').val(tc_info[0]).attr('title', 'Fuente Banxico, fecha ' + tc_info[1]);
 	// Llenamos los combos de las partidas de armada
 	llenarCombo($('#selectTubos'), 'TUB');
 	llenarCombo($('#selectRieles'), 'RIE');
@@ -1055,23 +1105,29 @@ var cargarCotizacion = function (folio) {
 				$('#tipo').prop('disabled', true);
 				window.estatus = en.estatus;
 				if (en.estatus == 'A') {
-					$('#btnGuardar, #btnAutorizar, #btnRechazar, #btnImprimir, #rowCargaImg, #rowGaleria').removeClass('hidden');
+					$('#btnGuardar, #btnRechazar, #btnImprimir, #rowCargaImg, #rowGaleria').removeClass('hidden');
 					string = "<span class='label label-default'>Abierta</span>";
 				}
 				if (en.estatus == 'B') {
-					$('#btnGuardar, #btnAutorizar, #rowCargaImg, #rowGaleria').addClass('hidden');
+					$('#btnGuardar, #rowCargaImg, #rowGaleria').addClass('hidden');
 					$('#btnRechazar, #btnImprimir').removeClass('hidden');
 					string = "<span class='label label-primary'>Autorizada</span>";
 				}
 				if (en.estatus == 'C') {
-					$('#btnGuardar, #btnAutorizar, #btnRechazar, #rowCargaImg, #rowGaleria').addClass('hidden');
+					$('#btnGuardar, #btnRechazar, #rowCargaImg, #rowGaleria').addClass('hidden');
 					$('#btnImprimir').removeClass('hidden');
 					string = "<span class='label label-danger'>Rechazada</span>";
 				}
 				if (en.estatus == 'D') {
-					$('#btnGuardar, #btnAutorizar, #btnRechazar, #rowCargaImg, #rowGaleria').addClass('hidden');
+					$('#btnGuardar,  #btnRechazar, #rowCargaImg, #rowGaleria').addClass('hidden');
 					$('#btnImprimir').removeClass('hidden');
 					string = "<span class='label label-success'>Cerrada</span>"
+				}
+				$('#btnAutorizarE1, #btnAutorizarE2').addClass('hidden');
+				if (en.descuento_total > 15) {
+					$('#btnAutorizarE1').removeClass('hidden');
+				} else if (en.utilidad < 15) {
+					$('#btnAutorizarE2').removeClass('hidden');
 				}
 				$('#fontEstatus').html(string);
 			}

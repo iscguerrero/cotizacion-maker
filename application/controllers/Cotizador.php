@@ -118,6 +118,7 @@ class Cotizador extends Base_Controller {
 			'totalPrecioPDD' => str_replace(',', '', $encabezado['totalPrecioPDD']),
 			'totalPrecioRAD' => str_replace(',', '', $encabezado['totalPrecioRAD']),
 			'totalPrecioRDD' => str_replace(',', '', $encabezado['totalPrecioRDD']),
+			'descuento_total' => ((str_replace(',', '', $encabezado['stPrecioRDD']) / str_replace(',', '', $encabezado['stUsdPrecioRAD']) * 100) - 100) * -1,
 			'utilidad' => str_replace(',', '', $encabezado['utilidad']),
 			'descuentost' => str_replace(',', '', $encabezado['descuentost']),
 			'tipo_impresion' => $encabezado['tipo'],
@@ -366,6 +367,10 @@ class Cotizador extends Base_Controller {
 	public function nuevaPagina($pdf, $encabezado, $partidas) {
 		$pdf->AddPage();
 
+			if( $encabezado->estatus == 'C' ) {
+				$pdf->Image(base_url('public/images/marca.jpg'), 80, 50, 70);
+			}
+
 		# Cuadro superior izquierda
 			$pdf->RoundedRect(15, 30, 95, 5, 1, 'DF', '12');
 			$pdf->RoundedRect(15, 35, 95, 25, 1, 'D', '');
@@ -406,7 +411,6 @@ class Cotizador extends Base_Controller {
 			$pdf->setXY(15, 20); $pdf->Cell(0, 5, utf8_decode('COTIZACIÓN TQ'.$encabezado->tq), 0, 1, 'C', false);
 			$pdf->SetFont('Courier', 'B', 12);
 			$pdf->SetTextColor(255, 0, 0);
-			if( $encabezado->estatus == 'C' ) $pdf->Cell(0, 5, utf8_decode('Cotización rechazada, prohibido su uso'), 0, 0, 'C', false);
 			$pdf->SetTextColor(0, 0, 0);
 			$pdf->SetFont('Courier', 'B', 11);
 			$pdf->setXY(15, 30); $pdf->Cell(95, 5, utf8_decode('Información del cliente'), 0, 0, 'L', false);
@@ -481,6 +485,9 @@ class Cotizador extends Base_Controller {
 	# Funcion para agregar las imagenes de la cotizacion
 	public function paginaImagenes($pdf, $encabezado, $imagenes, $key) {
 		$pdf->AddPage();
+		if( $encabezado->estatus == 'C' ) {
+			$pdf->Image(base_url('public/images/marca.jpg'), 80, 50, 70);
+		}
 		$pdf->SetFont('Courier', 'B', 12);
 		$pdf->RoundedRect(15, 30, 195, 10, 1, 'DF', '1234');
 		$pdf->setXY(16, 30); $pdf->Cell(95, 5, utf8_decode('Ilustraciones de referencia, cotización con folio ' . $encabezado->folio), 0, 0, 'L', false);
@@ -513,6 +520,9 @@ class Cotizador extends Base_Controller {
 	# Funcion para cargar la pagina de terminos y condiciones de venta
 	public function paginaTerminos($pdf, $encabezado, $terminos, $observaciones) {
 		$pdf->AddPage();
+		if( $encabezado->estatus == 'C' ) {
+			$pdf->Image(base_url('public/images/marca.jpg'), 80, 50, 70);
+		}
 		$pdf->SetAutoPageBreak(true, 17);
 		$pdf->SetMargins(15, 35 , 15);
 

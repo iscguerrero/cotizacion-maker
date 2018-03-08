@@ -66,6 +66,10 @@ $(document).ready(function () {
 		var data = { intidcontacto: '', strtelefono1: '', stremail: '', intidtipocontacto: '', strcampo1: '' };
 		setearContacto(data);
 	});
+}).ajaxStop(function () {
+	$('.loadingPage').hide();
+}).ajaxComplete(function () {
+	$('.loadingPage').hide();
 });
 // Funcion para setear los datos cliente en el modal
 function setearClienteEdit(data) {

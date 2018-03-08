@@ -26,8 +26,24 @@
 		</style>
 	</head>
 	<body style="padding-right: 0 !important">
-		<div class="container-fluid" style="max-width: 1200px">
 
+	<div style="display: block;" role="dialog" tabindex="-1" class="loadingPage modal fade in" id="myModal" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body" style="text-align:center">
+					<i class="fa fa-refresh fa-spin fa-3x fa-fw margin-bottom pull-center" style="color: #5bc0de"></i>
+					<hr />
+					<div>
+						<h3 style="margin:0;">Cargando...</h3>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-backdrop fade in loadingPage"></div>
+
+
+		<div class="container-fluid" style="max-width: 1200px">
 			<!-- Lista de Acciones sobre la cotizacion -->
 			<div class="row">
 				<div class="col-xs-12 form-inline">
@@ -54,7 +70,9 @@
 
 						<button type="button" onclick="guardarCotizacion()" data-tool="tooltip" data-placement="bottom" class="btn btn-primary hidden" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o hidden-lg"></i> <font class="visible-lg">Guardar</font></button>
 
-						<button type="button" onclick="cambiarEstado('B')" data-tool="tooltip" data-placement="bottom" class="btn btn-success hidden" title="Autorizar la impresión de la cotización" id="btnAutorizar"><i class="fa fa-unlock hidden-lg"></i> <font class="visible-lg">Autorizar</font></button>
+						<button type="button" onclick="autorizar('E1')" data-tool="tooltip" data-placement="bottom" class="btn btn-success hidden" title="Autorizar la impresión de la cotización" id="btnAutorizarE1"><i class="fa fa-unlock hidden-lg"></i> <font class="visible-lg">Autorizar E1</font></button>
+
+						<button type="button" onclick="autorizar('E2')" data-tool="tooltip" data-placement="bottom" class="btn btn-success hidden" title="Autorizar la impresión de la cotización" id="btnAutorizarE2"><i class="fa fa-unlock hidden-lg"></i> <font class="visible-lg">Autorizar E2</font></button>
 
 						<button type="button" onclick="cambiarEstado('C')" data-tool="tooltip" data-placement="bottom" class="btn btn-danger hidden" title="Rechazar uso de la cotización" id="btnRechazar"><i class="fa fa-close hidden-lg"></i> <font class="visible-lg">Rechazar</font></button>
 					</div>
@@ -66,6 +84,11 @@
 			<div class="row hidden" id="alerta">
 				<div class="col-xs-12">
 					<div class="alert alert-danger" role="alert">Cotizaciones con descuentos mayores a 15% deben ser aprobados para su impresión</div>
+				</div>
+			</div>
+			<div class="row hidden" id="alerta_">
+				<div class="col-xs-12">
+					<div class="alert alert-danger" role="alert">Cotizaciones con utilidad menor a 15% deben ser aprobados para su impresión</div>
 				</div>
 			</div>
 			<hr style="margin-top: 2px; margin-bottom: 1px; border: 0;" />
@@ -658,7 +681,7 @@
 						<h4 class="modal-title">Mensaje del sistema</h4>
 					</div>
 					<div class="modal-body">
-						<strong id="msjAlert"></strong>
+						<strong id="msjAlert">Cargando datos, espera un momento por favor...</strong>
 					</div>
 				</div>
 			</div>
