@@ -1,4 +1,12 @@
 $(document).ready(function () {
+	window.descuento_maximo = 15;
+	window.utilidad_minima = 20;
+
+	window.descuento_autorizado = 0;
+	window.utilidad_autorizada = 0;
+	window.fase_uno_usuario_autorizacion = '';
+	window.fase_dos_usuario_autorizacion = '';
+
 	/*************** CARGA INICIAL DE LA INFORMACION DE LA COTIZACION ***************/
 	nuevaCotizacion();
 	folios = [];
@@ -907,12 +915,22 @@ var actualizarTotales = function () {
 	$('#utilidadST').html(formato_numero(utilidadST, 2, '.', ',') + '%');
 	$('#utilidadSTDD').html(formato_numero(utilidadSTDD, 2, '.', ',') + '%');
 
-	if ((stPrecioRDD / stUsdPrecioRAD * 100) < 84.99) {
-		if (window.estatus == 'B') {
-			$('#btnImprimir').removeClass('hidden');
-			$('#alerta, #btnAutorizarE1').addClass('hidden');
+
+	$('#fontMsj').empty();
+	descuento_calculado = (((stPrecioRDD / stUsdPrecioRAD * 100) - 100) * -1);
+	if (descuento_calculado > window.descuento_maximo) {
+		if (window.fase_uno_usuario_autorizacion != null && window.fase_uno_usuario_autorizacion != '') {
+			if (window.descuento_autorizado < window.descuento_calculado) {
+				$('#btnImprimir').addClass('hidden');
+				$('#fontMsj').text("Es necesario volver a autorizar el descuento total sobre la cotización pues es mayor al descuento autorizado previamente");
+				$('#alerta, #btnAutorizarE1').removeClass('hidden');
+			} else {
+				$('#btnImprimir').removeClass('hidden');
+				$('#alerta, #btnAutorizarE1').addClass('hidden');
+			}
 		} else {
 			$('#btnImprimir').addClass('hidden');
+			$('#fontMsj').text("Cotizaciones con descuento mayor al " + window.descuento_maximo + "% deben ser autorizadas para su uso e impresión");
 			$('#alerta, #btnAutorizarE1').removeClass('hidden');
 		}
 	} else {
@@ -920,17 +938,24 @@ var actualizarTotales = function () {
 		$('#alerta, #btnAutorizarE1').addClass('hidden');
 	}
 
-	if (utilidad < 15) {
-		if (window.estatus == 'B') {
-			$('#btnImprimir').removeClass('hidden');
-			$('#alerta_, #btnAutorizarE2').addClass('hidden');
+	if (utilidad < window.utilidad_minima) {
+		if (window.fase_dos_usuario_autorizacion != null && window.fase_dos_usuario_autorizacion != '') {
+			if (window.utilidad_autorizada < window.utilidad) {
+				$('#btnImprimir').addClass('hidden');
+				$('#fontMsj').append("<br>Es necesario volver a autorizar la utilidad calculada sobre la cotización pues es menor a la utilidad autorizada previamente");
+				$('#alerta, #btnAutorizarE2').removeClass('hidden');
+			} else {
+				$('#btnImprimir').removeClass('hidden');
+				$('#alerta, #btnAutorizarE2').addClass('hidden');
+			}
 		} else {
 			$('#btnImprimir').addClass('hidden');
-			$('#alerta_, #btnAutorizarE2').removeClass('hidden');
+			$('#fontMsj').html("Cotizaciones con utilidad menor al " + window.utilidad_minima + "% deben ser autorizadas para su uso e impresión");
+			$('#alerta, #btnAutorizarE2').removeClass('hidden');
 		}
 	} else {
 		$('#btnImprimir').removeClass('hidden');
-		$('#alerta_, #btnAutorizarE2').addClass('hidden');
+		$('#alerta, #btnAutorizarE1').addClass('hidden');
 	}
 
 	// Se actualizan los valores de los controles de los totales
@@ -1092,6 +1117,10 @@ var cargarCotizacion = function (folio) {
 				setearTQ(en.id_cliente);
 				$('#contacto').val(en.nombre_contacto);
 				$('#tq').val(en.tq);
+				window.descuento_autorizado = en.descuento_total;
+				window.utilidad_autorizada = en.utilidad;
+				window.fase_uno_usuario_autorizacion = en.fase_uno_usuario_autorizacion;
+				window.fase_dos_usuario_autorizacion = en.fase_dos_usuario_autorizacion;
 				if (en.tipo_impresion == 'B') {
 					$('#tablaCotizacion').bootstrapTable('hideColumn', 'aparece_en_armada');
 				} else {
@@ -1108,11 +1137,6 @@ var cargarCotizacion = function (folio) {
 					$('#btnGuardar, #btnRechazar, #btnImprimir, #rowCargaImg, #rowGaleria').removeClass('hidden');
 					string = "<span class='label label-default'>Abierta</span>";
 				}
-				if (en.estatus == 'B') {
-					$('#btnGuardar, #rowCargaImg, #rowGaleria').addClass('hidden');
-					$('#btnRechazar, #btnImprimir').removeClass('hidden');
-					string = "<span class='label label-primary'>Autorizada</span>";
-				}
 				if (en.estatus == 'C') {
 					$('#btnGuardar, #btnRechazar, #rowCargaImg, #rowGaleria').addClass('hidden');
 					$('#btnImprimir').removeClass('hidden');
@@ -1123,10 +1147,15 @@ var cargarCotizacion = function (folio) {
 					$('#btnImprimir').removeClass('hidden');
 					string = "<span class='label label-success'>Cerrada</span>"
 				}
-				$('#btnAutorizarE1, #btnAutorizarE2').addClass('hidden');
-				if (en.descuento_total > 15) {
+				if (en.estatus == 'B') {
+					$('#btnGuardar, #rowCargaImg, #rowGaleria').addClass('hidden');
+					$('#btnRechazar, #btnImprimir').removeClass('hidden');
+					string = "<span class='label label-primary'>Autorizada</span>";
+					$('#btnAutorizarE1, #btnAutorizarE2').addClass('hidden');
+				}
+				if (en.descuento_total > window.descuento_maximo && (en.fase_uno_usuario_autorizacion == null || en.fase_uno_usuario_autorizacion == '')) {
 					$('#btnAutorizarE1').removeClass('hidden');
-				} else if (en.utilidad < 15) {
+				} else if (en.utilidad < window.utilidad_minima && (en.fase_dos_usuario_autorizacion == null || en.fase_dos_usuario_autorizacion == '')) {
 					$('#btnAutorizarE2').removeClass('hidden');
 				}
 				$('#fontEstatus').html(string);

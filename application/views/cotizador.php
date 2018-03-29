@@ -83,12 +83,9 @@
 			<!-- Mensaje de alerta sobre el descuento sobre la cotizacion -->
 			<div class="row hidden" id="alerta">
 				<div class="col-xs-12">
-					<div class="alert alert-danger" role="alert">Cotizaciones con descuentos mayores a 15% deben ser aprobados para su impresión</div>
-				</div>
-			</div>
-			<div class="row hidden" id="alerta_">
-				<div class="col-xs-12">
-					<div class="alert alert-danger" role="alert">Cotizaciones con utilidad menor a 15% deben ser aprobados para su impresión</div>
+					<div class="alert alert-danger" role="alert">
+						<font id="fontMsj"></font>
+					</div>
 				</div>
 			</div>
 			<hr style="margin-top: 2px; margin-bottom: 1px; border: 0;" />
