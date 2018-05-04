@@ -13,7 +13,8 @@ class Base_Controller extends CI_Controller {
 			$sesion = array(
 				'cve_usuario' => 'dguerrero',
 				#'tipo_usuario' => 'ventas',
-				'tipo_usuario' => 'diseñadores',
+				'tipo_usuario' => 'gerentes',
+				#'tipo_usuario' => 'diseñadores',
 				'logueado' => true
 			);
 			$this->session->set_userdata($sesion);

@@ -27,20 +27,20 @@
 	</head>
 	<body style="padding-right: 0 !important">
 
-	<div style="display: block;" role="dialog" tabindex="-1" class="loadingPage modal fade in" id="myModal" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-body" style="text-align:center">
-					<i class="fa fa-refresh fa-spin fa-3x fa-fw margin-bottom pull-center" style="color: #5bc0de"></i>
-					<hr />
-					<div>
-						<h3 style="margin:0;">Cargando...</h3>
+		<div style="display: block;" role="dialog" tabindex="-1" class="loadingPage modal fade in" id="myModal" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-body" style="text-align:center">
+						<i class="fa fa-refresh fa-spin fa-3x fa-fw margin-bottom pull-center" style="color: #5bc0de"></i>
+						<hr />
+						<div>
+							<h3 style="margin:0;">Cargando...</h3>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-	<div class="modal-backdrop fade in loadingPage"></div>
+		<div class="modal-backdrop fade in loadingPage"></div>
 
 
 		<div class="container-fluid" style="max-width: 1200px">
@@ -48,33 +48,59 @@
 			<div class="row">
 				<div class="col-xs-12 form-inline">
 					<div class="btn-group" role="group">
+						<?php
+							if(in_array($tipo_usuario, array('diseñadores', 'gerentes'))) { ?>
+								<a href="<?php echo base_url('Condiciones') ?>" target="_blank" role="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Modulo de términos y condiciones"><i class="fa fa-list-alt hidden-lg"></i> <font class="visible-lg">T y C</font></a> <?php
+							}
+						?>
 						<button type="button" data-tool="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo cliente o prospecto" data-toggle="modal" data-target="#modalCliente"><i class="fa fa-users hidden-lg"></i> <font class="visible-lg">Clientes</font></button>
-
 						<button type="button" data-tool="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo contacto" data-toggle="modal" data-target="#modalContacto"><i class="fa fa-phone hidden-lg"></i> <font class="visible-lg">Contactos</font></button>
 					</div>
 					<input type="text" class="form-control text-center" name="pre_folio" id="pre_folio" value="" readonly placeholder="Pre-folio" style="max-width: 150px">
 					<input type="text" class="form-control text-center" name="folio" id="folio" value="" readonly placeholder="Folio" style="max-width: 150px">
 					<font id="fontEstatus"></font>
 					<div class="btn-group pull-right" role="group">
-						<?php
-							if($tipo_usuario == 'diseñadores') { ?>
-								<a href="<?php echo base_url('Condiciones') ?>" target="_blank" role="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Modulo de términos y condiciones"><i class="fa fa-list-alt hidden-lg"></i> <font class="visible-lg">T y C</font></a> <?php
-							}
-						?>
 
 						<a href="<?php echo base_url() ?>" role="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Crear nueva cotización"><i class="fa fa-file-o hidden-lg"></i> <font class="visible-lg">Nueva</font></a>
 
 						<button type="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" data-toggle="modal" data-target="#modalCotizaciones" title="Abrir historial de cotizaciones"><i class="fa fa-folder-open-o hidden-lg"></i> <font class="visible-lg">Abrir</font></button>
 
-						<button type="button" id="btnImprimir" data-tool="tooltip" data-placement="bottom" class="btn btn-info hidden" title="Imprimir cotización (Guarda cambios antes de imprimir)" id="btnImprimir"><i class="fa fa-file-pdf-o hidden-lg"></i> <font class="visible-lg">Imprimir</font>
+						<button type="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Imprimir cotización (Guarda cambios antes de imprimir)" id="btnImprimir"><i class="fa fa-file-pdf-o hidden-lg"></i> <font class="visible-lg">Imprimir</font>
 
-						<button type="button" onclick="guardarCotizacion()" data-tool="tooltip" data-placement="bottom" class="btn btn-primary hidden" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o hidden-lg"></i> <font class="visible-lg">Guardar</font></button>
+						<button type="button" onclick="guardarCotizacion()" data-tool="tooltip" data-placement="bottom" class="btn btn-primary" title="Guardar los cambios" id="btnGuardar"><i class="fa fa-floppy-o hidden-lg"></i> <font class="visible-lg">Guardar</font></button>
 
-						<button type="button" onclick="autorizar('E1')" data-tool="tooltip" data-placement="bottom" class="btn btn-success hidden" title="Autorizar la impresión de la cotización" id="btnAutorizarE1"><i class="fa fa-unlock hidden-lg"></i> <font class="visible-lg">Autorizar E1</font></button>
+						<?php
+							if(in_array($tipo_usuario, array('diseñadores', 'gerentes'))) { ?>
+								<button type="button" onclick="cambiarEstado('B')" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Solicitar modificar el descuento de la autorización" id="btnB"><i class="fa fa-thumbs-down hidden-lg"></i> <font class="visible-lg">Solicitar Modificación del Descuento</font></button>
+							}
+						?>
 
-						<button type="button" onclick="autorizar('E2')" data-tool="tooltip" data-placement="bottom" class="btn btn-success hidden" title="Autorizar la impresión de la cotización" id="btnAutorizarE2"><i class="fa fa-unlock hidden-lg"></i> <font class="visible-lg">Autorizar E2</font></button>
+						<button type="button" onclick="cambiarEstado('C')" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Solicitar autorizar el descuento de la cotización" id="btnC"><i class="fa fa-star-half-o hidden-lg"></i> <font class="visible-lg">Solicitar Autorización del Descuento</font></button>
 
-						<button type="button" onclick="cambiarEstado('C')" data-tool="tooltip" data-placement="bottom" class="btn btn-danger hidden" title="Rechazar uso de la cotización" id="btnRechazar"><i class="fa fa-close hidden-lg"></i> <font class="visible-lg">Rechazar</font></button>
+						<?php
+							if(in_array($tipo_usuario, array('diseñadores', 'gerentes'))) { ?>
+								<button type="button" onclick="cambiarEstado('D')" data-tool="tooltip" data-placement="bottom" class="btn btn-primary" title="Autorizar el descuento de la cotización" id="btnD"><i class="fa fa-certificate hidden-lg"></i> <font class="visible-lg">Autorizar Descuento</font></button>
+							}
+						?>
+
+						<?php
+							if(in_array($tipo_usuario, array('diseñadores', 'gerentes'))) { ?>
+								<button type="button" onclick="cambiarEstado('E')" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Solicitar modificar la utilidad de la cotización" id="btnE"><i class="fa fa-star hidden-lg"></i> <font class="visible-lg">Solicitar Modificación de la Utilidad</font></button>
+							}
+						?>
+
+						<button type="button" onclick="cambiarEstado('F')" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Solicitar autorización la utilidad de la cotización" id="btnF"><i class="fa fa-star hidden-lg"></i> <font class="visible-lg">Solicitar Autorización de la Utilidad</font></button>
+
+						<?php
+							if(in_array($tipo_usuario, array('diseñadores', 'gerentes'))) { ?>
+								<button type="button" onclick="cambiarEstado('G')" data-tool="tooltip" data-placement="bottom" class="btn btn-primary" title="Autorizar Utilidad" id="btnG"><i class="fa fa-certificate hidden-lg"></i> <font class="visible-lg">Autorizar Utilidad</font></button>
+
+								<button type="button" onclick="cambiarEstado('H')" data-tool="tooltip" data-placement="bottom" class="btn btn-warning" title="Archivar cotización" id="btnH"><i class="fa fa-archive hidden-lg"></i> <font class="visible-lg">Archivar</font></button>
+
+								<button type="button" onclick="cambiarEstado('I')" data-tool="tooltip" data-placement="bottom" class="btn btn-danger" title="Rechazar cotización" id="btnI"><i class="fa fa-ban hidden-lg"></i> <font class="visible-lg">Rechazar</font></button>
+							}
+						?>
+
 					</div>
 				</div>
 			</div>
@@ -299,7 +325,7 @@
 			</div>
 
 			<!-- Panel para cargar las imagenes que se anexaran a la cotizacion -->
-			<div class="row hidden" id="rowCargaImg">
+			<div class="row" id="rowCargaImg">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel">
 						<div class="x_title">
@@ -318,7 +344,7 @@
 			</div>
 
 			<!-- Panel de la galeria de las imagenes de la cotizacion -->
-			<div class="row hidden" id="rowGaleria">
+			<div class="row" id="rowGaleria">
 				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 					<div class="x_panel">
 						<div class="x_title">
@@ -427,9 +453,14 @@
 						<select class="form-control input-sm" name="estatusCot" id="estatusCot">
 							<option value="">Estatus...</option>
 							<option value="A">Abiertas</option>
-							<option value="B">Autorizadas</option>
-							<option value="C">Rechazadas</option>
-							<option value="D">Cerradas</option>
+							<option value="B">Requiere Modificar Descuento</option>
+							<option value="C">Requiere Autorizar Descuento</option>
+							<option value="D">Descuento Autorizado</option>
+							<option value="E">Requiere Modificar Utilidad</option>
+							<option value="F">Requiere Autorizar Utilidad</option>
+							<option value="G">Utilidad Autorizada</option>
+							<option value="H">Cerradas</option>
+							<option value="J">Rechazadas</option>
 						</select>
 					</div>
 				</div>

@@ -914,11 +914,15 @@ var actualizarTotales = function () {
 	utilidadSTDD = 100 * (stPrecioRDD - costo_total) / stPrecioRDD;
 	$('#utilidadST').html(formato_numero(utilidadST, 2, '.', ',') + '%');
 	$('#utilidadSTDD').html(formato_numero(utilidadSTDD, 2, '.', ',') + '%');
-
-
 	$('#fontMsj').empty();
 	descuento_calculado = (((stPrecioRDD / stUsdPrecioRAD * 100) - 100) * -1);
-	if (descuento_calculado > window.descuento_maximo) {
+
+	//$('#btnImprimir, #btnGuardar, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #btnI, #rowCargar, #rowCargaImg, #rowGaleria')
+
+
+
+	
+	/*if (descuento_calculado > window.descuento_maximo) {
 		if (window.fase_uno_usuario_autorizacion != null && window.fase_uno_usuario_autorizacion != '') {
 			if (window.descuento_autorizado < window.descuento_calculado) {
 				$('#btnImprimir').addClass('hidden');
@@ -956,7 +960,7 @@ var actualizarTotales = function () {
 	} else {
 		$('#btnImprimir').removeClass('hidden');
 		$('#alerta, #btnAutorizarE1').addClass('hidden');
-	}
+	}*/
 
 	// Se actualizan los valores de los controles de los totales
 	$('#stUsdPrecioPDD').html(formato_numero(stUsdPrecioPDD, 2, '.', ','));
@@ -1130,26 +1134,43 @@ var cargarCotizacion = function (folio) {
 				$('#rowCargar').hide();
 				$('#tipo').prop('disabled', true);
 				window.estatus = en.estatus;
+				//$('#btnImprimir, #btnGuardar, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #btnI, #rowCargar, #rowCargaImg, #rowGaleria').hide();
 				if (en.estatus == 'A') {
-					$('#btnGuardar, #btnRechazar, #btnImprimir, #rowCargaImg, #rowGaleria').removeClass('hidden');
+					$('#btnImprimir, #btnGuardar, #btnH, #btnI, #rowCargaImg, #rowGaleria').show();
+					$('#btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #rowCargar').hide();
 					string = "<span class='label label-default'>Abierta</span>";
-				}
-				if (en.estatus == 'C') {
-					$('#btnGuardar, #btnRechazar, #rowCargaImg, #rowGaleria').addClass('hidden');
-					$('#btnImprimir').removeClass('hidden');
+				} else if (en.estatus == 'B') {
+					$('#btnGuardar, #btnC, #btnI, #rowCargaImg, #rowGaleria').show();
+					$('#btnImprimir, #btnB, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar').hide();
+					string = "<span class='label label-warning'>Requiere Modificar Descuento</span>";
+				} else if (en.estatus == 'C') {
+					$('#btnGuardar, #btnC, #btnI, #rowCargaImg, #rowGaleria').show();
+					$('#btnImprimir, #btnB, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar').hide();
+					string = "<span class='label label-warning'>Requiere Autorizar Descuento</span>";
+				} else if (en.estatus == 'D') {
+					$('#btnI').show();
+					$('#btnGuardar, #btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar, #rowCargaImg, #rowGaleria').hide();
+					string = "<span class='label label-success'>Descuento Autorizado</span>";
+				} else if (en.estatus == 'E') {
+					$('#btnGuardar, #btnF, #btnI, #rowCargaImg, #rowGaleria').show();
+					$('#btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnG, #btnH, #rowCargar').hide();
+					string = "<span class='label label-warning'>Requiere Modificar Utilidad</span>";
+				} else if (en.estatus == 'F') {
+					$('#btnGuardar, #btnG, #btnI, #rowCargaImg, #rowGaleria').show();
+					$('#btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnH, #rowCargar').hide();
+					string = "<span class='label label-warning'>Requiere Autorizar Utilidad</span>";
+				} else if (en.estatus == 'G') {
+					$('#btnI').show();
+					$('#btnGuardar, #btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar, #rowCargaImg, #rowGaleria').hide();
+					string = "<span class='label label-success'>Utilidad Autorizada</span>";
+				} else if (en.estatus == 'H') {
+					$('#btnI, #btnGuardar, #btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar, #rowCargaImg, #rowGaleria').hide();
+					string = "<span class='label label-primary'>Archivar</span>";
+				} else if (en.estatus == 'I') {
+					$('#btnI, #btnGuardar, #btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar, #rowCargaImg, #rowGaleria').hide();
 					string = "<span class='label label-danger'>Rechazada</span>";
 				}
-				if (en.estatus == 'D') {
-					$('#btnGuardar,  #btnRechazar, #rowCargaImg, #rowGaleria').addClass('hidden');
-					$('#btnImprimir').removeClass('hidden');
-					string = "<span class='label label-success'>Cerrada</span>"
-				}
-				if (en.estatus == 'B') {
-					$('#btnGuardar, #rowCargaImg, #rowGaleria').addClass('hidden');
-					$('#btnRechazar, #btnImprimir').removeClass('hidden');
-					string = "<span class='label label-primary'>Autorizada</span>";
-					$('#btnAutorizarE1, #btnAutorizarE2').addClass('hidden');
-				}
+
 				if (en.descuento_total > window.descuento_maximo && (en.fase_uno_usuario_autorizacion == null || en.fase_uno_usuario_autorizacion == '')) {
 					$('#btnAutorizarE1').removeClass('hidden');
 				} else if (en.utilidad < window.utilidad_minima && (en.fase_dos_usuario_autorizacion == null || en.fase_dos_usuario_autorizacion == '')) {
