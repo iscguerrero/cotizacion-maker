@@ -194,7 +194,7 @@ class Productos extends Base_Controller {
 			$totalPrecioPDD = $stPrecioPDD + $ivaPrecioPDD;
 			$totalPrecioRAD = $stPrecioRAD + $ivaPrecioRAD;
 			$totalPrecioRDD = $stPrecioRDD + $ivaPrecioRDD;
-			$utilidad = 100 * ($totalPrecioRDD - $costo_total) / $totalPrecioRDD;
+			$utilidad = $totalPrecioRDD == 0 ? 100 : 100 * ($totalPrecioRDD - $costo_total) / $totalPrecioRDD;
 
 		# Formamos un nuevo data para actualizar los campos de totales de la precotizacion y finalizamos la transaccion
 			$data = array(

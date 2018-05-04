@@ -24,7 +24,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 #$config['base_url'] = 'http://177.242.130.80/cotizacion-maker';
-$config['base_url'] = 'http://localhost/cotizacion-maker';
+$config['base_url'] = 'http://localhost/cotizador';
 
 /*
 |--------------------------------------------------------------------------

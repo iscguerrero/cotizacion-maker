@@ -984,9 +984,6 @@ var actualizarTotales = function () {
 
 // Funcion para inicializar una nueva cotizacion
 var nuevaCotizacion = function () {
-	// Cargamos el tipo de cambio de la cotizacion
-	var tc_info = obtenerTipoCambio();
-	//$('#tc').val(tc_info[0]).attr('title', 'Fuente Banxico, fecha ' + tc_info[1]);
 	// Llenamos los combos de las partidas de armada
 	llenarCombo($('#selectTubos'), 'TUB');
 	llenarCombo($('#selectRieles'), 'RIE');
@@ -994,7 +991,7 @@ var nuevaCotizacion = function () {
 	llenarCombo($('#selectSuperficies'), 'SUP');
 	llenarCombo($('#selectTornilleria'), 'TOR');
 	llenarCombo($('#selectOtros'), 'OTR');
-	$(".selectpicker").selectpicker();
+	$('.selectpicker').selectpicker();
 }
 
 // Funcion para guardar los cambios sobre la cotizacion
