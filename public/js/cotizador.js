@@ -47,6 +47,7 @@ $(document).ready(function () {
 		if (arguments.length == 2) {
 			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
 		}
+		$.cookie('intValCambio', 1);
 	});
 	$('#gestorDeCuenta').editable({
 		type: 'text',
@@ -61,6 +62,7 @@ $(document).ready(function () {
 		if (arguments.length == 2) {
 			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
 		}
+		$.cookie('intValCambio', 1);
 	});
 	$('#terminosVenta').editable({
 		type: 'textarea',
@@ -74,6 +76,7 @@ $(document).ready(function () {
 		if (arguments.length == 2) {
 			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
 		}
+		$.cookie('intValCambio', 1);
 	});
 	$('#observaciones').editable({
 		type: 'textarea',
@@ -87,6 +90,7 @@ $(document).ready(function () {
 		if (arguments.length == 2) {
 			setTimeout(function () { $this.data('editable').input.$input.select(); }, 50);
 		}
+		$.cookie('intValCambio', 1);
 	});
 	$('#impuestos').editable({
 		type: 'text',
@@ -107,6 +111,7 @@ $(document).ready(function () {
 		showbuttons: false,
 		onblur: 'submit'
 	}).on('hidden', function (e, reason) {
+		actualizarTabla();
 		actualizarTotales();
 	}).on("shown", function (e, editable) {
 		$this = $(this);
@@ -233,7 +238,7 @@ $(document).ready(function () {
 					$('#rowCargar').hide();
 				}
 				self.removeFile(file);
-				$('#btnGuardar').removeClass('hidden');
+				$('#btnGuardar').show();
 			});
 		}
 	});
@@ -288,9 +293,10 @@ $(document).ready(function () {
 		clickToSelect: true,
 		toolbar: '#toolbar',
 		uniqueId: 'no',
+		showColumns: true,
 		columns: [[
 			{ title: 'Información de las Piezas', halign: 'center', valign: 'middle', colspan: 5 },
-			{ title: 'Información de las Partes', halign: 'center', valign: 'middle', colspan: 3 },
+			{ title: 'Información de las Partes', halign: 'center', valign: 'middle', colspan: 4 },
 			{ title: 'Información de las Replicas', halign: 'center', valign: 'middle', colspan: 9 },
 		], [
 			{ radio: true, align: 'center' },
@@ -377,6 +383,11 @@ $(document).ready(function () {
 				}
 			},
 			{
+				field: 'precioParteAD', title: 'Precio AD', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
+					return formato_numero(value, 2, '.', ',');
+				}
+			},
+			{
 				field: 'descuento', title: 'Descuento', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
 					return formato_numero(value, 2, '.', ',')
 				}, editable: {
@@ -427,10 +438,15 @@ $(document).ready(function () {
 			},
 			{
 				field: 'utilidad', title: 'Utilidad %', align: 'right', halign: 'right', valign: 'middle', formatter: function (value, row, index) {
-					return formato_numero(value, 2, '.', ',') + '%';
+					console.log(value);
+					if ($.isNumeric(value)) {
+						return formato_numero(value, 2, '.', ',') + '%';
+					} else {
+						return value
+					}
 				}
 			},
-			{ field: 'ult_costo', title: 'Costo', visible: false },
+			{ field: 'ult_costo', title: 'Costo', visible: false, align: 'right', halign: 'right', valign: 'middle' },
 			{ field: 'folio', title: 'folio', visible: false },
 			{ field: 'clasificador', title: 'clasificador', visible: false },
 			{ field: 'partida_armado', title: 'armado', visible: false },
@@ -494,6 +510,9 @@ $(document).ready(function () {
 			setTimeout(function () {
 				$el.input.$input.select();
 			}, 0);
+			$.cookie('intValCambio', 1);
+		}, onColumnSwitch(field, checked) {
+			mergeCells();
 		}
 	});
 
@@ -635,13 +654,28 @@ $(document).ready(function () {
 							string = "<span class='label label-default'>Abierta</span>"
 							break;
 						case 'B':
-							string = "<span class='label label-primary'>Autorizada</span>"
+							string = "<span class='label label-warning'>Requiere Modificar Descuento</span>"
 							break;
 						case 'C':
-							string = "<span class='label label-danger'>Rechazada</span>"
+							string = "<span class='label label-warning'>Requiere Autorizar Descuento</span>"
 							break;
 						case 'D':
-							string = "<span class='label label-success'>Cerrada</span>"
+							string = "<span class='label label-success'>Descuento Autorizado</span>"
+							break;
+						case 'E':
+							string = "<span class='label label-warning'>Requiere Modificar Utilidad</span>"
+							break;
+						case 'F':
+							string = "<span class='label label-warning'>Requiere Autorizar Utilidad</span>"
+							break;
+						case 'G':
+							string = "<span class='label label-success'>Utilidad Autorizada</span>"
+							break;
+						case 'H':
+							string = "<span class='label label-primary'>Archivada</span>"
+							break;
+						case 'I':
+							string = "<span class='label label-danger'>Rechazada</span>"
 							break;
 						default:
 							string = "<span class='label label-default'>N/A</span>"
@@ -653,8 +687,8 @@ $(document).ready(function () {
 			{
 				title: 'Acciones', align: 'center', halign: 'center', valign: 'middle', formatter: function (value, row, index) {
 					str = "<button type='button' class='btn btn-xs btn-primary open' title='Cargar esta cotización en el editor'><i class='fa fa-folder-open-o'></i></button>";
-					if (row.estatus == 'A' || row.estatus == 'B') {
-						str += "&nbsp;<button type='button' class='btn btn-xs btn-success cerrar' title='Cerrar esta cotización'><i class='fa fa-lock'></i></button>";
+					if (row.estatus == 'A' || row.estatus == 'D' || row.estatus == 'G') {
+						str += "&nbsp;<button type='button' class='btn btn-xs btn-success cerrar' title='Archivar esta cotización'><i class='fa fa-lock'></i></button>";
 					}
 					return str
 				}
@@ -807,7 +841,7 @@ var actualizarNumeroPartidas = function () {
 			case '':
 				row['no_partida'] = i;
 				$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
-				i = i + 1;
+				i = parseInt(i) + 1;
 				break;
 			case 'TUB':
 				row['no_partida'] = '1.' + iTub;
@@ -865,7 +899,16 @@ var actualizarFila = function (index, row) {
 		row['precioParteDD'] = row['piezas'] * precioPiezaDD;
 		row['precioReplicaAD'] = row['replicas'] * row['precioPiezaAD'];
 		row['precioReplicaDD'] = row['replicas'] * precioPiezaDD;
-		row['utilidad'] = 100 * (row['precioReplicaDD'] - row['ult_costo'] * row['replicas']) / row['precioReplicaDD'];
+		//row['utilidad'] = 100 * (row['precioReplicaDD'] - row['ult_costo'] * row['replicas']) / row['precioReplicaDD'];
+		//row['utilidad'] = 100 * ((row['precioReplicaDD'] - (row['ult_costo'] * row['replicas'])) / (row['ult_costo'] * row['replicas']));
+		row['precioParteAD'] = row['piezas'] * row['precioPiezaAD'];
+
+		_utilidad = 100 * ((row['precioReplicaDD'] - (row['ult_costo'] * row['replicas'])) / (row['ult_costo'] * row['replicas']));
+		descuento = parseInt($('#descuento').editable('getValue', true));
+		_precio = row['precioReplicaDD'] - (row['precioReplicaDD'] * (descuento / 100));
+		__utilidad = 100 * ((_precio - (row['ult_costo'] * row['replicas'])) / (row['ult_costo'] * row['replicas']));
+		row['utilidad'] = formato_numero(_utilidad, 2, '.', ',') + '% | ' + formato_numero(__utilidad, 2, '.', ',') + '%';
+
 		$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
 	}
 }
@@ -908,59 +951,8 @@ var actualizarTotales = function () {
 	totalPrecioRAD = stPrecioRAD + ivaPrecioRAD;
 	totalPrecioRDD = stPrecioRDD + ivaPrecioRDD;
 
-	utilidad = 100 * (totalPrecioRDD - costo_total) / totalPrecioRDD;
-
-	utilidadST = 100 * (stUsdPrecioRDD - costo_total) / stUsdPrecioRDD;
-	utilidadSTDD = 100 * (stPrecioRDD - costo_total) / stPrecioRDD;
-	$('#utilidadST').html(formato_numero(utilidadST, 2, '.', ',') + '%');
-	$('#utilidadSTDD').html(formato_numero(utilidadSTDD, 2, '.', ',') + '%');
-	$('#fontMsj').empty();
-	descuento_calculado = (((stPrecioRDD / stUsdPrecioRAD * 100) - 100) * -1);
-
-	//$('#btnImprimir, #btnGuardar, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #btnI, #rowCargar, #rowCargaImg, #rowGaleria')
-
-
-
-	
-	/*if (descuento_calculado > window.descuento_maximo) {
-		if (window.fase_uno_usuario_autorizacion != null && window.fase_uno_usuario_autorizacion != '') {
-			if (window.descuento_autorizado < window.descuento_calculado) {
-				$('#btnImprimir').addClass('hidden');
-				$('#fontMsj').text("Es necesario volver a autorizar el descuento total sobre la cotización pues es mayor al descuento autorizado previamente");
-				$('#alerta, #btnAutorizarE1').removeClass('hidden');
-			} else {
-				$('#btnImprimir').removeClass('hidden');
-				$('#alerta, #btnAutorizarE1').addClass('hidden');
-			}
-		} else {
-			$('#btnImprimir').addClass('hidden');
-			$('#fontMsj').text("Cotizaciones con descuento mayor al " + window.descuento_maximo + "% deben ser autorizadas para su uso e impresión");
-			$('#alerta, #btnAutorizarE1').removeClass('hidden');
-		}
-	} else {
-		$('#btnImprimir').removeClass('hidden');
-		$('#alerta, #btnAutorizarE1').addClass('hidden');
-	}
-
-	if (utilidad < window.utilidad_minima) {
-		if (window.fase_dos_usuario_autorizacion != null && window.fase_dos_usuario_autorizacion != '') {
-			if (window.utilidad_autorizada < window.utilidad) {
-				$('#btnImprimir').addClass('hidden');
-				$('#fontMsj').append("<br>Es necesario volver a autorizar la utilidad calculada sobre la cotización pues es menor a la utilidad autorizada previamente");
-				$('#alerta, #btnAutorizarE2').removeClass('hidden');
-			} else {
-				$('#btnImprimir').removeClass('hidden');
-				$('#alerta, #btnAutorizarE2').addClass('hidden');
-			}
-		} else {
-			$('#btnImprimir').addClass('hidden');
-			$('#fontMsj').html("Cotizaciones con utilidad menor al " + window.utilidad_minima + "% deben ser autorizadas para su uso e impresión");
-			$('#alerta, #btnAutorizarE2').removeClass('hidden');
-		}
-	} else {
-		$('#btnImprimir').removeClass('hidden');
-		$('#alerta, #btnAutorizarE1').addClass('hidden');
-	}*/
+	utilidadST = 100 * (stUsdPrecioRDD - costo_total) / costo_total;
+	utilidadSTDD = 100 * (stPrecioRDD - costo_total) / costo_total;
 
 	// Se actualizan los valores de los controles de los totales
 	$('#stUsdPrecioPDD').html(formato_numero(stUsdPrecioPDD, 2, '.', ','));
@@ -983,7 +975,51 @@ var actualizarTotales = function () {
 	$('#totalPrecioRAD').html(formato_numero(totalPrecioRAD, 2, '.', ','));
 	$('#totalPrecioRDD').html(formato_numero(totalPrecioRDD, 2, '.', ','));
 
-	$('#utilidad').html(formato_numero(utilidad, 2, '.', ','));
+	$('#utilidadST').text(formato_numero(utilidadST, 2, '.', ','));
+	$('#utilidadSTDD').text(formato_numero(utilidadSTDD, 2, '.', ','));
+
+	$('#fontMsj').empty();
+	descuento_calculado = (((stPrecioRDD / stUsdPrecioRAD * 100) - 100) * -1);
+	//$('#btnImprimir, #btnGuardar, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #btnI, #rowCargar, #rowCargaImg, #rowGaleria')
+	ax = bx = 0;
+	if (descuento_calculado > window.descuento_maximo || utilidadSTDD < window.utilidad_minima) {
+		if (descuento_calculado > window.descuento_maximo) {
+			if (window.estatus == 'A' || window.estatus == 'B' || window.estatus == 'C') {
+				$('#fontMsj').html("<h5>Cotizaciones con descuentos mayores a  la tasa establecida deben ser aprovadas para su uso</h5>");
+			} else {
+				ax = 1;
+			}
+			if (window.estatus == 'A' || window.estatus == 'B') {
+				$('#btnC').show();
+			} else {
+				$('#btnC').hide();
+			}
+		} else {
+			$('#btnC').hide();
+		}
+		if (utilidadSTDD < window.utilidad_minima) {
+			if (window.estatus != 'D' && window.estatus != 'G' && window.estatus != 'H' && window.estatus != 'I') {
+				$('#fontMsj').append("<h5>Cotizaciones con una utilidad menor a la tasa establecida deben ser aprovadas para su uso</h5>");
+			} else {
+				bx = 1;
+			}
+			if (window.estatus == 'A' || window.estatus == 'B' || window.estatus == 'C' || window.estatus == 'E') {
+				$('#btnF').show();
+			} else {
+				$('#btnF').hide();
+			}
+		} else {
+			$('#btnF').hide();
+		}
+		$('#alerta').show();
+		if (ax == 1 && bx == 1) {
+			$('#alerta').hide();
+		}
+	} else {
+		$('#fontMsj').empty();
+		$('#alerta').hide();
+	}
+
 }
 
 // Funcion para inicializar una nueva cotizacion
@@ -996,6 +1032,8 @@ var nuevaCotizacion = function () {
 	llenarCombo($('#selectTornilleria'), 'TOR');
 	llenarCombo($('#selectOtros'), 'OTR');
 	$('.selectpicker').selectpicker();
+	$('#btnImprimir, #btnGuardar, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #btnI, #rowCargaImg, #rowGaleria, #alerta').hide();
+	$('#rowCargar').show();
 }
 
 // Funcion para guardar los cambios sobre la cotizacion
@@ -1044,11 +1082,12 @@ var guardarCotizacion = function () {
 		totalPrecioPDD: $('#totalPrecioPDD').html(),
 		totalPrecioRAD: $('#totalPrecioRAD').html(),
 		totalPrecioRDD: $('#totalPrecioRDD').html(),
-		utilidad: $('#utilidad').html(),
+		utilidad: $('#utilidadSTDD').text(),
 		tasa_impuesto: $('#impuestos').editable('getValue', true),
 		descuentost: $('#descuento').editable('getValue', true),
 		tipo: $('#tipo').val(),
 		area: $('#area').val(),
+		estatus: window.estatus
 	};
 	$.ajax({
 		async: true,
@@ -1069,6 +1108,7 @@ var guardarCotizacion = function () {
 				cargarCotizacion(json.folio);
 				folios.length = 0;
 				modalAlert.modal('hide');
+				$.cookie('intValCambio', 0);
 			}
 		}
 	});
@@ -1144,37 +1184,32 @@ var cargarCotizacion = function (folio) {
 					$('#btnImprimir, #btnB, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar').hide();
 					string = "<span class='label label-warning'>Requiere Modificar Descuento</span>";
 				} else if (en.estatus == 'C') {
-					$('#btnGuardar, #btnC, #btnI, #rowCargaImg, #rowGaleria').show();
-					$('#btnImprimir, #btnB, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar').hide();
+					$('#btnGuardar, #btnB, #btnD, #btnI, #rowCargaImg, #rowGaleria').show();
+					$('#btnImprimir, #btnC, #btnE, #btnF, #btnG, #btnH, #rowCargar').hide();
 					string = "<span class='label label-warning'>Requiere Autorizar Descuento</span>";
 				} else if (en.estatus == 'D') {
-					$('#btnI').show();
-					$('#btnGuardar, #btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar, #rowCargaImg, #rowGaleria').hide();
+					$('#btnImprimir, #btnI, #btnH').show();
+					$('#btnGuardar, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #rowCargar, #rowCargaImg, #rowGaleria').hide();
 					string = "<span class='label label-success'>Descuento Autorizado</span>";
 				} else if (en.estatus == 'E') {
 					$('#btnGuardar, #btnF, #btnI, #rowCargaImg, #rowGaleria').show();
 					$('#btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnG, #btnH, #rowCargar').hide();
 					string = "<span class='label label-warning'>Requiere Modificar Utilidad</span>";
 				} else if (en.estatus == 'F') {
-					$('#btnGuardar, #btnG, #btnI, #rowCargaImg, #rowGaleria').show();
-					$('#btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnH, #rowCargar').hide();
+					$('#btnE, #btnGuardar, #btnG, #btnI, #rowCargaImg, #rowGaleria').show();
+					$('#btnImprimir, #btnB, #btnC, #btnD, #btnF, #btnH, #rowCargar').hide();
 					string = "<span class='label label-warning'>Requiere Autorizar Utilidad</span>";
 				} else if (en.estatus == 'G') {
-					$('#btnI').show();
-					$('#btnGuardar, #btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar, #rowCargaImg, #rowGaleria').hide();
+					$('#btnImprimir, #btnI, #btnH').show();
+					$('#btnGuardar, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #rowCargar, #rowCargaImg, #rowGaleria').hide();
 					string = "<span class='label label-success'>Utilidad Autorizada</span>";
 				} else if (en.estatus == 'H') {
-					$('#btnI, #btnGuardar, #btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar, #rowCargaImg, #rowGaleria').hide();
-					string = "<span class='label label-primary'>Archivar</span>";
+					$('#btnImprimir').show();
+					$('#btnH, #btnI, #btnGuardar, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #rowCargar, #rowCargaImg, #rowGaleria').hide();
+					string = "<span class='label label-primary'>Archivada</span>";
 				} else if (en.estatus == 'I') {
 					$('#btnI, #btnGuardar, #btnImprimir, #btnB, #btnC, #btnD, #btnE, #btnF, #btnG, #btnH, #rowCargar, #rowCargaImg, #rowGaleria').hide();
 					string = "<span class='label label-danger'>Rechazada</span>";
-				}
-
-				if (en.descuento_total > window.descuento_maximo && (en.fase_uno_usuario_autorizacion == null || en.fase_uno_usuario_autorizacion == '')) {
-					$('#btnAutorizarE1').removeClass('hidden');
-				} else if (en.utilidad < window.utilidad_minima && (en.fase_dos_usuario_autorizacion == null || en.fase_dos_usuario_autorizacion == '')) {
-					$('#btnAutorizarE2').removeClass('hidden');
 				}
 				$('#fontEstatus').html(string);
 			}
@@ -1195,6 +1230,7 @@ var setearPartidas = function () {
 		success: function (json) {
 			$('#tablaCotizacion').bootstrapTable('load', json.partidas);
 			mergeCells();
+			actualizarTabla();
 			actualizarTotales();
 			$('#selectTubos').selectpicker('val', json.tubos);
 			$('#selectRieles').selectpicker('val', json.rieles);
@@ -1264,6 +1300,14 @@ var removerImagen = function (folio) {
 
 // Funcion para cambiar el estatus de una cotizacion
 var cambiarEstado = function (estado) {
+	if ($.cookie('intValCambio') == 1) {
+		$('#msjAlert').html('GUARDA CAMBIOS ANTES DE SOLICITAR O REALIZAR UN CAMBIO EN EL ESTATUS DE LA COTIZACIÓN');
+		modalAlert.modal('show');
+		return false;
+	}
+	if (estado == 'D' && window.utilidad_minima > window.utilidad) {
+		estado = 'F';
+	}
 	$.ajax({
 		async: true,
 		type: 'POST',
@@ -1358,8 +1402,6 @@ mergeCells = function () {
 crearPartida = function (cve_art, descripcion, costo, precio, piezas, clasificador) {
 	return {
 		no_partida: 0,
-		folio: '',
-		ult_costo: costo,
 		cve_art: cve_art,
 		descripcion: descripcion,
 		precioPiezaAD: precio,
@@ -1369,8 +1411,9 @@ crearPartida = function (cve_art, descripcion, costo, precio, piezas, clasificad
 		replicas: piezas * $('#replica').val(),
 		precioReplicaAD: precio * piezas * $('#replica').val(),
 		precioReplicaDD: precio * piezas * $('#replica').val(),
-		ult_costo: 0,
 		utilidad: 0,
+		ult_costo: costo,
+		folio: '',
 		clasificador: clasificador,
 		partida_armado: 'N',
 		aparece_en_armada: 'No'

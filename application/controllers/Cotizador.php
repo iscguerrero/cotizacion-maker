@@ -9,7 +9,7 @@ class Cotizador extends Base_Controller {
 
 	# Este metodo simplemente se encarga de retornar la vista principal del controlador en la carpeta views
 	public function index() {
-		$data['tipos'] = $this->session->userdata('tipo_usuario') == 'ventas' ? array(
+		$data['tipos'] = $this->session->userdata('tipo_usuario') == 'agente' ? array(
 			array('value'=>'', 'text'=>'Selecciona...'),
 			array('value'=>'B', 'text'=>'Bulk')
 		) : array(
@@ -133,8 +133,10 @@ class Cotizador extends Base_Controller {
 		} else {
 			# Actualizamos el encabezado de la cotizacion
 			$data['folio'] = $folio;
+			$data['estatus'] = $encabezado['estatus'];
 			unset($data['created_user']);
 			unset($data['created_at']);
+
 			$this->encabezado->editar($data);
 			# Editamos, damos de alta y cancelamos las partidas correspondientes de la cotizacion
 			foreach ($partidas as $key => $partida) {
@@ -264,7 +266,7 @@ class Cotizador extends Base_Controller {
 		if(!$this->input->is_ajax_request()) show_404();
 		$folio = $this->input->post('folio');
 		$this->load->model('encabezado');
-		if( $this->encabezado->editar(array('folio'=>$folio, 'estatus'=>'D')) ) {
+		if( $this->encabezado->editar(array('folio'=>$folio, 'estatus'=>'H')) ) {
 			exit(json_encode(array('bandera' => true)));
 		} else {
 			exit(json_encode(array('bandera' => false, 'msj'=>'Se presento un error al cerrar la cotización')));
@@ -274,13 +276,29 @@ class Cotizador extends Base_Controller {
 	# Metodo para autorizar una cotizacion
 	public function CambiarEstado() {
 		if(!$this->input->is_ajax_request()) show_404();
-		if($this->session->userdata('tipo_usuario') != 'diseñadores') {
+		/*if($this->session->userdata('tipo_usuario') != 'diseñadores') {
 			exit(json_encode(array('bandera' => false, 'msj'=>'No cuentas con los permisos necesarios para realizar esta acción')));
-		}
+		}*/
 		$folio = $this->input->post('folio');
 		$estatus = $this->input->post('estatus');
+
+		$data = array(
+			'folio'=>$folio,
+			'estatus'=>$estatus
+		);
+
+		if($data['estatus'] == 'D') {
+			$data['fase_uno_usuario_autorizacion'] = $this->created_user;
+			$data['fase_uno_fecha_autorizacion'] = date('Y-m-d');
+		}
+		if($data['estatus'] == 'G') {
+			$data['fase_dos_usuario_autorizacion'] = $this->created_user;
+			$data['fase_dos_fecha_autorizacion'] = date('Y-m-d');
+		}
+
+
 		$this->load->model('encabezado');
-		$this->encabezado->editar(array('folio'=>$folio, 'estatus'=>$estatus)) ? exit(json_encode(array('bandera' => true))): exit(json_encode(array('bandera' => false, 'msj'=>'Se presento un error al cambiar el estatus de la cotización')));
+		$this->encabezado->editar($data) ? exit(json_encode(array('bandera' => true))): exit(json_encode(array('bandera' => false, 'msj'=>'Se presento un error al cambiar el estatus de la cotización')));
 	}
 
 	# Este metodo se encarga de mostrar en pantalla el pdf de la cotizacion
@@ -338,7 +356,7 @@ class Cotizador extends Base_Controller {
 	public function nuevaPagina($pdf, $encabezado, $partidas) {
 		$pdf->AddPage();
 
-			if( $encabezado->estatus == 'C' ) {
+			if( in_array($encabezado->estatus, array('A', 'B', 'C','E', 'F', 'I')) ) {
 				$pdf->Image(base_url('public/images/marca.jpg'), 80, 50, 70);
 			}
 
@@ -456,7 +474,7 @@ class Cotizador extends Base_Controller {
 	# Funcion para agregar las imagenes de la cotizacion
 	public function paginaImagenes($pdf, $encabezado, $imagenes, $key) {
 		$pdf->AddPage();
-		if( $encabezado->estatus == 'C' ) {
+		if( in_array($encabezado->estatus, array('A', 'B', 'C','E', 'F', 'I')) ) {
 			$pdf->Image(base_url('public/images/marca.jpg'), 80, 50, 70);
 		}
 		$pdf->SetFont('Courier', 'B', 12);
@@ -491,7 +509,7 @@ class Cotizador extends Base_Controller {
 	# Funcion para cargar la pagina de terminos y condiciones de venta
 	public function paginaTerminos($pdf, $encabezado, $terminos, $observaciones) {
 		$pdf->AddPage();
-		if( $encabezado->estatus == 'C' ) {
+		if( in_array($encabezado->estatus, array('A', 'B', 'C','E', 'F', 'I')) ) {
 			$pdf->Image(base_url('public/images/marca.jpg'), 80, 50, 70);
 		}
 		$pdf->SetAutoPageBreak(true, 17);
