@@ -211,6 +211,12 @@
 			}
 
 		</style>
+		<script>
+			window.paceOptions = {
+				ajax: false,
+				restartOnRequestAfter: false,
+			};
+		</script>
 		<script src="<?php echo base_url('resources/pace.min.js')?>"></script>
 		<link rel="stylesheet" href="<?php echo base_url('resources/bootstrap/dist/css/bootstrap.min.css')?>">
 		<link rel="stylesheet" href="<?php echo base_url('resources/jquery-ui/jquery-ui.min.css')?>">
@@ -237,7 +243,7 @@
 					<div class="btn-group" role="group">
 						<?php
 							if(in_array($tipo_usuario, array('gerente', 'director'))) { ?>
-								<a href="<?php echo base_url('Condiciones') ?>" target="_blank" role="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Modulo de términos y condiciones"><i class="fa fa-list-alt hidden-lg"></i> <font class="visible-lg">T y C</font></a> <?php
+								<a href="<?php echo base_url('Cotizador/Condiciones') ?>" target="_blank" role="button" data-tool="tooltip" data-placement="bottom" class="btn btn-info" title="Modulo de términos y condiciones"><i class="fa fa-list-alt hidden-lg"></i> <font class="visible-lg">T y C</font></a> <?php
 							}
 						?>
 						<button type="button" data-tool="tooltip" data-placement="bottom" class="btn btn-primary" title="Dar de alta un nuevo cliente o prospecto" data-toggle="modal" data-target="#modalCliente"><i class="fa fa-users hidden-lg"></i> <font class="visible-lg">Clientes</font></button>

@@ -139,7 +139,6 @@ $(document).ready(function () {
 			}
 		}
 	});
-
 	// Actualizacion de los datos del cliente
 	$('#btnActualizarCliente').click(function () {
 		$.ajax({
@@ -903,10 +902,10 @@ var actualizarFila = function (index, row) {
 		//row['utilidad'] = 100 * ((row['precioReplicaDD'] - (row['ult_costo'] * row['replicas'])) / (row['ult_costo'] * row['replicas']));
 		row['precioParteAD'] = row['piezas'] * row['precioPiezaAD'];
 
-		_utilidad = 100 * ((row['precioReplicaDD'] - (row['ult_costo'] * row['replicas'])) / (row['ult_costo'] * row['replicas']));
+		_utilidad = 100 * ((row['precioReplicaDD'] - (row['ult_costo'] * row['replicas'])) / row['precioReplicaDD']);
 		descuento = parseInt($('#descuento').editable('getValue', true));
 		_precio = row['precioReplicaDD'] - (row['precioReplicaDD'] * (descuento / 100));
-		__utilidad = 100 * ((_precio - (row['ult_costo'] * row['replicas'])) / (row['ult_costo'] * row['replicas']));
+		__utilidad = 100 * ((_precio - (row['ult_costo'] * row['replicas'])) / _precio);
 		row['utilidad'] = formato_numero(_utilidad, 2, '.', ',') + '% | ' + formato_numero(__utilidad, 2, '.', ',') + '%';
 
 		$('#tablaCotizacion').bootstrapTable('updateRow', { index, row });
@@ -951,8 +950,8 @@ var actualizarTotales = function () {
 	totalPrecioRAD = stPrecioRAD + ivaPrecioRAD;
 	totalPrecioRDD = stPrecioRDD + ivaPrecioRDD;
 
-	utilidadST = 100 * (stUsdPrecioRDD - costo_total) / costo_total;
-	utilidadSTDD = 100 * (stPrecioRDD - costo_total) / costo_total;
+	utilidadST = 100 * (stUsdPrecioRDD - costo_total) / stUsdPrecioRDD;
+	utilidadSTDD = 100 * (stPrecioRDD - costo_total) / stPrecioRDD;
 
 	// Se actualizan los valores de los controles de los totales
 	$('#stUsdPrecioPDD').html(formato_numero(stUsdPrecioPDD, 2, '.', ','));

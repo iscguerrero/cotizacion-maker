@@ -124,7 +124,7 @@ class Productos extends Base_Controller {
 				//$existentes[$key]['utilidad'] = $existentes[$key]['precioReplicaDD'] > 0 ? 100 * ( $existentes[$key]['precioReplicaDD'] - ($existentes[$key]['ult_costo'] * $existentes[$key]['replicas']) ) / $existentes[$key]['precioReplicaDD'] : 0;
 				$existentes[$key]['utilidad'] =
 				$existentes[$key]['precioReplicaDD'] > 0 && $existentes[$key]['ult_costo'] > 0 ?
-				100 * (($existentes[$key]['precioReplicaDD'] - ($existentes[$key]['ult_costo'] * $existentes[$key]['replicas'])) / ($existentes[$key]['ult_costo'] * $existentes[$key]['replicas'])) : 0;
+				100 * (($existentes[$key]['precioReplicaDD'] - ($existentes[$key]['ult_costo'] * $existentes[$key]['replicas'])) / $existentes[$key]['precioReplicaDD']) : 0;
 			}
 
 		# Cerramos la conexion a Firebird para abrir la conexion mysql y los modelos necesarios
@@ -198,7 +198,7 @@ class Productos extends Base_Controller {
 			$totalPrecioRAD = $stPrecioRAD + $ivaPrecioRAD;
 			$totalPrecioRDD = $stPrecioRDD + $ivaPrecioRDD;
 			#$utilidad = $totalPrecioRDD == 0 ? 100 : 100 * ($totalPrecioRDD - $costo_total) / $totalPrecioRDD;
-			$utilidad = $totalPrecioRDD > 0 && $costo_total > 0 ? 100 * ($totalPrecioRDD - $costo_total) / $costo_total : 0;
+			$utilidad = $totalPrecioRDD > 0 && $costo_total > 0 ? 100 * ($totalPrecioRDD - $costo_total) / $totalPrecioRDD : 0;
 
 		# Formamos un nuevo data para actualizar los campos de totales de la precotizacion y finalizamos la transaccion
 			$data = array(

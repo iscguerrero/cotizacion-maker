@@ -21,6 +21,10 @@ class Cotizador extends Base_Controller {
 		$this->load->view('cotizador', $data);
 	}
 
+	public function Condiciones() {
+		$this->load->view('terminos');
+	}
+
 	# Metodo para guardar los cambios en la cotizacion
 	public function GuardarCotizacion(){
 		if(!$this->input->is_ajax_request()) show_404();
